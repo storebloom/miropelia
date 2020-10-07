@@ -1,2 +1,0 @@
-# miropelia
-Author website

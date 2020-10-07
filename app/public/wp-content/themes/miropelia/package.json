@@ -1,0 +1,45 @@
+{
+  "name": "cti-custom",
+  "version": "1.0.0",
+  "description": "Dependencies for CTI Custom theme",
+  "main": "gulpfile.js",
+  "dependencies": {
+    "gulp": "^3.9.1",
+    "gulp-babel": "^8.0.0",
+    "gulp-browserify": "^0.5.1",
+    "gulp-rename": "^1.4.0",
+    "gulp-sass": "^4.0.2",
+    "gulp-terser": "^1.2.0",
+    "gulp-uglify": "^3.0.1",
+    "jquery": "^3.5.1",
+    "popper.js": "^1.16.1",
+    "pump": "^3.0.0",
+    "tether": "^1.4.7",
+    "uglify-js": "^3.6.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.4.5",
+    "@babel/preset-env": "^7.4.5",
+    "@babel/preset-react": "^7.0.0",
+    "babel-preset-minify": "^0.5.0",
+    "babelify": "^10.0.0",
+    "bootstrap": "^4.5.0",
+    "gulp-uglify-es": "^1.0.4"
+  },
+  "scripts": {
+    "test": "gulp"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/storebloom/cti-test.git"
+  },
+  "keywords": [
+    "universal"
+  ],
+  "author": "Scott Adrian",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/storebloom/cti-test/issues"
+  },
+  "homepage": "https://github.com/storebloom/cti-test#readme"
+}
