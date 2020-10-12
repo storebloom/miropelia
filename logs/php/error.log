@@ -499,3 +499,60 @@ Stack trace:
 [11-Oct-2020 05:26:13 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
 [11-Oct-2020 05:26:13 UTC] PHP   9. wp_set_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:90
 [11-Oct-2020 05:26:13 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:960
+[12-Oct-2020 17:52:00 UTC] PHP Warning:  A non-numeric value encountered in /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php on line 46
+[12-Oct-2020 17:52:00 UTC] PHP Stack trace:
+[12-Oct-2020 17:52:00 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/index.php:0
+[12-Oct-2020 17:52:00 UTC] PHP   2. require() /Users/scott/sites/miropelia.com/app/public/index.php:17
+[12-Oct-2020 17:52:00 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-blog-header.php:19
+[12-Oct-2020 17:52:00 UTC] PHP   4. include() /Users/scott/sites/miropelia.com/app/public/wp-includes/template-loader.php:106
+[12-Oct-2020 17:52:00 UTC] PHP   5. get_header() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/page-templates/register.php:10
+[12-Oct-2020 17:52:00 UTC] PHP   6. locate_template() /Users/scott/sites/miropelia.com/app/public/wp-includes/general-template.php:48
+[12-Oct-2020 17:52:00 UTC] PHP   7. load_template() /Users/scott/sites/miropelia.com/app/public/wp-includes/template.php:676
+[12-Oct-2020 17:52:00 UTC] PHP   8. require_once() /Users/scott/sites/miropelia.com/app/public/wp-includes/template.php:730
+[12-Oct-2020 17:52:00 UTC] PHP   9. wp_head() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/header.php:20
+[12-Oct-2020 17:52:00 UTC] PHP  10. do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/general-template.php:3006
+[12-Oct-2020 17:52:00 UTC] PHP  11. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[12-Oct-2020 17:52:00 UTC] PHP  12. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[12-Oct-2020 17:52:00 UTC] PHP  13. wp_enqueue_scripts() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:287
+[12-Oct-2020 17:52:00 UTC] PHP  14. do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/script-loader.php:1999
+[12-Oct-2020 17:52:00 UTC] PHP  15. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[12-Oct-2020 17:52:00 UTC] PHP  16. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[12-Oct-2020 17:52:00 UTC] PHP  17. Miropelia\Register->enqueue_assets() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[12-Oct-2020 17:52:00 UTC] PHP Warning:  A non-numeric value encountered in /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php on line 46
+[12-Oct-2020 17:52:00 UTC] PHP Stack trace:
+[12-Oct-2020 17:52:00 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/index.php:0
+[12-Oct-2020 17:52:00 UTC] PHP   2. require() /Users/scott/sites/miropelia.com/app/public/index.php:17
+[12-Oct-2020 17:52:00 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-blog-header.php:19
+[12-Oct-2020 17:52:00 UTC] PHP   4. include() /Users/scott/sites/miropelia.com/app/public/wp-includes/template-loader.php:106
+[12-Oct-2020 17:52:00 UTC] PHP   5. get_header() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/page-templates/register.php:10
+[12-Oct-2020 17:52:00 UTC] PHP   6. locate_template() /Users/scott/sites/miropelia.com/app/public/wp-includes/general-template.php:48
+[12-Oct-2020 17:52:00 UTC] PHP   7. load_template() /Users/scott/sites/miropelia.com/app/public/wp-includes/template.php:676
+[12-Oct-2020 17:52:00 UTC] PHP   8. require_once() /Users/scott/sites/miropelia.com/app/public/wp-includes/template.php:730
+[12-Oct-2020 17:52:00 UTC] PHP   9. wp_head() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/header.php:20
+[12-Oct-2020 17:52:00 UTC] PHP  10. do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/general-template.php:3006
+[12-Oct-2020 17:52:00 UTC] PHP  11. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[12-Oct-2020 17:52:00 UTC] PHP  12. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[12-Oct-2020 17:52:00 UTC] PHP  13. wp_enqueue_scripts() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:287
+[12-Oct-2020 17:52:00 UTC] PHP  14. do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/script-loader.php:1999
+[12-Oct-2020 17:52:00 UTC] PHP  15. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[12-Oct-2020 17:52:00 UTC] PHP  16. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[12-Oct-2020 17:52:00 UTC] PHP  17. Miropelia\Register->enqueue_assets() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[12-Oct-2020 17:52:00 UTC] PHP Warning:  A non-numeric value encountered in /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php on line 46
+[12-Oct-2020 17:52:00 UTC] PHP Stack trace:
+[12-Oct-2020 17:52:00 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/index.php:0
+[12-Oct-2020 17:52:00 UTC] PHP   2. require() /Users/scott/sites/miropelia.com/app/public/index.php:17
+[12-Oct-2020 17:52:00 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-blog-header.php:19
+[12-Oct-2020 17:52:00 UTC] PHP   4. include() /Users/scott/sites/miropelia.com/app/public/wp-includes/template-loader.php:106
+[12-Oct-2020 17:52:00 UTC] PHP   5. get_header() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/page-templates/register.php:10
+[12-Oct-2020 17:52:00 UTC] PHP   6. locate_template() /Users/scott/sites/miropelia.com/app/public/wp-includes/general-template.php:48
+[12-Oct-2020 17:52:00 UTC] PHP   7. load_template() /Users/scott/sites/miropelia.com/app/public/wp-includes/template.php:676
+[12-Oct-2020 17:52:00 UTC] PHP   8. require_once() /Users/scott/sites/miropelia.com/app/public/wp-includes/template.php:730
+[12-Oct-2020 17:52:00 UTC] PHP   9. wp_head() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/header.php:20
+[12-Oct-2020 17:52:00 UTC] PHP  10. do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/general-template.php:3006
+[12-Oct-2020 17:52:00 UTC] PHP  11. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[12-Oct-2020 17:52:00 UTC] PHP  12. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[12-Oct-2020 17:52:00 UTC] PHP  13. wp_enqueue_scripts() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:287
+[12-Oct-2020 17:52:00 UTC] PHP  14. do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/script-loader.php:1999
+[12-Oct-2020 17:52:00 UTC] PHP  15. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[12-Oct-2020 17:52:00 UTC] PHP  16. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[12-Oct-2020 17:52:00 UTC] PHP  17. Miropelia\Register->enqueue_assets() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285

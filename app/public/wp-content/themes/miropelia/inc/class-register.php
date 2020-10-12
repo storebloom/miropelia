@@ -42,8 +42,11 @@ class Register {
         wp_enqueue_script($this->theme->assets_prefix);
         wp_enqueue_style("{$this->theme->assets_prefix}-font", 'https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400;600&display=swap');
 
-        if (is_page('contact')) {
+        if (is_page('register')) {
+            wp_add_inline_script($this->theme->assets_prefix, 'const restApiKey ="' . REST_API_KEY . '";');
+        }
 
+        if (is_page('contact')) {
             wp_enqueue_script('google-recaptcha');
         }
 

@@ -134,17 +134,19 @@ function getPageHTTPObject() {
 function createMiroUser(username, email, password) {
     const filehref = "https://" + wpThemeURL + "/wp-json/wp/v2/users";
 
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", filehref, true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.setRequestHeader('Authorization','Basic aG9tb25pYW46QnVyYmFuazQ1MjQzIQ==');
-    xhr.send(JSON.stringify({
-        username: username,
-        email: email,
-        password: password
-    }));
+    if (restApiKey) {
+        const xhr = new XMLHttpRequest();
+        xhr.open( "POST", filehref, true );
+        xhr.setRequestHeader( 'Content-Type', 'application/json' );
+        xhr.setRequestHeader( 'Authorization', 'Basic ' + restApiKey );
+        xhr.send( JSON.stringify( {
+            username: username,
+            email: email,
+            password: password
+        } ) );
 
-    xhr.addEventListener("load", function() {
-        window.location.href = '/?loginuser=' + username;
-    });
+        xhr.addEventListener( "load", function () {
+            //window.location.href = '/?loginuser=' + username;
+        } );
+    }
 }
