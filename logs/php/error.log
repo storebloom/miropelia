@@ -1,0 +1,501 @@
+[10-Oct-2020 17:54:43 UTC] PHP Fatal error:  Uncaught ArgumentCountError: Too few arguments to function user_can(), 1 passed in /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php on line 45 and exactly 2 expected in /Users/scott/sites/miropelia.com/app/public/wp-includes/capabilities.php:779
+Stack trace:
+#0 /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php(45): user_can('manage_options')
+#1 /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php(285): Miropelia\Register->enqueue_assets()
+#2 /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php(311): WP_Hook->apply_filters(NULL, Array)
+#3 /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php(478): WP_Hook->do_action(Array)
+#4 /Users/scott/sites/miropelia.com/app/public/wp-includes/script-loader.php(1999): do_action('wp_enqueue_scri...')
+#5 /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php(287): wp_enqueue_scripts('')
+#6 /Users/scott/sites/miro in /Users/scott/sites/miropelia.com/app/public/wp-includes/capabilities.php on line 779
+[11-Oct-2020 02:37:39 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function Miropelia\add_inline_style() in /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:58
+Stack trace:
+#0 /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php(285): Miropelia\Register->hideAdminBar()
+#1 /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php(311): WP_Hook->apply_filters(NULL, Array)
+#2 /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php(478): WP_Hook->do_action(Array)
+#3 /Users/scott/sites/miropelia.com/app/public/wp-settings.php(546): do_action('init')
+#4 /Users/scott/sites/miropelia.com/app/public/wp-config.php(77): require_once('/Users/scott/si...')
+#5 /Users/scott/sites/miropelia.com/app/public/wp-load.php(37): require_once('/Users/scott/si...')
+#6 /Users/scott/sites/miropelia.com/app/public/wp-blog-header.php(13): require_once('/Users/scott/si...')
+#7 /Users/scott/sites/miropelia.com/app/public/index.php(17): require('/Users/scott/si...')
+#8 {main}
+  th in /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php on line 58
+[11-Oct-2020 05:24:04 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 987
+[11-Oct-2020 05:24:04 UTC] PHP Stack trace:
+[11-Oct-2020 05:24:04 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:24:04 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:24:04 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:24:04 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:24:04 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:24:04 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:24:04 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:24:04 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:24:04 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:24:04 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:987
+[11-Oct-2020 05:24:04 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 988
+[11-Oct-2020 05:24:04 UTC] PHP Stack trace:
+[11-Oct-2020 05:24:04 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:24:04 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:24:04 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:24:04 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:24:04 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:24:04 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:24:04 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:24:04 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:24:04 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:24:04 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:988
+[11-Oct-2020 05:24:04 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 989
+[11-Oct-2020 05:24:04 UTC] PHP Stack trace:
+[11-Oct-2020 05:24:04 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:24:04 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:24:04 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:24:04 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:24:04 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:24:04 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:24:04 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:24:04 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:24:04 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:24:04 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:989
+[11-Oct-2020 05:24:04 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 990
+[11-Oct-2020 05:24:04 UTC] PHP Stack trace:
+[11-Oct-2020 05:24:04 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:24:04 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:24:04 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:24:04 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:24:04 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:24:04 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:24:04 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:24:04 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:24:04 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:24:04 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:990
+[11-Oct-2020 05:24:04 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 991
+[11-Oct-2020 05:24:04 UTC] PHP Stack trace:
+[11-Oct-2020 05:24:04 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:24:04 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:24:04 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:24:04 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:24:04 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:24:04 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:24:04 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:24:04 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:24:04 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:24:04 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:991
+[11-Oct-2020 05:24:04 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 992
+[11-Oct-2020 05:24:04 UTC] PHP Stack trace:
+[11-Oct-2020 05:24:04 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:24:04 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:24:04 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:24:04 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:24:04 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:24:04 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:24:04 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:24:04 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:24:04 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:24:04 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:992
+[11-Oct-2020 05:24:04 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 995
+[11-Oct-2020 05:24:04 UTC] PHP Stack trace:
+[11-Oct-2020 05:24:04 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:24:04 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:24:04 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:24:04 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:24:04 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:24:04 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:24:04 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:24:04 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:24:04 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:24:04 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:995
+[11-Oct-2020 05:24:04 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 996
+[11-Oct-2020 05:24:04 UTC] PHP Stack trace:
+[11-Oct-2020 05:24:04 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:24:04 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:24:04 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:24:04 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:24:04 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:24:04 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:24:04 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:24:04 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:24:04 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:24:04 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:996
+[11-Oct-2020 05:24:04 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 999
+[11-Oct-2020 05:24:04 UTC] PHP Stack trace:
+[11-Oct-2020 05:24:04 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:24:04 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:24:04 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:24:04 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:24:04 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:24:04 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:24:04 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:24:04 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:24:04 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:24:04 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:999
+[11-Oct-2020 05:24:04 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 1000
+[11-Oct-2020 05:24:04 UTC] PHP Stack trace:
+[11-Oct-2020 05:24:04 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:24:04 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:24:04 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:24:04 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:24:04 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:24:04 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:24:04 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:24:04 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:24:04 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:24:04 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:1000
+[11-Oct-2020 05:24:04 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 1001
+[11-Oct-2020 05:24:04 UTC] PHP Stack trace:
+[11-Oct-2020 05:24:04 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:24:04 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:24:04 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:24:04 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:24:04 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:24:04 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:24:04 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:24:04 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:24:04 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:24:04 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:1001
+[11-Oct-2020 05:24:04 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 1002
+[11-Oct-2020 05:24:04 UTC] PHP Stack trace:
+[11-Oct-2020 05:24:04 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:24:04 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:24:04 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:24:04 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:24:04 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:24:04 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:24:04 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:24:04 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:24:04 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:24:04 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:1002
+[11-Oct-2020 05:24:04 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 1005
+[11-Oct-2020 05:24:04 UTC] PHP Stack trace:
+[11-Oct-2020 05:24:04 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:24:04 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:24:04 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:24:04 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:24:04 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:24:04 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:24:04 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:24:04 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:24:04 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:24:04 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:1005
+[11-Oct-2020 05:24:04 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 1006
+[11-Oct-2020 05:24:04 UTC] PHP Stack trace:
+[11-Oct-2020 05:24:04 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:24:04 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:24:04 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:24:04 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:24:04 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:24:04 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:24:04 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:24:04 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:24:04 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:24:04 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:1006
+[11-Oct-2020 05:24:04 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 1007
+[11-Oct-2020 05:24:04 UTC] PHP Stack trace:
+[11-Oct-2020 05:24:04 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:24:04 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:24:04 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:24:04 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:24:04 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:24:04 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:24:04 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:24:04 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:24:04 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:24:04 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:1007
+[11-Oct-2020 05:24:04 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 1008
+[11-Oct-2020 05:24:04 UTC] PHP Stack trace:
+[11-Oct-2020 05:24:04 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:24:04 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:24:04 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:24:04 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:24:04 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:24:04 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:24:04 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:24:04 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:24:04 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:24:04 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:1008
+[11-Oct-2020 05:24:04 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 1011
+[11-Oct-2020 05:24:04 UTC] PHP Stack trace:
+[11-Oct-2020 05:24:04 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:24:04 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:24:04 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:24:04 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:24:04 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:24:04 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:24:04 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:24:04 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:24:04 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:24:04 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:1011
+[11-Oct-2020 05:24:04 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 958
+[11-Oct-2020 05:24:04 UTC] PHP Stack trace:
+[11-Oct-2020 05:24:04 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:24:04 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:24:04 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:24:04 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:24:04 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:24:04 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:24:04 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:24:04 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:24:04 UTC] PHP   9. wp_set_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:90
+[11-Oct-2020 05:24:04 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:958
+[11-Oct-2020 05:24:04 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 959
+[11-Oct-2020 05:24:04 UTC] PHP Stack trace:
+[11-Oct-2020 05:24:04 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:24:04 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:24:04 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:24:04 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:24:04 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:24:04 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:24:04 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:24:04 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:24:04 UTC] PHP   9. wp_set_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:90
+[11-Oct-2020 05:24:04 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:959
+[11-Oct-2020 05:24:04 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 960
+[11-Oct-2020 05:24:04 UTC] PHP Stack trace:
+[11-Oct-2020 05:24:04 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:24:04 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:24:04 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:24:04 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:24:04 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:24:04 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:24:04 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:24:04 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:24:04 UTC] PHP   9. wp_set_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:90
+[11-Oct-2020 05:24:04 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:960
+[11-Oct-2020 05:26:13 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 987
+[11-Oct-2020 05:26:13 UTC] PHP Stack trace:
+[11-Oct-2020 05:26:13 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:26:13 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:26:13 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:26:13 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:26:13 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:26:13 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:26:13 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:26:13 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:26:13 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:26:13 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:987
+[11-Oct-2020 05:26:13 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 988
+[11-Oct-2020 05:26:13 UTC] PHP Stack trace:
+[11-Oct-2020 05:26:13 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:26:13 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:26:13 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:26:13 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:26:13 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:26:13 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:26:13 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:26:13 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:26:13 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:26:13 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:988
+[11-Oct-2020 05:26:13 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 989
+[11-Oct-2020 05:26:13 UTC] PHP Stack trace:
+[11-Oct-2020 05:26:13 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:26:13 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:26:13 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:26:13 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:26:13 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:26:13 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:26:13 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:26:13 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:26:13 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:26:13 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:989
+[11-Oct-2020 05:26:13 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 990
+[11-Oct-2020 05:26:13 UTC] PHP Stack trace:
+[11-Oct-2020 05:26:13 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:26:13 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:26:13 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:26:13 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:26:13 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:26:13 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:26:13 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:26:13 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:26:13 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:26:13 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:990
+[11-Oct-2020 05:26:13 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 991
+[11-Oct-2020 05:26:13 UTC] PHP Stack trace:
+[11-Oct-2020 05:26:13 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:26:13 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:26:13 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:26:13 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:26:13 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:26:13 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:26:13 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:26:13 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:26:13 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:26:13 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:991
+[11-Oct-2020 05:26:13 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 992
+[11-Oct-2020 05:26:13 UTC] PHP Stack trace:
+[11-Oct-2020 05:26:13 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:26:13 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:26:13 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:26:13 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:26:13 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:26:13 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:26:13 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:26:13 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:26:13 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:26:13 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:992
+[11-Oct-2020 05:26:13 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 995
+[11-Oct-2020 05:26:13 UTC] PHP Stack trace:
+[11-Oct-2020 05:26:13 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:26:13 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:26:13 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:26:13 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:26:13 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:26:13 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:26:13 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:26:13 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:26:13 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:26:13 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:995
+[11-Oct-2020 05:26:13 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 996
+[11-Oct-2020 05:26:13 UTC] PHP Stack trace:
+[11-Oct-2020 05:26:13 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:26:13 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:26:13 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:26:13 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:26:13 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:26:13 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:26:13 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:26:13 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:26:13 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:26:13 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:996
+[11-Oct-2020 05:26:13 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 999
+[11-Oct-2020 05:26:13 UTC] PHP Stack trace:
+[11-Oct-2020 05:26:13 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:26:13 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:26:13 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:26:13 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:26:13 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:26:13 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:26:13 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:26:13 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:26:13 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:26:13 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:999
+[11-Oct-2020 05:26:13 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 1000
+[11-Oct-2020 05:26:13 UTC] PHP Stack trace:
+[11-Oct-2020 05:26:13 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:26:13 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:26:13 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:26:13 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:26:13 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:26:13 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:26:13 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:26:13 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:26:13 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:26:13 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:1000
+[11-Oct-2020 05:26:13 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 1001
+[11-Oct-2020 05:26:13 UTC] PHP Stack trace:
+[11-Oct-2020 05:26:13 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:26:13 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:26:13 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:26:13 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:26:13 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:26:13 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:26:13 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:26:13 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:26:13 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:26:13 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:1001
+[11-Oct-2020 05:26:13 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 1002
+[11-Oct-2020 05:26:13 UTC] PHP Stack trace:
+[11-Oct-2020 05:26:13 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:26:13 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:26:13 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:26:13 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:26:13 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:26:13 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:26:13 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:26:13 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:26:13 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:26:13 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:1002
+[11-Oct-2020 05:26:13 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 1005
+[11-Oct-2020 05:26:13 UTC] PHP Stack trace:
+[11-Oct-2020 05:26:13 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:26:13 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:26:13 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:26:13 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:26:13 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:26:13 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:26:13 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:26:13 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:26:13 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:26:13 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:1005
+[11-Oct-2020 05:26:13 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 1006
+[11-Oct-2020 05:26:13 UTC] PHP Stack trace:
+[11-Oct-2020 05:26:13 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:26:13 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:26:13 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:26:13 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:26:13 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:26:13 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:26:13 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:26:13 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:26:13 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:26:13 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:1006
+[11-Oct-2020 05:26:13 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 1007
+[11-Oct-2020 05:26:13 UTC] PHP Stack trace:
+[11-Oct-2020 05:26:13 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:26:13 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:26:13 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:26:13 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:26:13 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:26:13 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:26:13 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:26:13 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:26:13 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:26:13 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:1007
+[11-Oct-2020 05:26:13 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 1008
+[11-Oct-2020 05:26:13 UTC] PHP Stack trace:
+[11-Oct-2020 05:26:13 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:26:13 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:26:13 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:26:13 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:26:13 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:26:13 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:26:13 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:26:13 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:26:13 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:26:13 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:1008
+[11-Oct-2020 05:26:13 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 1011
+[11-Oct-2020 05:26:13 UTC] PHP Stack trace:
+[11-Oct-2020 05:26:13 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:26:13 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:26:13 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:26:13 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:26:13 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:26:13 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:26:13 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:26:13 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:26:13 UTC] PHP   9. wp_clear_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:88
+[11-Oct-2020 05:26:13 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:1011
+[11-Oct-2020 05:26:13 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 958
+[11-Oct-2020 05:26:13 UTC] PHP Stack trace:
+[11-Oct-2020 05:26:13 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:26:13 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:26:13 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:26:13 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:26:13 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:26:13 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:26:13 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:26:13 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:26:13 UTC] PHP   9. wp_set_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:90
+[11-Oct-2020 05:26:13 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:958
+[11-Oct-2020 05:26:13 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 959
+[11-Oct-2020 05:26:13 UTC] PHP Stack trace:
+[11-Oct-2020 05:26:13 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:26:13 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:26:13 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:26:13 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:26:13 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:26:13 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:26:13 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:26:13 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:26:13 UTC] PHP   9. wp_set_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:90
+[11-Oct-2020 05:26:13 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:959
+[11-Oct-2020 05:26:13 UTC] PHP Warning:  Cannot modify header information - headers already sent in /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php on line 960
+[11-Oct-2020 05:26:13 UTC] PHP Stack trace:
+[11-Oct-2020 05:26:13 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[11-Oct-2020 05:26:13 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:44
+[11-Oct-2020 05:26:13 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[11-Oct-2020 05:26:13 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[11-Oct-2020 05:26:13 UTC] PHP   5. do_action() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:546
+[11-Oct-2020 05:26:13 UTC] PHP   6. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[11-Oct-2020 05:26:13 UTC] PHP   7. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[11-Oct-2020 05:26:13 UTC] PHP   8. Miropelia\Register->logUserInOut() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[11-Oct-2020 05:26:13 UTC] PHP   9. wp_set_auth_cookie() /Users/scott/sites/miropelia.com/app/public/wp-content/themes/miropelia/inc/class-register.php:90
+[11-Oct-2020 05:26:13 UTC] PHP  10. setcookie() /Users/scott/sites/miropelia.com/app/public/wp-includes/pluggable.php:960

@@ -1,0 +1,36 @@
+@-webkit-keyframes flip-in {
+  from {transform: rotate(0deg);}
+  to {transform: rotate(-90deg);}
+}
+
+keyframes flip-in {
+  from {transform: rotate(0deg);}
+  to {transform: rotate(-90deg);}
+}
+
+@-webkit-keyframes flip-out {
+  from {transform: rotate(-90deg);}
+  to {transform: rotate(0deg);}
+}
+
+keyframes flip-out {
+  from {transform: rotate(-90deg);}
+  to {transform: rotate(0deg);}
+}
+
+@-moz-keyframes spin {
+  100% {
+    -moz-transform: rotatey(360deg);
+  }
+}
+@-webkit-keyframes spin {
+  100% {
+    -webkit-transform: rotatey(360deg);
+  }
+}
+@keyframes spin {
+  100% {
+    -webkit-transform: rotatey(360deg);
+    transform:rotatey(360deg);
+  }
+}

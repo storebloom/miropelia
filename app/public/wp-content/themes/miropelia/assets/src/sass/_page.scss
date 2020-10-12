@@ -1,0 +1,15 @@
+#primary {
+  .container {
+    margin-top: 40px;
+    &>div:not(.wp-block-cover):not(.wpcf7),
+    &>h1,
+    &>p{
+      margin: auto;
+      max-width: 1044px;
+    }
+
+    .home & {
+      margin-top: 20px;
+    }
+  }
+}

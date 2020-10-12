@@ -12,6 +12,10 @@
 ?>
 
 	<footer id="colophon" class="site-footer">
+		<div class="footer-detail">
+			© <?php echo date("Y"); ?> OrbemOrder.com
+		</div>
+        <?php echo wp_nav_menu(['menu' => 'footer']); ?>
 	</footer><!-- #colophon -->
 </div><!-- #page -->
 

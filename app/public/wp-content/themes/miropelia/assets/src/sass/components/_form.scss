@@ -1,0 +1,48 @@
+label {
+  text-align: left;
+}
+
+form {
+  margin: auto;
+  text-align: left;
+  width: 50%;
+}
+
+input:not([type="checkbox"]):not([type="submit"]) {
+  width: 100%;
+
+  &[type="text"],
+  &[type="email"],
+  &[type="password"] {
+    border: none;
+    border-radius: 2px;
+    height: 40px;
+    margin-top: 10px;
+    padding-left: 10px;
+  }
+
+  &:focus {
+    border: solid 2px $light_blue;
+    outline: none;
+  }
+}
+
+.form-wrapper,
+.wpcf7 {
+  background: #cdcdcd;
+  border-radius: 5px;
+  margin: auto;
+  max-width: 500px;
+  padding: 30px;
+  text-align: center;
+  width: 100%;
+
+  form {
+    width: 100%;
+  }
+
+  button {
+    display: block;
+    margin: 10px auto;
+  }
+}

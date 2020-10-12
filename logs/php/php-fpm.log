@@ -1,2 +1,8 @@
 [05-Oct-2020 14:16:34] NOTICE: fpm is running, pid 39933
 [05-Oct-2020 14:16:34] NOTICE: ready to handle connections
+[06-Oct-2020 22:46:54] NOTICE: Terminating ...
+[06-Oct-2020 22:46:54] NOTICE: Terminating ...
+[06-Oct-2020 22:46:54] NOTICE: exiting, bye-bye!
+[06-Oct-2020 22:46:56] NOTICE: fpm is running, pid 14338
+[06-Oct-2020 22:46:56] NOTICE: ready to handle connections
+[06-Oct-2020 22:47:35] WARNING: [pool www] child 14346 said into stderr: "sh: gs: command not found"

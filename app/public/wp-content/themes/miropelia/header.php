@@ -23,4 +23,25 @@
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
 <div id="page" class="site">
-	<a class="skip-link screen-reader-text" href="#primary"><?php esc_html_e( 'Skip to content', 'one-world-love-custom' ); ?></a>
+	<a style="display: none;" class="skip-link screen-reader-text" href="#primary"><?php esc_html_e( 'Skip to content', 'miropelia' ); ?></a>
+	<header>
+		<div class="logo">
+			<span class="logo-icon">
+				<a href="/">
+                    <?php echo get_template_part('assets/src/images/icon', 'oologo.svg'); ?>
+				</a>
+			</span>
+
+			<div class="login">
+                <?php
+                if (is_user_logged_in()) {
+                    include get_template_directory() . '/templates/greeting.php';
+                } else {
+                    include get_template_directory() . '/templates/login.php';
+                }
+                ?>
+			</div>
+		</div>
+
+		<?php echo wp_nav_menu(['menu' => 'main']); ?>
+	</header>

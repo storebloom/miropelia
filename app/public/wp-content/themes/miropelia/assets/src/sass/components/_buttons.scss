@@ -1,0 +1,22 @@
+button,
+a.wp-block-button__link,
+input[type="submit"] {
+  background: #fff;
+  border: 1px solid #000;
+  border-radius: 2px;
+  cursor: pointer;
+  padding: 5px 20px;
+
+  &:focus {
+    background: #000;
+    border: solid 1px #02ffff;
+    color: #02ffff;
+    outline: none;
+  }
+}
+
+a {
+  border-bottom: solid 1px #02ffff;
+  color: #000;
+  text-decoration: none;
+}
