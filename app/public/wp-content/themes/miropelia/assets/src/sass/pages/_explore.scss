@@ -1,0 +1,174 @@
+.page-template-explore {
+  .grecaptcha-badge {
+    display: none;
+  }
+
+  .explore-overlay {
+    background: rgba(255, 255, 255, 0.64);
+    height: 100vh;
+    left: 0;
+    position: fixed;
+    top: 200px;
+    width: 100%;
+    z-index: 2;
+
+    #engage-explore {
+      left: 50%;
+      position: absolute;
+      top: 40%;
+      transform: translate(-50%, -50%);
+    }
+  }
+  .container {
+    background: url("../../src/images/orbem-map-rough.svg");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: left;
+    height: 4000px;
+    position: relative;
+    width: 4000px;
+
+    #leave-map {
+      opacity: 0;
+      position: fixed;
+      right: 40px;
+      top: 40px;
+      z-index: 99999;
+
+    }
+
+    .map-item-1 {
+      left: 50%;
+      position: absolute;
+      top: 50%;
+
+      img {
+        width: 100px;
+      }
+
+      .map-item-modal-1 {
+        background: #cdcdcd;
+        opacity: 0;
+        left: 50%;
+        position: absolute;
+        top: 20%;
+        transition: all .5s;
+        transform: translate(-50%, -50%);
+        width: 100%;
+
+        &.engage {
+          opacity: 1;
+        }
+      }
+    }
+
+    #map-character {
+      height: 100vh;
+      position: absolute;
+      width: 90vw;
+
+      @media only screen and (max-width: 480px) {
+        max-width: 100%!important;
+      }
+
+      img {
+        height: 100px;
+        left: 50%;
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 100px;
+      }
+
+      @media only screen and (max-width: 480px) {
+        left: calc(50vw - 50px);
+        transform: translate(0, -50%);
+      }
+    }
+
+    .touch-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      height: 100vh;
+      left: 0;
+      max-width: 100%!important;
+      opacity: 0;
+      position: fixed;
+      top: 0;
+      transition: all .5s;
+      width: 100%;
+      z-index: -1;
+
+      &.engage {
+        @media only screen and (max-width: 480px) {
+          opacity: .4;
+        }
+      }
+
+      span {
+        width: 33%;
+        height: 33%;
+        position: relative;
+
+        &:before {
+          background-size: contain!important;
+          content: '';
+          height: 140px;
+          left: 30%;
+          position: absolute;
+          top: 10%;
+          width: 30px;
+        }
+
+        &:first-child {
+          &:before {
+            background: url('../../src/images/sword-arrow.png') no-repeat;
+            transform: rotate(125deg);
+          }
+        }
+        &:nth-child(2) {
+          &:before {
+            background: url('../../src/images/sword-arrow.png') no-repeat;
+            transform: rotate(180deg);
+          }
+        }
+        &:nth-child(3) {
+          &:before {
+            background: url('../../src/images/sword-arrow.png') no-repeat;
+            transform: rotate(225deg);
+          }
+        }
+        &:nth-child(4) {
+          &:before {
+            background: url('../../src/images/sword-arrow.png') no-repeat;
+
+            transform: rotate(90deg);
+          }
+        }
+        &:nth-child(6) {
+          &:before {
+            background: url('../../src/images/sword-arrow.png') no-repeat;
+            transform: rotate(270deg);
+          }
+        }
+        &:nth-child(7) {
+          &:before {
+            background: url('../../src/images/sword-arrow.png') no-repeat;
+            transform: rotate(45deg);
+          }
+        }
+        &:nth-child(8) {
+          &:before {
+            background: url('../../src/images/sword-arrow.png') no-repeat;
+          }
+        }
+        &:nth-child(9) {
+          &:before {
+            background: url('../../src/images/sword-arrow.png') no-repeat;
+            transform: rotate(315deg);
+          }
+        }
+      }
+    }
+  }
+}

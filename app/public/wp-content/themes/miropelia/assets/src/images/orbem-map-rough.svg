@@ -1,0 +1,749 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="533px" height="623px" viewBox="0 0 533 623" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 55.2 (78181) - https://sketchapp.com -->
+    <title>Orbem Map</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M254.574219,114.5625 C173.968001,173.814159 145.24274,239.403016 168.398437,311.329072 C176.517917,336.549741 182.948599,372.907142 144.511719,392.792969 C110.947783,410.157714 33.6385369,411.17547 17.5742188,430.59375 C-26.6619147,484.065651 23.5362549,545.472287 53.2539063,571.773438 C106.122259,618.56376 202.625608,625.132348 307.445313,622.496094 C412.265017,619.85984 375.1568,545.332646 456.824219,528.453125 C538.491637,511.573604 545.045993,169.380222 520.050781,136.710938 C495.055569,104.041653 457.584812,118.930007 456.824219,86.6875 C456.063625,54.4449927 496.63824,0.10546875 448.644531,0.10546875 C400.650823,0.10546875 379.433654,63.2459887 351.566406,86.6875 C332.988241,102.315174 300.657512,111.606841 254.574219,114.5625 Z" id="path-1"></path>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <mask id="mask-2" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+        <use id="Mask" fill="#4F7C3D" transform="translate(266.515611, 311.549695) scale(1, -1) translate(-266.515611, -311.549695) " xlink:href="#path-1"></use>
+        <path d="M458,437 C475.673112,437 490,427.150264 490,415 C490,402.849736 475.673112,393 458,393 C440.326888,393 426,402.849736 426,415 C426,427.150264 440.326888,437 458,437 Z" id="Oval" stroke="#000000" fill="#82664D" stroke-dasharray="6" mask="url(#mask-2)"></path>
+        <text id="Spinebeck-Village" mask="url(#mask-2)" font-family="Avenir-Heavy, Avenir" font-size="8" font-weight="600" letter-spacing="1.46155" fill="#000000">
+            <tspan x="434.083025" y="413">Spinebeck</tspan>
+            <tspan x="442.088575" y="424">Village</tspan>
+        </text>
+        <g id="Group-4" mask="url(#mask-2)">
+            <g transform="translate(343.000000, 479.000000)" id="Group-3">
+                <g transform="translate(19.000000, 34.000000)">
+                    <g id="Group-2" transform="translate(2.000000, 18.000000)" fill="#264404" stroke="#000000">
+                        <g id="Group">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(26.000000, 3.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(54.000000, 8.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(6.000000, 9.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                    </g>
+                    <g id="Group-2" transform="translate(48.500000, 16.500000) scale(-1, 1) translate(-48.500000, -16.500000) " fill="#264404" stroke="#000000">
+                        <g id="Group">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(26.000000, 3.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(54.000000, 8.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(6.000000, 9.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                    </g>
+                </g>
+                <g transform="translate(0.000000, 10.000000)">
+                    <g id="Group-2" transform="translate(2.000000, 18.000000)" fill="#264404" stroke="#000000">
+                        <g id="Group">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(26.000000, 3.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(54.000000, 8.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(6.000000, 9.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                    </g>
+                    <g id="Group-2" transform="translate(48.500000, 16.500000) scale(-1, 1) translate(-48.500000, -16.500000) " fill="#264404" stroke="#000000">
+                        <g id="Group">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(26.000000, 3.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(54.000000, 8.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(6.000000, 9.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                    </g>
+                </g>
+                <g transform="translate(61.000000, 0.000000)">
+                    <g id="Group-2" transform="translate(2.000000, 18.000000)" fill="#264404" stroke="#000000">
+                        <g id="Group">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(26.000000, 3.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(54.000000, 8.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(6.000000, 9.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                    </g>
+                    <g id="Group-2" transform="translate(48.500000, 16.500000) scale(-1, 1) translate(-48.500000, -16.500000) " fill="#264404" stroke="#000000">
+                        <g id="Group">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(26.000000, 3.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(54.000000, 8.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(6.000000, 9.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+        <g id="Group-4" mask="url(#mask-2)">
+            <g transform="translate(236.000000, 455.000000)" id="Group-3">
+                <g transform="translate(19.000000, 34.000000)">
+                    <g id="Group-2" transform="translate(2.000000, 18.000000)" fill="#264404" stroke="#000000">
+                        <g id="Group">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(26.000000, 3.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(54.000000, 8.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(6.000000, 9.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                    </g>
+                    <g id="Group-2" transform="translate(48.500000, 16.500000) scale(-1, 1) translate(-48.500000, -16.500000) " fill="#264404" stroke="#000000">
+                        <g id="Group">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(26.000000, 3.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(54.000000, 8.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(6.000000, 9.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                    </g>
+                </g>
+                <g transform="translate(0.000000, 10.000000)">
+                    <g id="Group-2" transform="translate(2.000000, 18.000000)" fill="#264404" stroke="#000000">
+                        <g id="Group">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(26.000000, 3.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(54.000000, 8.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(6.000000, 9.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                    </g>
+                    <g id="Group-2" transform="translate(48.500000, 16.500000) scale(-1, 1) translate(-48.500000, -16.500000) " fill="#264404" stroke="#000000">
+                        <g id="Group">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(26.000000, 3.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(54.000000, 8.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(6.000000, 9.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                    </g>
+                </g>
+                <g transform="translate(61.000000, 0.000000)">
+                    <g id="Group-2" transform="translate(2.000000, 18.000000)" fill="#264404" stroke="#000000">
+                        <g id="Group">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(26.000000, 3.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(54.000000, 8.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(6.000000, 9.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                    </g>
+                    <g id="Group-2" transform="translate(48.500000, 16.500000) scale(-1, 1) translate(-48.500000, -16.500000) " fill="#264404" stroke="#000000">
+                        <g id="Group">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(26.000000, 3.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(54.000000, 8.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(6.000000, 9.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+        <g id="Group-4" mask="url(#mask-2)">
+            <g transform="translate(464.000000, 486.500000) scale(-1, 1) translate(-464.000000, -486.500000) translate(384.000000, 444.000000)" id="Group-3">
+                <g transform="translate(19.000000, 34.000000)">
+                    <g id="Group-2" transform="translate(2.000000, 18.000000)" fill="#264404" stroke="#000000">
+                        <g id="Group">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(26.000000, 3.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(54.000000, 8.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(6.000000, 9.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                    </g>
+                    <g id="Group-2" transform="translate(48.500000, 16.500000) scale(-1, 1) translate(-48.500000, -16.500000) " fill="#264404" stroke="#000000">
+                        <g id="Group">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(26.000000, 3.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(54.000000, 8.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(6.000000, 9.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                    </g>
+                </g>
+                <g transform="translate(0.000000, 10.000000)">
+                    <g id="Group-2" transform="translate(2.000000, 18.000000)" fill="#264404" stroke="#000000">
+                        <g id="Group">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(26.000000, 3.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(54.000000, 8.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(6.000000, 9.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                    </g>
+                    <g id="Group-2" transform="translate(48.500000, 16.500000) scale(-1, 1) translate(-48.500000, -16.500000) " fill="#264404" stroke="#000000">
+                        <g id="Group">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(26.000000, 3.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(54.000000, 8.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(6.000000, 9.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                    </g>
+                </g>
+                <g transform="translate(61.000000, 0.000000)">
+                    <g id="Group-2" transform="translate(2.000000, 18.000000)" fill="#264404" stroke="#000000">
+                        <g id="Group">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(26.000000, 3.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(54.000000, 8.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(6.000000, 9.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                    </g>
+                    <g id="Group-2" transform="translate(48.500000, 16.500000) scale(-1, 1) translate(-48.500000, -16.500000) " fill="#264404" stroke="#000000">
+                        <g id="Group">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(26.000000, 3.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(54.000000, 8.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                        <g id="Group" transform="translate(6.000000, 9.000000)">
+                            <polygon id="Triangle" points="9 4 18 19 0 19"></polygon>
+                            <polygon id="Triangle" points="12 0 21 15 3 15"></polygon>
+                            <polygon id="Triangle" points="22 2 31 17 13 17"></polygon>
+                            <polygon id="Triangle" points="34 1 43 16 25 16"></polygon>
+                            <polygon id="Triangle" points="12 8 21 23 3 23"></polygon>
+                            <polygon id="Triangle" points="22 9 31 24 13 24"></polygon>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+        <path d="M341.777344,535.058594 C355.405586,515.558407 425.144582,506.94454 448.115234,518.179688 C453.860285,520.989642 458.238932,525.997396 463.300781,529.90625" id="Path" stroke="#FFFFFF" stroke-dasharray="4" mask="url(#mask-2)"></path>
+        <path d="M347.121094,529.507812 C347.121094,503.891086 344.924362,477.267747 319.339844,464.96875" id="Path-2" stroke="#FFFFFF" stroke-dasharray="5" mask="url(#mask-2)"></path>
+        <text id="Southern-Forest" mask="url(#mask-2)" font-family="Apple-Chancery, Apple Chancery" font-size="21" font-weight="normal" letter-spacing="0.8119722" fill="#FFFFFF">
+            <tspan x="319.748669" y="503.243123">Southern</tspan>
+            <tspan x="410.75003" y="503.243123" font-family="Kokonor"> </tspan>
+            <tspan x="418.02354" y="503.243123">Forest</tspan>
+        </text>
+        <g id="blackclaw" mask="url(#mask-2)">
+            <g transform="translate(387.000000, 539.000000)">
+                <rect id="Rectangle" fill="#8B572A" fill-rule="evenodd" x="0" y="0" width="46" height="5"></rect>
+                <text id="Blackclaw-Forest" fill="none" font-family="Avenir-Heavy, Avenir" font-size="4" font-weight="600" letter-spacing="0.730775">
+                    <tspan x="0.0598" y="4" fill="#000000">Blackclaw Forest</tspan>
+                </text>
+            </g>
+        </g>
+        <g id="Elven-Domain" mask="url(#mask-2)">
+            <g transform="translate(423.000000, 475.000000)">
+                <rect id="Rectangle" fill="#8B572A" fill-rule="evenodd" x="10" y="0" width="41" height="5"></rect>
+                <text id="Elven-Domain" fill="none" font-family="Avenir-Heavy, Avenir" font-size="4" font-weight="600" letter-spacing="0.730775">
+                    <tspan x="12.72735" y="4" fill="#000000">Elven Domain</tspan>
+                </text>
+            </g>
+        </g>
+        <g id="Forbidden-Forest" mask="url(#mask-2)">
+            <g transform="translate(245.000000, 491.000000)">
+                <rect id="Rectangle" fill="#8B572A" fill-rule="evenodd" x="12" y="0" width="47.1956522" height="7"></rect>
+                <text id="Elven-Domain" fill="none" font-family="Avenir-Heavy, Avenir" font-size="4" font-weight="600" letter-spacing="0.730775">
+                    <tspan x="14.1023217" y="5" fill="#000000">Forbidden Forest</tspan>
+                </text>
+            </g>
+        </g>
+        <g id="Northern-Mountains" mask="url(#mask-2)">
+            <g transform="translate(-32.000000, -221.000000)">
+                <g id="Group-6" transform="translate(358.716401, 261.956568) rotate(9.000000) translate(-358.716401, -261.956568) translate(30.216401, 48.956568)">
+                    <path d="M19.7756731,425.757725 C23.4182963,419.950025 27.635018,414.895842 30.7035428,408.334626 C36.6703534,395.576204 39.5655688,379.264558 46.7373308,368.10746 C49.5292543,363.764069 54.4859323,365.210723 58.4347688,365.193202 C67.846227,365.151442 77.8420943,373.233185 86.614352,367.930522 C92.9604818,364.094408 91.8004311,346.29824 97.8299733,341.379552 C121.088258,322.406262 104.6865,371.541713 127.896672,345.334616 C136.963082,335.09754 141.550623,317.576941 149.457968,305.232346 C152.369991,300.686224 155.89796,294.838905 160.017783,295.188565 C163.296796,295.466863 217.406587,317.798175 233.494825,310.478011 C236.771947,308.986917 238.057514,302.399381 239.537609,297.613644 C245.888337,277.079201 245.425648,248.986576 256.896393,234.811387 C263.940409,226.106611 318.416851,263.361705 331.243381,256.657913 C335.716418,254.320078 339.298392,248.697222 342.499154,243.304367 C352.297643,226.795224 359.638597,206.850162 370.049699,191.274456 C386.227491,167.071396 405.954113,243.440183 422.507489,240.150724 C431.972314,238.269889 436.775793,180.903084 453.952718,163.318397 C464.926384,152.084228 458.688628,188.347513 504.369479,230.606529 C511.931582,237.602175 521.975771,253.636139 528.995664,245.38598 L539.481869,245.38598 C550.74678,232.146846 558.438547,212.689547 569.086826,198.268675 C586.015796,175.341918 642.283752,211.71864 646.692769,152.879109 C649.095585,120.812869 623.326844,-57.3406511 571.649823,20.0722156 C565.504757,29.277606 552.988032,36.6054739 548.408861,48.3092925 C547.117967,51.6086641 549.111663,59.6293918 546.628816,59.5604095 C544.670303,59.505995 524.957449,38.3336993 518.75706,49.8080537 C508.324647,69.1141334 514.973443,94.7365303 496.426196,95.6867988 C470.270948,97.0268633 455.054205,66.4582923 427.981461,71.1549925 C402.071555,75.6499584 447.329852,93.7543828 416.76584,87.3603478 C416.34693,87.2727113 386.587916,71.3532766 380.375298,76.3694324 C370.889947,84.0280383 365.276825,100.854564 355.682193,108.176475 C339.846048,120.261446 321.8958,112.02498 305.660255,112.214804 C289.239004,112.4068 292.489957,133.009649 274.007576,135.216625 C255.809601,137.38964 237.432312,135.371288 219.294617,138.536797 C209.415109,140.261034 163.049408,182.951362 156.397466,190.670789 C140.520936,209.095138 158.710051,217.743598 134.334278,227.421662 C126.257489,230.628439 117.5589,224.435367 109.333346,226.536976 C57.1873485,239.860153 95.4915572,234.243949 60.7501655,266.555981 C57.4474332,269.627764 52.7439022,265.915847 49.2735602,268.502289 C46.8433341,270.313535 45.5940802,274.824043 44.5089287,278.66056 C33.7574254,316.672136 24.0674104,355.388806 13.8466513,393.752929 L19.7756731,425.757725 Z" id="Path-3" stroke="#979797" fill="#D8D8D8"></path>
+                    <path d="M6.98043537,391.915968 C10.755413,386.859853 15.125349,382.459741 18.3053683,376.747623 C24.4889824,365.640291 27.4893952,351.439564 34.9217426,341.726325 C37.8151104,337.94502 42.9518889,339.20446 47.044206,339.189207 C56.7976287,339.152851 67.156695,346.188721 76.2476919,341.572286 C82.8244077,338.23261 81.6222067,322.739475 87.8708318,318.457323 C111.974204,301.939401 94.9764897,344.716146 119.030001,321.900556 C128.425839,312.988277 133.180068,297.73505 141.374725,286.987991 C144.392557,283.030191 148.048714,277.939584 152.31823,278.243993 C155.716386,278.486276 211.792251,297.927654 228.465054,291.554805 C231.86125,290.256676 233.193528,284.521645 234.727402,280.355238 C241.308883,262.478194 240.829383,238.021085 252.716916,225.680333 C260.016876,218.102057 316.472715,250.535903 329.765296,244.699661 C334.400859,242.66437 338.112985,237.769178 341.430046,233.074221 C351.584562,218.701555 359.192249,201.337619 369.981637,187.777593 C386.747248,166.706693 407.190636,233.192461 424.345476,230.328696 C434.154205,228.691264 439.132219,178.748398 456.933266,163.439377 C468.305659,153.659041 461.841255,185.22943 509.181915,222.019633 C517.018787,228.10996 527.42793,242.06894 534.70289,234.886449 L545.57011,234.886449 C557.244331,223.360614 565.215578,206.421319 576.250761,193.866678 C593.794844,173.906912 652.107291,205.576058 656.67651,154.351055 C659.166632,126.434564 632.461586,-28.6637948 578.906885,38.7309362 C572.538538,46.7450409 559.567019,53.1245964 554.821464,63.3138033 C553.483665,66.1861973 555.549802,73.1689485 552.976741,73.1088933 C550.947066,73.0615207 530.517947,54.6291691 524.092268,64.6186071 C513.280794,81.4262529 520.171173,103.73281 500.950013,104.560103 C473.844417,105.726747 458.074775,79.1141089 430.018345,83.2030009 C403.167005,87.1162653 450.069758,102.877764 418.395205,97.3111925 C417.961075,97.2348972 387.120769,83.3756247 380.682416,87.7426309 C370.852416,94.4101231 365.035341,109.059099 355.09209,115.433468 C338.68054,125.954502 320.078071,118.783931 303.252608,118.94919 C286.234693,119.116339 289.603769,137.052937 270.449833,138.974304 C251.590636,140.866106 232.545609,139.108952 213.748883,141.864807 C203.510403,143.365908 155.460009,180.531605 148.566369,187.252047 C132.112967,203.292068 150.962982,210.821316 125.701517,219.246925 C117.331259,222.038707 108.316607,216.647092 99.7921788,218.476728 C45.7514608,230.075729 85.4474496,225.186328 49.4437325,253.316803 C46.0209956,255.991061 41.1465623,252.759509 37.5501257,255.011236 C35.0315975,256.588085 33.7369521,260.51488 32.6123717,263.854906 C21.4702135,296.947338 11.4281126,330.653615 0.835983105,364.052969 L6.98043537,391.915968 Z" id="Path-3" stroke="#979797" fill="#5E5E5E"></path>
+                </g>
+                <g id="Group-5" transform="translate(24.000000, 279.000000)">
+                    <path d="M26,21.3206998 L57.3671492,92.5 L-5.36714923,92.5 L26,21.3206998 Z" id="Triangle" stroke="#737373" stroke-width="7" fill="#D8D8D8"></path>
+                    <path d="M86,-8.67930017 L117.367149,62.5 L54.6328508,62.5 L86,-8.67930017 Z" id="Triangle" stroke="#737373" stroke-width="7" fill="#D8D8D8"></path>
+                    <path d="M46,21.3206998 L77.3671492,92.5 L14.6328508,92.5 L46,21.3206998 Z" id="Triangle" stroke="#737373" stroke-width="7" fill="#D8D8D8"></path>
+                    <path d="M66,11.3206998 L97.3671492,82.5 L34.6328508,82.5 L66,11.3206998 Z" id="Triangle" stroke="#737373" stroke-width="7" fill="#D8D8D8"></path>
+                    <path d="M86,21.3206998 L117.367149,92.5 L54.6328508,92.5 L86,21.3206998 Z" id="Triangle" stroke="#737373" stroke-width="7" fill="#D8D8D8"></path>
+                </g>
+                <g id="Group-5" transform="translate(264.000000, 209.000000)">
+                    <path d="M26,21.3206998 L57.3671492,92.5 L-5.36714923,92.5 L26,21.3206998 Z" id="Triangle" stroke="#737373" stroke-width="7" fill="#D8D8D8"></path>
+                    <path d="M86,-8.67930017 L117.367149,62.5 L54.6328508,62.5 L86,-8.67930017 Z" id="Triangle" stroke="#737373" stroke-width="7" fill="#D8D8D8"></path>
+                    <path d="M46,21.3206998 L77.3671492,92.5 L14.6328508,92.5 L46,21.3206998 Z" id="Triangle" stroke="#737373" stroke-width="7" fill="#D8D8D8"></path>
+                    <path d="M66,11.3206998 L97.3671492,82.5 L34.6328508,82.5 L66,11.3206998 Z" id="Triangle" stroke="#737373" stroke-width="7" fill="#D8D8D8"></path>
+                    <path d="M86,21.3206998 L117.367149,92.5 L54.6328508,92.5 L86,21.3206998 Z" id="Triangle" stroke="#737373" stroke-width="7" fill="#D8D8D8"></path>
+                </g>
+                <g id="Group-5" transform="translate(104.000000, 249.000000)">
+                    <path d="M26,21.3206998 L57.3671492,92.5 L-5.36714923,92.5 L26,21.3206998 Z" id="Triangle" stroke="#737373" stroke-width="7" fill="#D8D8D8"></path>
+                    <path d="M86,-8.67930017 L117.367149,62.5 L54.6328508,62.5 L86,-8.67930017 Z" id="Triangle" stroke="#737373" stroke-width="7" fill="#D8D8D8"></path>
+                    <path d="M46,21.3206998 L77.3671492,92.5 L14.6328508,92.5 L46,21.3206998 Z" id="Triangle" stroke="#737373" stroke-width="7" fill="#D8D8D8"></path>
+                    <path d="M66,11.3206998 L97.3671492,82.5 L34.6328508,82.5 L66,11.3206998 Z" id="Triangle" stroke="#737373" stroke-width="7" fill="#D8D8D8"></path>
+                    <path d="M86,21.3206998 L117.367149,92.5 L54.6328508,92.5 L86,21.3206998 Z" id="Triangle" stroke="#737373" stroke-width="7" fill="#D8D8D8"></path>
+                </g>
+                <g id="Group-5" transform="translate(260.000000, 273.500000) scale(-1, 1) translate(-260.000000, -273.500000) translate(204.000000, 229.000000)">
+                    <path d="M26,21.3206998 L57.3671492,92.5 L-5.36714923,92.5 L26,21.3206998 Z" id="Triangle" stroke="#737373" stroke-width="7" fill="#D8D8D8"></path>
+                    <path d="M86,-8.67930017 L117.367149,62.5 L54.6328508,62.5 L86,-8.67930017 Z" id="Triangle" stroke="#737373" stroke-width="7" fill="#D8D8D8"></path>
+                    <path d="M46,21.3206998 L77.3671492,92.5 L14.6328508,92.5 L46,21.3206998 Z" id="Triangle" stroke="#737373" stroke-width="7" fill="#D8D8D8"></path>
+                    <path d="M66,11.3206998 L97.3671492,82.5 L34.6328508,82.5 L66,11.3206998 Z" id="Triangle" stroke="#737373" stroke-width="7" fill="#D8D8D8"></path>
+                    <path d="M86,21.3206998 L117.367149,92.5 L54.6328508,92.5 L86,21.3206998 Z" id="Triangle" stroke="#737373" stroke-width="7" fill="#D8D8D8"></path>
+                </g>
+            </g>
+        </g>
+        <g id="Group-7" mask="url(#mask-2)" fill="#417505" stroke="#33692A">
+            <g transform="translate(158.000000, 155.000000)" id="Path-4">
+                <path d="M2.50390625,200.175781 C5.8046875,194.252604 6.55369677,185.830692 12.40625,182.40625 C14.4280326,181.223266 35.7528321,195.320531 46.2773438,192.628906 C60.0259697,189.112721 60.3347974,166.177114 77.0507813,167.535156 C116.656627,170.752819 83.6057012,178.344725 115.777344,175.949219 C125.942213,175.192341 128.178426,156.820052 138.070313,156.34375 C209.795018,152.890148 151.137321,167.722178 201.535156,136.011719 C209.383795,131.073333 218.577185,141.102494 223.597656,143.523438 C229.26639,146.256982 230.908261,143.401127 236.96875,143.292969 C245.390162,143.142676 253.877806,145.133551 262.226563,144.019531 C280.533745,141.576705 294.496843,101.629239 323.199219,95.734375 C334.436899,93.4263918 327.990409,107.316673 342.136719,111.917969 C344.181632,112.583107 366.089976,113.627084 371.65625,112.21875"></path>
+                <path d="M12.5039062,213.175781 C15.8046875,202.726696 16.5536968,187.869588 22.40625,181.828525 C24.4280326,179.741621 45.7528321,204.610626 56.2773438,199.862328 C70.0259697,193.65942 70.3347974,153.198682 87.0507813,155.594406 C126.656627,161.27069 93.6057012,174.663582 125.777344,170.437666 C135.942213,169.102457 138.178426,136.691875 148.070313,135.85163 C219.795018,129.759126 161.137321,155.924331 211.535156,99.983863 C219.383795,91.27205 228.577185,108.964508 233.597656,113.235297 C239.26639,118.057547 240.908261,113.01953 246.96875,112.828727 C255.390162,112.563595 263.877806,116.075701 272.226563,114.110457 C290.533745,109.801063 304.496843,39.3296801 333.199219,28.9305408 C344.436899,24.8590243 337.990409,49.3628895 352.136719,57.4800427 C354.181632,58.6534141 376.089976,60.495096 381.65625,58.0106513" transform="translate(197.080078, 120.826714) rotate(9.000000) translate(-197.080078, -120.826714) "></path>
+                <path d="M2.50390625,160.175781 C5.8046875,154.252604 6.55369677,145.830692 12.40625,142.40625 C14.4280326,141.223266 35.7528321,155.320531 46.2773438,152.628906 C60.0259697,149.112721 60.3347974,126.177114 77.0507813,127.535156 C116.656627,130.752819 83.6057012,138.344725 115.777344,135.949219 C125.942213,135.192341 128.178426,116.820052 138.070313,116.34375 C209.795018,112.890148 151.137321,127.722178 201.535156,96.0117188 C209.383795,91.0733334 218.577185,101.102494 223.597656,103.523438 C229.26639,106.256982 230.908261,103.401127 236.96875,103.292969 C245.390162,103.142676 253.877806,105.133551 262.226563,104.019531 C280.533745,101.576705 294.496843,61.6292395 323.199219,55.734375 C334.436899,53.4263918 327.990409,67.3166727 342.136719,71.9179687 C344.181632,72.583107 366.089976,73.6270843 371.65625,72.21875"></path>
+            </g>
+        </g>
+        <g id="Group-7" mask="url(#mask-2)" fill="#417505" stroke="#33692A">
+            <g transform="translate(355.000000, 245.500000) scale(-1, 1) rotate(27.000000) translate(-355.000000, -245.500000) translate(158.000000, 125.000000)" id="Path-4">
+                <path d="M2.50390625,200.175781 C5.8046875,194.252604 6.55369677,185.830692 12.40625,182.40625 C14.4280326,181.223266 35.7528321,195.320531 46.2773438,192.628906 C60.0259697,189.112721 60.3347974,166.177114 77.0507813,167.535156 C116.656627,170.752819 83.6057012,178.344725 115.777344,175.949219 C125.942213,175.192341 128.178426,156.820052 138.070313,156.34375 C209.795018,152.890148 151.137321,167.722178 201.535156,136.011719 C209.383795,131.073333 218.577185,141.102494 223.597656,143.523438 C229.26639,146.256982 230.908261,143.401127 236.96875,143.292969 C245.390162,143.142676 253.877806,145.133551 262.226563,144.019531 C280.533745,141.576705 294.496843,101.629239 323.199219,95.734375 C334.436899,93.4263918 327.990409,107.316673 342.136719,111.917969 C344.181632,112.583107 366.089976,113.627084 371.65625,112.21875"></path>
+                <path d="M12.5039062,213.175781 C15.8046875,202.726696 16.5536968,187.869588 22.40625,181.828525 C24.4280326,179.741621 45.7528321,204.610626 56.2773438,199.862328 C70.0259697,193.65942 70.3347974,153.198682 87.0507813,155.594406 C126.656627,161.27069 93.6057012,174.663582 125.777344,170.437666 C135.942213,169.102457 138.178426,136.691875 148.070313,135.85163 C219.795018,129.759126 161.137321,155.924331 211.535156,99.983863 C219.383795,91.27205 228.577185,108.964508 233.597656,113.235297 C239.26639,118.057547 240.908261,113.01953 246.96875,112.828727 C255.390162,112.563595 263.877806,116.075701 272.226563,114.110457 C290.533745,109.801063 304.496843,39.3296801 333.199219,28.9305408 C344.436899,24.8590243 337.990409,49.3628895 352.136719,57.4800427 C354.181632,58.6534141 376.089976,60.495096 381.65625,58.0106513" transform="translate(197.080078, 120.826714) rotate(9.000000) translate(-197.080078, -120.826714) "></path>
+                <path d="M2.50390625,160.175781 C5.8046875,154.252604 6.55369677,145.830692 12.40625,142.40625 C14.4280326,141.223266 35.7528321,155.320531 46.2773438,152.628906 C60.0259697,149.112721 60.3347974,126.177114 77.0507813,127.535156 C116.656627,130.752819 83.6057012,138.344725 115.777344,135.949219 C125.942213,135.192341 128.178426,116.820052 138.070313,116.34375 C209.795018,112.890148 151.137321,127.722178 201.535156,96.0117188 C209.383795,91.0733334 218.577185,101.102494 223.597656,103.523438 C229.26639,106.256982 230.908261,103.401127 236.96875,103.292969 C245.390162,103.142676 253.877806,105.133551 262.226563,104.019531 C280.533745,101.576705 294.496843,61.6292395 323.199219,55.734375 C334.436899,53.4263918 327.990409,67.3166727 342.136719,71.9179687 C344.181632,72.583107 366.089976,73.6270843 371.65625,72.21875"></path>
+            </g>
+        </g>
+        <text id="Central-Highland" mask="url(#mask-2)" font-family="Apple-Chancery, Apple Chancery" font-size="21" font-weight="normal" letter-spacing="0.8119722" fill="#FFFFFF">
+            <tspan x="253.978679" y="283.243123">Central Highlands</tspan>
+        </text>
+        <text id="Central-Highland" mask="url(#mask-2)" font-family="Apple-Chancery, Apple Chancery" font-size="24" font-weight="normal" line-spacing="33" letter-spacing="0.9257143" fill="#000000">
+            <tspan x="76" y="76.243123">Northern Mountains</tspan>
+        </text>
+    </g>
+</svg>

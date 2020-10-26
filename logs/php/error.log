@@ -556,3 +556,32 @@ Stack trace:
 [12-Oct-2020 17:52:00 UTC] PHP  15. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
 [12-Oct-2020 17:52:00 UTC] PHP  16. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
 [12-Oct-2020 17:52:00 UTC] PHP  17. Miropelia\Register->enqueue_assets() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:285
+[21-Oct-2020 06:25:47 UTC] PHP Warning:  strtotime() expects parameter 2 to be int, string given in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/googleanalytics/class/Ga_Admin.php on line 862
+[21-Oct-2020 06:25:47 UTC] PHP Stack trace:
+[21-Oct-2020 06:25:47 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin.php:0
+[21-Oct-2020 06:25:47 UTC] PHP   2. do_action() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin.php:259
+[21-Oct-2020 06:25:47 UTC] PHP   3. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[21-Oct-2020 06:25:47 UTC] PHP   4. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[21-Oct-2020 06:25:47 UTC] PHP   5. Ga_Admin::statistics_page_googleanalytics() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:287
+[21-Oct-2020 06:25:47 UTC] PHP   6. Ga_Admin::get_stats_page() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/googleanalytics/class/Ga_Admin.php:233
+[21-Oct-2020 06:25:47 UTC] PHP   7. Ga_Admin::generate_stats_data() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/googleanalytics/class/Ga_Admin.php:489
+[21-Oct-2020 06:25:47 UTC] PHP   8. Ga_Admin::checkDataDate() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/googleanalytics/class/Ga_Admin.php:769
+[21-Oct-2020 06:25:47 UTC] PHP   9. strtotime() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/googleanalytics/class/Ga_Admin.php:862
+[22-Oct-2020 07:16:24 UTC] PHP Warning:  Unknown: failed to open stream: No such file or directory in Unknown on line 0
+[22-Oct-2020 07:16:24 UTC] PHP Fatal error:  Unknown: Failed opening required '/Users/scott/sites/miropelia.com/app/public/wordfence-waf.php' (include_path='.:/usr/share/php:/www/wp-content/pear') in Unknown on line 0
+[22-Oct-2020 07:32:25 UTC] PHP Warning:  Unknown: failed to open stream: No such file or directory in Unknown on line 0
+[22-Oct-2020 07:32:25 UTC] PHP Fatal error:  Unknown: Failed opening required '/Users/scott/sites/miropelia.com/app/public/wordfence-waf.php' (include_path='.:/usr/share/php:/www/wp-content/pear') in Unknown on line 0
+[22-Oct-2020 07:32:39 UTC] PHP Warning:  Unknown: failed to open stream: No such file or directory in Unknown on line 0
+[22-Oct-2020 07:32:39 UTC] PHP Fatal error:  Unknown: Failed opening required '/Users/scott/sites/miropelia.com/app/public/wordfence-waf.php' (include_path='.:/usr/share/php:/www/wp-content/pear') in Unknown on line 0
+[22-Oct-2020 07:33:04 UTC] PHP Warning:  Unknown: failed to open stream: No such file or directory in Unknown on line 0
+[22-Oct-2020 07:33:04 UTC] PHP Fatal error:  Unknown: Failed opening required '/Users/scott/sites/miropelia.com/app/public/wordfence-waf.php' (include_path='.:/usr/share/php:/www/wp-content/pear') in Unknown on line 0
+[22-Oct-2020 07:33:06 UTC] PHP Warning:  Unknown: failed to open stream: No such file or directory in Unknown on line 0
+[22-Oct-2020 07:33:06 UTC] PHP Fatal error:  Unknown: Failed opening required '/Users/scott/sites/miropelia.com/app/public/wordfence-waf.php' (include_path='.:/usr/share/php:/www/wp-content/pear') in Unknown on line 0
+[22-Oct-2020 07:33:06 UTC] PHP Warning:  Unknown: failed to open stream: No such file or directory in Unknown on line 0
+[22-Oct-2020 07:33:06 UTC] PHP Fatal error:  Unknown: Failed opening required '/Users/scott/sites/miropelia.com/app/public/wordfence-waf.php' (include_path='.:/usr/share/php:/www/wp-content/pear') in Unknown on line 0
+[22-Oct-2020 07:34:18 UTC] PHP Warning:  Unknown: failed to open stream: No such file or directory in Unknown on line 0
+[22-Oct-2020 07:34:18 UTC] PHP Fatal error:  Unknown: Failed opening required '/Users/scott/sites/miropelia.com/app/public/wordfence-waf.php' (include_path='.:/usr/share/php:/www/wp-content/pear') in Unknown on line 0
+[22-Oct-2020 07:34:22 UTC] PHP Warning:  Unknown: failed to open stream: No such file or directory in Unknown on line 0
+[22-Oct-2020 07:34:22 UTC] PHP Fatal error:  Unknown: Failed opening required '/Users/scott/sites/miropelia.com/app/public/wordfence-waf.php' (include_path='.:/usr/share/php:/www/wp-content/pear') in Unknown on line 0
+[22-Oct-2020 07:34:34 UTC] PHP Warning:  Unknown: failed to open stream: No such file or directory in Unknown on line 0
+[22-Oct-2020 07:34:34 UTC] PHP Fatal error:  Unknown: Failed opening required '/Users/scott/sites/miropelia.com/app/public/wordfence-waf.php' (include_path='.:/usr/share/php:/www/wp-content/pear') in Unknown on line 0

@@ -16,8 +16,11 @@ get_header();
 ?>
 
 	<main id="primary" class="site-main">
+		<div class="news-header">
+			<h1><?php esc_html_e('Orbem News', 'miropelia'); ?></h1>
+		</div>
 		<div class="container">
-			<div class="row">
+			<div class="post-list">
 				<?php
 				if ( have_posts() ) :
 
@@ -25,12 +28,17 @@ get_header();
 					while ( have_posts() ) :
 						the_post();
 					?>
-						<div class="col-md-3 col-sm-12">
-							<div class="row">
-		                        <?php the_title(); ?>
+						<div class="post-item">
+							<a href="<?php the_permalink(); ?>">
+		                        <h3>
+			                        <?php the_title(); ?>
+		                        </h3>
+							</a>
+							<div class="post-thumb">
+								<?php the_post_thumbnail('large'); ?>
 							</div>
-							<div class="row">
-		                        <?php the_content(); ?>
+							<div class="post-content">
+		                        <?php the_excerpt(); ?>
 							</div>
 						</div>
 					<?php
@@ -40,36 +48,6 @@ get_header();
 				?>
 			</div>
 		</div>
-		<div class="container">
-			<div class="row">
-				<?php
-				$args = array(
-					'post_type' => 'movie',
-					'post_status' => 'publish',
-					'posts_per_page' => 100,
-				);
-
-				$loop = new WP_Query( $args );
-
-				while ( $loop->have_posts() ) : $loop->the_post();
-				?>
-					<div class="col-md-3 col-sm-12">
-						<div class="row">
-							<?php the_title(); ?>
-						</div>
-						<div class="row">
-		                    <?php the_content(); ?>
-						</div>
-					</div>
-				<?php
-				endwhile;
-
-				wp_reset_postdata();
-				?>
-			</div>
-		</div>
 	</main><!-- #main -->
-
 <?php
-get_sidebar();
 get_footer();

@@ -1,9 +1,19 @@
-body {
-  font-family: $font__main;
-  margin: 0;
+html {
   overflow-x: hidden;
+  width: 100%;
 
-  img {
-    height: 100%;
+  body {
+    font-family: $font__main;
+    margin: 0;
+    overflow-x: hidden;
+    width: 100%;
+
+    &.page-template-explore {
+      overflow-x: scroll;
+    }
+
+    img {
+      height: 100%;
+    }
   }
 }
