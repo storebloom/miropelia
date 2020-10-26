@@ -116,6 +116,7 @@ class Register {
      */
     public function registerForm() {
         return '<div class="form-wrapper">
+                <error class="error-message"></error>
 			    <p>
 				    <label for="user_login">Username</label>
 				    <input type="text" name="user_name" id="user_name" placeholder="Enter Username..." class="input" value="" size="20" autocapitalize="off">
