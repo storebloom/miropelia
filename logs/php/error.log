@@ -585,3 +585,30 @@ Stack trace:
 [22-Oct-2020 07:34:22 UTC] PHP Fatal error:  Unknown: Failed opening required '/Users/scott/sites/miropelia.com/app/public/wordfence-waf.php' (include_path='.:/usr/share/php:/www/wp-content/pear') in Unknown on line 0
 [22-Oct-2020 07:34:34 UTC] PHP Warning:  Unknown: failed to open stream: No such file or directory in Unknown on line 0
 [22-Oct-2020 07:34:34 UTC] PHP Fatal error:  Unknown: Failed opening required '/Users/scott/sites/miropelia.com/app/public/wordfence-waf.php' (include_path='.:/usr/share/php:/www/wp-content/pear') in Unknown on line 0
+[31-Oct-2020 06:32:00 UTC] PHP Warning:  Declaration of WP_CLI\Core\CoreUpgrader::download_package($package, $check_signatures = true) should be compatible with WP_Upgrader::download_package($package, $check_signatures = false, $hook_extra = Array) in phar:///Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/wp-cli.phar/vendor/wp-cli/core-command/src/WP_CLI/Core/CoreUpgrader.php on line 30
+[31-Oct-2020 06:32:00 UTC] PHP Stack trace:
+[31-Oct-2020 06:32:00 UTC] PHP   1. {main}() /Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/wp-cli.phar:0
+[31-Oct-2020 06:32:00 UTC] PHP   2. include() /Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/wp-cli.phar:4
+[31-Oct-2020 06:32:00 UTC] PHP   3. include() phar:///Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/wp-cli.phar/php/boot-phar.php:11
+[31-Oct-2020 06:32:00 UTC] PHP   4. WP_CLI\bootstrap() phar:///Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/wp-cli.phar/vendor/wp-cli/wp-cli/php/wp-cli.php:27
+[31-Oct-2020 06:32:00 UTC] PHP   5. WP_CLI\Bootstrap\LaunchRunner->process() phar:///Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/wp-cli.phar/vendor/wp-cli/wp-cli/php/bootstrap.php:74
+[31-Oct-2020 06:32:00 UTC] PHP   6. WP_CLI\Runner->start() phar:///Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/wp-cli.phar/vendor/wp-cli/wp-cli/php/WP_CLI/Bootstrap/LaunchRunner.php:23
+[31-Oct-2020 06:32:00 UTC] PHP   7. WP_CLI\Runner->run_command_and_exit() phar:///Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/wp-cli.phar/vendor/wp-cli/wp-cli/php/WP_CLI/Runner.php:1160
+[31-Oct-2020 06:32:00 UTC] PHP   8. WP_CLI\Runner->run_command() phar:///Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/wp-cli.phar/vendor/wp-cli/wp-cli/php/WP_CLI/Runner.php:394
+[31-Oct-2020 06:32:00 UTC] PHP   9. WP_CLI\Dispatcher\Subcommand->invoke() phar:///Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/wp-cli.phar/vendor/wp-cli/wp-cli/php/WP_CLI/Runner.php:371
+[31-Oct-2020 06:32:00 UTC] PHP  10. call_user_func:{phar:///Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/wp-cli.phar/vendor/wp-cli/wp-cli/php/WP_CLI/Dispatcher/Subcommand.php:451}() phar:///Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/wp-cli.phar/vendor/wp-cli/wp-cli/php/WP_CLI/Dispatcher/Subcommand.php:451
+[31-Oct-2020 06:32:00 UTC] PHP  11. WP_CLI\Dispatcher\CommandFactory::WP_CLI\Dispatcher\{closure:phar:///Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/wp-cli.phar/vendor/wp-cli/wp-cli/php/WP_CLI/Dispatcher/CommandFactory.php:95-102}() phar:///Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/wp-cli.phar/vendor/wp-cli/wp-cli/php/WP_CLI/Dispatcher/Subcommand.php:451
+[31-Oct-2020 06:32:00 UTC] PHP  12. call_user_func:{phar:///Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/wp-cli.phar/vendor/wp-cli/wp-cli/php/WP_CLI/Dispatcher/CommandFactory.php:98}() phar:///Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/wp-cli.phar/vendor/wp-cli/wp-cli/php/WP_CLI/Dispatcher/CommandFactory.php:98
+[31-Oct-2020 06:32:00 UTC] PHP  13. Core_Command->update() phar:///Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/wp-cli.phar/vendor/wp-cli/wp-cli/php/WP_CLI/Dispatcher/CommandFactory.php:98
+[31-Oct-2020 06:32:00 UTC] PHP  14. WP_CLI\Utils\get_upgrader() phar:///Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/wp-cli.phar/vendor/wp-cli/core-command/src/Core_Command.php:1138
+[31-Oct-2020 06:32:00 UTC] PHP  15. spl_autoload_call() phar:///Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/wp-cli.phar/vendor/wp-cli/wp-cli/php/utils-wp.php:138
+[31-Oct-2020 06:32:00 UTC] PHP  16. Composer\Autoload\ClassLoader->loadClass() phar:///Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/wp-cli.phar/vendor/wp-cli/wp-cli/php/utils-wp.php:138
+[31-Oct-2020 06:32:00 UTC] PHP  17. Composer\Autoload\includeFile() phar:///Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/wp-cli.phar/vendor/composer/ClassLoader.php:322
+[04-Nov-2020 10:25:42 UTC] PHP Warning:  An unexpected error occurred. Something may be wrong with WordPress.org or this server&#8217;s configuration. If you continue to have problems, please try the <a href="https://wordpress.org/support/forums/">support forums</a>. (WordPress could not establish a secure connection to WordPress.org. Please contact your server administrator.) in /Users/scott/sites/miropelia.com/app/public/wp-includes/update.php on line 168
+[04-Nov-2020 10:25:42 UTC] PHP Stack trace:
+[04-Nov-2020 10:25:42 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:0
+[04-Nov-2020 10:25:42 UTC] PHP   2. do_action_ref_array() /Users/scott/sites/miropelia.com/app/public/wp-cron.php:138
+[04-Nov-2020 10:25:42 UTC] PHP   3. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:544
+[04-Nov-2020 10:25:42 UTC] PHP   4. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[04-Nov-2020 10:25:42 UTC] PHP   5. wp_version_check() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:287
+[04-Nov-2020 10:25:42 UTC] PHP   6. trigger_error() /Users/scott/sites/miropelia.com/app/public/wp-includes/update.php:168

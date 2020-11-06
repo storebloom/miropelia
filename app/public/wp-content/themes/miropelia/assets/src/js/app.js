@@ -3,11 +3,37 @@ const wpThemeURL = "orbemorder.local";
 const pageFile = 1;
 const pageTitle = "";
 
+// forEach method, could be shipped as part of an Object Literal/Module
+const forEach = function (array, callback, scope) {
+    for (let i = 0; i < array.length; i++) {
+        callback.call(scope, i, array[i]); // passes back stuff we need
+    }
+};
+
 document.addEventListener("DOMContentLoaded", function(){
 
     // Explore page functions.
     const explorePage = document.querySelector('.page-template-explore');
     if (miroElExists(explorePage)) {
+        // Add character select functionality.
+        const characters = document.querySelectorAll('.character-item');
+
+        forEach(characters, function (index, value) {
+            value.addEventListener( 'click', function (e) {
+                const characterChoice = e.target;
+                const imgSrc = characterChoice.getAttribute('src');
+
+                if (miroElExists(document.querySelector('.character-item img.engage'))) {
+                    removeMiroClass( document.querySelector( '.character-item img.engage' ), 'engage' );
+                }
+
+                addMiroClass(characterChoice, 'engage');
+                addMiroClass(document.getElementById('engage-explore'), 'engage');
+
+                document.getElementById('map-character-icon').setAttribute('src', imgSrc);
+            } );
+        });
+
         const body = document.body;
         const scrollY = body.style.top;
         body.style.position = 'fixed';
@@ -23,17 +49,13 @@ document.addEventListener("DOMContentLoaded", function(){
     // Add swing in effect to market sign.
     const marketSign = document.querySelector('.market-sign');
     if (miroElExists(marketSign)) {
-        const marketSignArr = marketSign.className.split(" ");
-
-        addMiroClass(marketSign, marketSignArr, 'engage');
+        addMiroClass(marketSign, 'engage');
     }
 
     // Add roll in for market cart.
     const marketCart1 = document.querySelector('.market-cart-1');
     if (miroElExists(marketCart1)) {
-        const marketCart1Arr = marketCart1.className.split(" ");
-
-        addMiroClass(marketCart1, marketCart1Arr, 'engage');
+        addMiroClass(marketCart1, 'engage');
     }
 
     // Add register account click event.
@@ -53,9 +75,8 @@ document.addEventListener("DOMContentLoaded", function(){
     if (miroElExists(loginMiroButton)) {
         loginMiroButton.addEventListener( 'click', function () {
             const loginModal = document.querySelector( '.login-modal' );
-            const loginModalArr = loginModal.className.split( " " );
 
-            addMiroClass( loginModal, loginModalArr, 'engage' );
+            addMiroClass( loginModal, 'engage' );
 
             document.querySelector( '.close-login' ).addEventListener( 'click', function () {
                 removeMiroClass( loginModal, 'engage' );
@@ -67,9 +88,8 @@ document.addEventListener("DOMContentLoaded", function(){
     document.querySelectorAll("#menu-main .menu-item-has-children").forEach( item => {
         item.addEventListener('click', function ( event ) {
             const menuItem = event.target;
-            const menuItemArr = menuItem.className.split( " " );
 
-            toggleMiroClass( menuItem, menuItemArr, 'engage' );
+            toggleMiroClass( menuItem, 'engage' );
 
             // Click out of sub nav.
             document.addEventListener( 'click', function ( event ) {
@@ -86,14 +106,13 @@ document.addEventListener("DOMContentLoaded", function(){
     setInterval(
         function() {
             const logo = document.querySelector('.logo .logo-icon');
-            const logoArr = logo.className.split(" ");
 
-            spinMiroLogo(logo, logoArr, 'engage');
+            spinMiroLogo(logo, 'engage');
 
             // Logo glow.
             const logoCont = document.querySelector('.logo');
-            const logoContArr = logoCont.className.split(" ");
-            spinMiroLogo(logoCont, logoContArr, 'engage');
+
+            spinMiroLogo(logoCont, 'engage');
         },
         30000
     );
@@ -102,14 +121,13 @@ document.addEventListener("DOMContentLoaded", function(){
     setTimeout(
         function() {
             const logo = document.querySelector('.logo .logo-icon');
-            const logoArr = logo.className.split(" ");
 
-            spinMiroLogo(logo, logoArr, 'engage');
+            spinMiroLogo(logo, 'engage');
 
             // Logo glow.
             const logoCont = document.querySelector('.logo');
-            const logoContArr = logoCont.className.split(" ");
-            spinMiroLogo(logoCont, logoContArr, 'engage');
+
+            spinMiroLogo(logoCont, 'engage');
         },
         3000
     );
@@ -123,9 +141,8 @@ document.addEventListener("DOMContentLoaded", function(){
  * @param elementArr
  * @param name
  */
-function spinMiroLogo(element,elementArr,name) {
-    addMiroClass(element, elementArr, name);
-
+function spinMiroLogo(element,name) {
+    addMiroClass(element, name);
     setTimeout(
         function() {
             removeMiroClass(element, name);
@@ -138,11 +155,10 @@ function spinMiroLogo(element,elementArr,name) {
  * Helper function to add class to element.
  *
  * @param element
- * @param elementArr
  * @param name
  */
-function addMiroClass(element,elementArr,name) {
-    if (elementArr.indexOf(name) == -1) {
+function addMiroClass(element, name) {
+    if (element.className.split(' ').indexOf(name) === -1) {
         element.className += " " + name;
     }
 }
@@ -154,8 +170,8 @@ function addMiroClass(element,elementArr,name) {
  * @param elementArr
  * @param name
  */
-function toggleMiroClass(element,elementArr,name) {
-    if (elementArr.indexOf(name) == -1) {
+function toggleMiroClass(element,name) {
+    if (element.className.split(' ').indexOf(name) === -1) {
         element.className += " " + name;
     } else {
         element.classList.remove(name);
@@ -233,16 +249,21 @@ function engageExploreGame() {
     const box = document.getElementById('map-character');
     const touchButtons = document.querySelector('.touch-buttons');
 
-    // Show leave map link.
+    // Show leave map link and keys guide.
     document.getElementById('leave-map').style.opacity = '1';
+
+    // Flash key-guide.
+    const keyGuide = document.getElementById('key-guide');
+    spinMiroLogo(keyGuide, 'engage');
 
     // Bring touch buttons forward and flash arrows.
     document.querySelector('.touch-buttons').style.zIndex = '99';
-    spinMiroLogo(touchButtons, touchButtons.className.split(' '), 'engage');
+    spinMiroLogo(touchButtons, 'engage');
 
     // Run arrow flash intermittently.
     const buttonShow = setInterval(function() {
-        spinMiroLogo(touchButtons, touchButtons.className.split(' '), 'engage');
+        spinMiroLogo(touchButtons, 'engage');
+        spinMiroLogo(keyGuide, 'engage');
     }, 10000);
 
     // Add listeners for explore keyboard movement.
@@ -407,19 +428,20 @@ function engageExploreGame() {
     function miroExplorePosition(v,a,b) {
         const pane = document.querySelector( '.container' );
         const box = document.querySelector( '#map-character img' );
-        const modal = document.querySelector('.map-item-modal-1');
-        const modalArr = modal.className.split(' ');
+        const modal = document.querySelectorAll('.map-item');
 
         // Overlap check for map item.
-        if(elementsOverlap(box.getBoundingClientRect(), document.querySelector('.map-item-1').getBoundingClientRect())) {
-            if (!miroHasClass(modal, 'engage')) {
-                addMiroClass( modal, modalArr, 'engage' );
+        forEach(modal, function(index, value) {
+            if ( elementsOverlap( box.getBoundingClientRect(), value.getBoundingClientRect() ) ) {
+                if (!miroHasClass(value, 'engage')) {
+                    addMiroClass( value, 'engage' );
+                }
+            } else {
+                if (miroHasClass(value, 'engage')) {
+                    removeMiroClass( value, 'engage' );
+                }
             }
-        } else {
-            if (miroHasClass(modal, 'engage')) {
-                removeMiroClass( modal, 'engage' );
-            }
-        }
+        });
 
         const w = pane.offsetWidth - box.offsetWidth;
         const n = parseInt(v, 10) - (d[a] ? x : 0) + (d[b] ? x : 0);

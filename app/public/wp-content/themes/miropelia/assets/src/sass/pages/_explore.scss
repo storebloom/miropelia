@@ -1,32 +1,73 @@
 .page-template-explore {
+  &.admin-bar {
+    .explore-overlay {
+      top: 200px;
+    }
+  }
+
   .grecaptcha-badge {
     display: none;
   }
 
   .explore-overlay {
-    background: rgba(255, 255, 255, 0.64);
+    background: rgba(255, 255, 255, 0.77);
     height: 100vh;
     left: 0;
     position: fixed;
-    top: 200px;
+    top: 160px;
     width: 100%;
     z-index: 2;
 
-    #engage-explore {
+    .greeting-message {
       left: 50%;
+      max-width: 400px;
       position: absolute;
-      top: 40%;
+      text-align: center;
+      top: 30%;
       transform: translate(-50%, -50%);
+      width: 100%;
+
+      #engage-explore {
+        opacity: 0;
+        transition: all .5s;
+
+        &.engage {
+          opacity: 1;
+        }
+      }
+
+      .character-choice {
+        cursor: pointer;
+        display: flex;
+
+        .character-item {
+          cursor: pointer;
+          width: 25%;
+
+          img {
+            height: auto;
+            width: 100%;
+
+            &.engage {
+              border: 5px dotted $light_blue;
+            }
+          }
+        }
+      }
+
+      button {
+        margin-top: 15px;
+      }
     }
   }
   .container {
-    background: url("../../src/images/orbem-map-rough.svg");
+    background: url("../../src/images/orbem-map.jpg");
     background-size: contain;
     background-repeat: no-repeat;
     background-position: left;
-    height: 4000px;
+    height: 5000px;
     position: relative;
-    width: 4000px;
+    width: 5000px;
 
     #leave-map {
       opacity: 0;
@@ -34,29 +75,89 @@
       right: 40px;
       top: 40px;
       z-index: 99999;
-
     }
 
-    .map-item-1 {
-      left: 50%;
+    #key-guide {
+      bottom: 40px;
+      opacity: 0;
+      position: fixed;
+      right: -240px;
+      transition: opacity .6s;
+      width: 200px;
+      z-index: 99999;
+
+      img {
+        width: 100%;
+      }
+
+      &.engage {
+        @media only screen and (min-width: 480px) {
+          opacity: .8;
+          right: 40px;
+        }
+      }
+    }
+
+    .map-item {
       position: absolute;
-      top: 50%;
+
+      &:before {
+        background: url("../../src/images/indicator.gif") no-repeat;
+        background-size: 100%;
+        content: '';
+        height: 42px;
+        left: 0;
+        position: absolute;
+        top: 0;
+        width: 60px;
+      }
+
+      &.gillimank-map-item {
+        left: 1693px;
+        top: 2249px;
+      }
+
+      &.pool-map-item {
+        left: 2102px;
+        top: 2700px;
+      }
+
+      &.spinebeck-map-item {
+        left: 2702px;
+        top: 3100px;
+      }
 
       img {
         width: 100px;
       }
 
-      .map-item-modal-1 {
-        background: #cdcdcd;
+      .map-item-modal {
+        background: #fff;
+        border-radius: 55px;
+        font-size: 14px;
         opacity: 0;
-        left: 50%;
+        right: 0;
+        padding: 22px;
         position: absolute;
-        top: 20%;
+        top: 0;
+        transform: translate(80%, -80%);
         transition: all .5s;
-        transform: translate(-50%, -50%);
-        width: 100%;
+        width: 200px;
 
-        &.engage {
+        &:before {
+          border-top: 20px solid #fff;
+          border-left: 0px solid transparent;
+          border-right: 36px solid transparent;
+          content: "";
+          left: 20px;
+          position: absolute;
+          top: 91%;
+          width: 0;
+        }
+      }
+
+      &.engage {
+        .map-item-modal {
           opacity: 1;
         }
       }
