@@ -12,7 +12,8 @@ namespace Miropelia;
  *
  * @package Miropelia
  */
-class Register {
+class Register
+{
 
 	/**
 	 * Theme instance.
@@ -26,7 +27,8 @@ class Register {
 	 *
 	 * @param object $plugin Plugin class.
 	 */
-	public function __construct( $theme ) {
+	public function __construct($theme)
+    {
 		$this->theme = $theme;
 	}
 
@@ -35,15 +37,25 @@ class Register {
 	 *
 	 * @action wp_enqueue_scripts
 	 */
-	public function enqueue_assets() {
+	public function enqueueAssets()
+    {
 		global $post;
+
+		$explore_points = get_user_meta(get_current_user_id(), 'explore_points', true);
+		$explore_points = isset($explore_points) ? $explore_points: [];
 
 		wp_enqueue_style($this->theme->assets_prefix);
         wp_enqueue_script($this->theme->assets_prefix);
         wp_enqueue_style("{$this->theme->assets_prefix}-font", 'https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400;600&display=swap');
 
-        if (is_page('register')) {
-            wp_add_inline_script($this->theme->assets_prefix, 'const restApiKey ="' . REST_API_KEY . '";');
+        if (is_page(['register', 'explore'])) {
+            wp_add_inline_script(
+                $this->theme->assets_prefix,
+                'const restApiKey ="' . REST_API_KEY . '";' .
+                'const currentUserId ="' . get_current_user_id() . '";' .
+                'const explorePoints = ' . wp_json_encode($explore_points) . ';' .
+                'const siteUrl = "' . get_home_url() . '";'
+            );
         }
 
         if (is_page('contact')) {
@@ -61,7 +73,8 @@ class Register {
      *
      * @action init
      */
-	public function hideAdminBar() {
+	public function hideAdminBar()
+    {
         if (!current_user_can('administrator') && !is_admin()) {
             show_admin_bar(false);
         }
@@ -78,7 +91,8 @@ class Register {
      *
      * @action init
      */
-    public function logUserInOut() {
+    public function logUserInOut()
+    {
         if (!isset($_GET['logoutuser']) && !isset($_GET['loginuser'])) {
             return;
         }
@@ -105,7 +119,8 @@ class Register {
      * @action wp_enqueue_scripts 999
      * @action wp_head 999
      */
-    public function dequeueGoogle() {
+    public function dequeueGoogle()
+    {
         wp_dequeue_script('google-recaptcha');
     }
 
@@ -114,7 +129,8 @@ class Register {
      *
      * @shortcode register-form
      */
-    public function registerForm() {
+    public function registerForm()
+    {
         return '<div class="form-wrapper">
                 <error class="error-message"></error>
 			    <p>
@@ -133,5 +149,48 @@ class Register {
 		            <button type="button" id="register-submit">' . esc_html('Join') . '</button>
 		        </p>
 		    </div>';
+    }
+
+    /**
+     * Register API field.
+     *
+     * @action rest_api_init
+     */
+    public function create_api_posts_meta_field()
+    {
+        // Register route for getting event by location.
+        register_rest_route('orbemorder/v1', '/add-explore-points/(?P<user>\d+)/(?P<position>[a-zA-Z0-9-]+)/(?P<point>\d+)/(?P<character>[a-zA-Z0-9-]+)', array(
+            'methods'  => 'GET',
+            'callback' => [$this, 'addCharacterPoints'],
+        ));
+    }
+
+    /**
+     * Call back function for rest route that adds points to user's explore game.
+     * @param object $return The arg values from rest route.
+     */
+    public function addCharacterPoints(object $return)
+    {
+        $user = isset($return['user']) ? intval($return['user']) : '';
+        $points = isset($return['point']) ? intval($return['point']) : '';
+        $character = isset($return['character']) ? sanitize_text_field(wp_unslash($return['character'])) : '';
+        $position = isset($return['position']) ? sanitize_text_field(wp_unslash($return['position'])) : '';
+
+        if (!in_array('', [$points, $character, $user, $position], true)) {
+            $current_explore_points             = get_user_meta($user, 'explore_points', true);
+            $current_points             = ! empty($current_explore_points[$character]['points']) ? intval($current_explore_points[$character]['points']) : 0;
+            $explore_points = !empty($current_explore_points) && is_array($current_explore_points) ? $current_explore_points : [];
+
+            $explore_points[$character]['points'] = ($points + $current_points);
+
+            // Add position to list of positions received points on.
+            if (!isset($explore_points[$character]['positions'])) {
+                $explore_points[$character]['positions'] = [$position];
+            } elseif(!isset($explore_points[$character]['positions'][$position])) {
+                array_push($explore_points[$character]['positions'], $position);
+            }
+
+            update_user_meta($user, 'explore_points', $explore_points);
+        }
     }
 }

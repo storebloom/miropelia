@@ -54,7 +54,7 @@ class Theme extends Theme_Base
 	 *
 	 * @action wp_enqueue_scripts
 	 */
-	public function register_assets()
+	public function registerAssets()
     {
 		global $post;
 
@@ -64,4 +64,14 @@ class Theme extends Theme_Base
         // reCaptcha.
         wp_register_script('recaptcha', 'https://www.google.com/recaptcha/api.js', [], '1', false);
 	}
+
+	/**
+     * Register admin assets.
+     *
+     * @action admin_enqueue_scripts
+     */
+	public function registerAdminAssets()
+    {
+        wp_enqueue_style( $this->assets_prefix . '-admin', "{$this->dir_url}/assets/dist/css/admin.css", null, time());
+    }
 }

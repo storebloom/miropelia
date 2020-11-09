@@ -33,13 +33,15 @@ get_header();
 		                        <h3>
 			                        <?php the_title(); ?>
 		                        </h3>
+
+								<div class="post-thumb">
+									<?php the_post_thumbnail('large'); ?>
+								</div>
+								<div class="post-content">
+			                        <?php the_excerpt(); ?>
+								</div>
+								<button><?php esc_html_e('Read More', 'miropelia'); ?></button>
 							</a>
-							<div class="post-thumb">
-								<?php the_post_thumbnail('large'); ?>
-							</div>
-							<div class="post-content">
-		                        <?php the_excerpt(); ?>
-							</div>
 						</div>
 					<?php
 					endwhile;

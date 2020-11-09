@@ -1,5 +1,4 @@
 "use strict";
-const wpThemeURL = "orbemorder.local";
 const pageFile = 1;
 const pageTitle = "";
 
@@ -18,10 +17,27 @@ document.addEventListener("DOMContentLoaded", function(){
         // Add character select functionality.
         const characters = document.querySelectorAll('.character-item');
 
+        addMiroClass(document.querySelector('.explore-overlay'), 'engage');
+        addMiroClass(document.querySelector('.greeting-message'), 'engage');
+
         forEach(characters, function (index, value) {
             value.addEventListener( 'click', function (e) {
                 const characterChoice = e.target;
                 const imgSrc = characterChoice.getAttribute('src');
+                const characterName = characterChoice.getAttribute('data-character');
+                const characterSlug = document.querySelectorAll('.map-item-modal.' + characterName);
+                const points = '' !== characterChoice.getAttribute('data-points') ?
+                    characterChoice.getAttribute('data-points') :
+                '0';
+                const selectedCharacterPositions = undefined !== explorePoints[characterName] ? explorePoints[characterName]['positions'] : [];
+
+                // Add no point class to positions already gotten.
+                forEach(selectedCharacterPositions, function(index, value) {
+                    addMiroClass(document.querySelector('.' + value), 'no-point');
+                });
+
+                // Set points.
+                document.querySelector('#explore-points span.point-amount').innerHTML = points;
 
                 if (miroElExists(document.querySelector('.character-item img.engage'))) {
                     removeMiroClass( document.querySelector( '.character-item img.engage' ), 'engage' );
@@ -30,20 +46,30 @@ document.addEventListener("DOMContentLoaded", function(){
                 addMiroClass(characterChoice, 'engage');
                 addMiroClass(document.getElementById('engage-explore'), 'engage');
 
-                document.getElementById('map-character-icon').setAttribute('src', imgSrc);
+                const selectedCharacter = document.getElementById('map-character-icon');
+
+                selectedCharacter.setAttribute('src', imgSrc);
+                selectedCharacter.setAttribute('data-character', characterName);
+
+                // Show all character bubbles.
+                forEach(characterSlug, function (index, value) {
+                    addMiroClass( value, 'engage' );
+                });
             } );
         });
 
         const body = document.body;
-        const scrollY = body.style.top;
         body.style.position = 'fixed';
+        const engageExplore = document.getElementById('engage-explore');
 
-        document.getElementById( 'engage-explore' ).addEventListener( 'click', function () {
-            engageExploreGame();
+        if (miroElExists(engageExplore)) {
+            engageExplore.addEventListener( 'click', function () {
+                engageExploreGame();
 
-            document.querySelector('.explore-overlay').remove();
-            body.style.position = 'unset';
-        } );
+                removeMiroClass( document.querySelector( '.explore-overlay' ), 'engage' );
+                body.style.position = 'unset';
+            } );
+        }
     }
 
     // Add swing in effect to market sign.
@@ -207,6 +233,7 @@ function miroElExists(element) {
  * @param password
  */
 function createMiroUser(username, email, password) {
+    const wpThemeURL = siteUrl.replace('https://', '').replace('http://', '').replace('www', '');
     const filehref = "https://" + wpThemeURL + "/wp-json/wp/v2/users";
 
     if (restApiKey) {
@@ -226,6 +253,29 @@ function createMiroUser(username, email, password) {
             } else {
                 document.querySelector('.error-message').textContent = JSON.parse(e.currentTarget.response).message;
             }
+        } );
+    }
+}
+
+/**
+ * Adds points to user's account.
+ *
+ * @param amount
+ * @param character
+ */
+function addUserPoints(amount, character, position) {
+    const wpThemeURL = siteUrl.replace('https://', '').replace('http://', '').replace('www', '');
+    const filehref = `https://${wpThemeURL}/wp-json/orbemorder/v1/add-explore-points/${currentUserId}/${position}/${amount}/${character}`;
+
+    if (restApiKey) {
+        const xhr = new XMLHttpRequest();
+        xhr.open( "GET", filehref, true );
+        xhr.setRequestHeader( 'Content-Type', 'application/json' );
+        xhr.setRequestHeader( 'Authorization', 'Basic ' + restApiKey );
+        xhr.send();
+
+        xhr.addEventListener( "load", function (e) { console.log(e.currentTarget);
+
         } );
     }
 }
@@ -251,6 +301,7 @@ function engageExploreGame() {
 
     // Show leave map link and keys guide.
     document.getElementById('leave-map').style.opacity = '1';
+    document.getElementById('explore-points').style.opacity = '1';
 
     // Flash key-guide.
     const keyGuide = document.getElementById('key-guide');
@@ -282,8 +333,6 @@ function engageExploreGame() {
         clearInterval(buttonShow);
     } );
 
-
-    // Add listener for touch events.
     document.querySelector('.top-left').addEventListener('touchstart', function(e){
         e.preventDefault();
         d[37] = true;
@@ -409,6 +458,25 @@ function engageExploreGame() {
     setInterval( function () {
         const leftVal = box.style.left;
         const topVal = box.style.top;
+        const leftValInt = parseInt(leftVal, 10);
+        const topValInt = parseInt(topVal, 10);
+
+        // Kill character if they hit these positions.
+        if (leftValInt >= 3632 || leftValInt <= 450 || topValInt >= 3989 || topValInt === 0 ) {
+            playSplashSound();
+            const overlayModalWrap = document.querySelector('.explore-overlay');
+
+            overlayModalWrap.style.top = '0';
+
+            addMiroClass(document.getElementById('map-character'), 'drown');
+            addMiroClass(overlayModalWrap, 'engage');
+            removeMiroClass(document.querySelector('.greeting-message'), 'engage');
+            addMiroClass(document.querySelector('.you-died-message'), 'engage');
+
+            setTimeout(function() {
+                window.location = '/explore/';
+            }, 1000);
+        }
 
         box.style.left = miroExplorePosition( leftVal, 37, 39 ).toString() + 'px';
         box.style.top = miroExplorePosition( topVal, 38, 40 ).toString() + 'px';
@@ -429,12 +497,39 @@ function engageExploreGame() {
         const pane = document.querySelector( '.container' );
         const box = document.querySelector( '#map-character img' );
         const modal = document.querySelectorAll('.map-item');
+        const boxSrc = box.getAttribute('src');
+        const character = box.getAttribute('data-character');
 
         // Overlap check for map item.
         forEach(modal, function(index, value) {
+            const position = value.className.replace('wp-block-group map-item ', '');
+
             if ( elementsOverlap( box.getBoundingClientRect(), value.getBoundingClientRect() ) ) {
                 if (!miroHasClass(value, 'engage')) {
                     addMiroClass( value, 'engage' );
+
+                    // Play interest sound effect.
+                    playInterestSound(character);
+
+                    if (!miroHasClass(value, 'no-point')) {
+                        const thePoints = document.querySelector('#explore-points span.point-amount');
+                        let currentPoints = thePoints.innerHTML;
+                        currentPoints = '' !== currentPoints ? parseInt(currentPoints, 10) : 0;
+                        thePoints.innerHTML = currentPoints + 50;
+
+                        // Add class for notification of point gain.
+                        addMiroClass(thePoints, 'engage');
+
+                        // Play sound effect for points.
+                        playPointSound();
+
+                        setTimeout(function() {
+                            removeMiroClass(thePoints, 'engage');
+                        }, 2000);
+
+                        addUserPoints( '50', box.getAttribute( 'data-character' ), position );
+                        addMiroClass( value, 'no-point' );
+                    }
                 }
             } else {
                 if (miroHasClass(value, 'engage')) {
@@ -442,6 +537,21 @@ function engageExploreGame() {
                 }
             }
         });
+
+        // Engage/disengage walking class.
+        if (d[37] || d[38] || d[39] || d[40]) {
+            if (boxSrc.includes('png')) {
+                box.setAttribute( 'src', boxSrc.replace( 'png', 'gif' ) );
+
+                playWalkSound();
+            }
+        } else {
+            if (boxSrc.includes('gif')) {
+                box.setAttribute( 'src', boxSrc.replace( 'gif', 'png' ) );
+
+                stopWalkSound();
+            }
+        }
 
         const w = pane.offsetWidth - box.offsetWidth;
         const n = parseInt(v, 10) - (d[a] ? x : 0) + (d[b] ? x : 0);
@@ -461,5 +571,55 @@ function engageExploreGame() {
                         rect1.left > rect2.right ||
                         rect1.bottom < rect2.top ||
                         rect1.top > rect2.bottom);
+    }
+
+    function playPointSound() {
+        const character = document.getElementById('map-character');
+
+        // Show point graphic.
+        addMiroClass(character, 'point');
+
+        setTimeout(function() {
+            addMiroClass(character, 'over');
+
+            setTimeout(function() {
+                removeMiroClass(character, 'point');
+                removeMiroClass(character, 'over');
+            }, 500);
+        }, 1000 );
+
+        document.getElementById('ching').play();
+
+
+        return false;
+    }
+
+    function playWalkSound() {
+        const walkingSound = document.getElementById('walking');
+        walkingSound.loop = true;
+        walkingSound.play();
+
+        return false;
+    }
+
+    function stopWalkSound() {
+        const walkingSound = document.getElementById('walking');
+        walkingSound.pause();
+        walkingSound.currentTime = 0;
+
+        return false;
+    }
+
+    function playSplashSound() {
+        const splashSound = document.getElementById('splash');
+        splashSound.play();
+
+        return false;
+    }
+
+    function playInterestSound(type) {
+        interestSound = document.getElementById(type + '-interest').play();
+
+        return false;
     }
 }

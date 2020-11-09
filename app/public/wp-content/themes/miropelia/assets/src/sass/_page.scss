@@ -1,17 +1,61 @@
 #primary {
   .container {
     margin-top: 40px;
-    &>div:not(.wp-block-cover):not(.wpcf7),
+    &>div:not(.wp-block-cover):not(.wpcf7):not(.container),
     &>h1,
     &>h2,
     &>h3,
     &>p,
+    &>ol,
+    &>article,
+    &>nav,
     &>figure {
       margin: auto;
       max-width: 1044px;
 
       @media only screen and (max-width: 480px) {
         margin: 15px;
+      }
+    }
+
+    .container {
+      &.sub-post-section{
+        background: #efefef;
+        padding: 10px;
+      }
+    }
+
+    .single & {
+      nav {
+        padding-bottom: 20px;
+      }
+
+      #respond {
+        margin-top: -20px;
+      }
+
+      #comments {
+        margin-top: 20px;
+      }
+
+      article {
+        display: flex;
+        flex-wrap: wrap;
+
+        header {
+          width: 100%;
+        }
+        .entry-content {
+          margin-right: 1%;
+          width: 49%;
+        }
+        .feature-image {
+          width: 50%;
+
+          img {
+            width: 100%;
+          }
+        }
       }
     }
 
