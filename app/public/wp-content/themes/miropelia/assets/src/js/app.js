@@ -298,10 +298,15 @@ function engageExploreGame() {
     const x = 3;
     const box = document.getElementById('map-character');
     const touchButtons = document.querySelector('.touch-buttons');
+    const soundControl = document.getElementById('sound-control');
+
+    // Start music.
+    playAdventureSong();
 
     // Show leave map link and keys guide.
     document.getElementById('leave-map').style.opacity = '1';
     document.getElementById('explore-points').style.opacity = '1';
+    document.getElementById('sound-control').style.opacity = '1';
 
     // Flash key-guide.
     const keyGuide = document.getElementById('key-guide');
@@ -316,6 +321,17 @@ function engageExploreGame() {
         spinMiroLogo(touchButtons, 'engage');
         spinMiroLogo(keyGuide, 'engage');
     }, 10000);
+
+    // Add listener for sound control.
+    soundControl.addEventListener('click', function() {
+       const allAudio = document.querySelectorAll('audio');
+
+       forEach( allAudio, function ( index, value ) {
+           value.muted = !miroHasClass(soundControl, 'mute');
+       } );
+
+       toggleMiroClass(soundControl, 'mute');
+    });
 
     // Add listeners for explore keyboard movement.
     document.addEventListener('keydown', function(e) {
@@ -597,6 +613,7 @@ function engageExploreGame() {
     function playWalkSound() {
         const walkingSound = document.getElementById('walking');
         walkingSound.loop = true;
+        walkingSound.volume = 0.5;
         walkingSound.play();
 
         return false;
@@ -618,8 +635,19 @@ function engageExploreGame() {
     }
 
     function playInterestSound(type) {
-        interestSound = document.getElementById(type + '-interest').play();
+        const interestSound = document.getElementById(type + '-interest');
+
+        interestSound.volume = 0.6;
+        interestSound.play();
 
         return false;
+    }
+
+    function playAdventureSong() {
+        const adventureSong = document.getElementById('adventure-song');
+
+        adventureSong.loop = true;
+        adventureSong.volume = 0.2;
+        adventureSong.play();
     }
 }

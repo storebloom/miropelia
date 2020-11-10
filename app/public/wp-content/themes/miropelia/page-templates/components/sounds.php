@@ -10,3 +10,4 @@
 <audio id="koromere-interest" src="<?php echo get_template_directory_uri() . '/assets/src/audio/koromere-interest.mp3'; ?>"></audio>
 <audio id="sionnah-interest" src="<?php echo get_template_directory_uri() . '/assets/src/audio/sionnah-interest.mp3'; ?>"></audio>
 <audio id="corinder-interest" src="<?php echo get_template_directory_uri() . '/assets/src/audio/corinder-interest.mp3'; ?>"></audio>
+<audio id="adventure-song" src="<?php echo get_template_directory_uri() . '/assets/src/audio/adventure-song.mp3'; ?>"></audio>

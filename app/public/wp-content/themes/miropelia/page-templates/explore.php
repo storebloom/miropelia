@@ -60,8 +60,9 @@ get_header();
 	<div class="container">
 		<a id="leave-map" href="/explore"><?php esc_html_e('Leave Map', 'miropelia'); ?></a>
 		<div id="explore-points">
-			<span class="point-amount">0</span>
-			/ 10000
+			<span class="point-amount">0</span> / 10000
+		</div>
+		<div id="sound-control">
 		</div>
 		<div class="touch-buttons">
 			<span class="top-left">

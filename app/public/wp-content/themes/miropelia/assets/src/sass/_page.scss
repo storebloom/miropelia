@@ -174,4 +174,38 @@
   }
 }
 
+html {
+  min-height: 100%;
+  position: relative;
+
+  body.single {
+    height: 100%;
+
+    &:before {
+      background: url('../../src/images/black-smoke.png') no-repeat 100%;
+      background-size: cover;
+      content: "";
+      height: 100%;
+      left: 0;
+      position: absolute;
+      top: 0;
+      width: 230px;
+      z-index: -1;
+    }
+
+    &:after {
+      background: url('../../src/images/black-smoke.png') no-repeat 100%;
+      background-size: cover;
+      content: "";
+      height: 100%;
+      right: 0;
+      position: absolute;
+      top: 0;
+      transform: rotateY(180deg);
+      width: 230px;
+      z-index: -1;
+    }
+  }
+}
+
 @import "./pages/explore";
