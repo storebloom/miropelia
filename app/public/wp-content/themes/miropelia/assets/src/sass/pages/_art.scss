@@ -1,0 +1,26 @@
+.wp-block-gallery {
+  .blocks-gallery-grid {
+    .blocks-gallery-item {
+      transition: all .5s;
+
+      &.engage {
+        background: #ffffff87;
+        height: 100%;
+        left: 0;
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 9999;
+
+        figure {
+          height: auto;
+          left: 50%;
+          position: absolute;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          width: 60%;
+        }
+      }
+    }
+  }
+}

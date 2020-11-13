@@ -72,6 +72,6 @@ class Theme extends Theme_Base
      */
 	public function registerAdminAssets()
     {
-        wp_enqueue_style( $this->assets_prefix . '-admin', "{$this->dir_url}/assets/dist/css/admin.css", null, time());
+        wp_register_style( $this->assets_prefix . '-admin', "{$this->dir_url}/assets/dist/css/admin.css", null, time());
     }
 }

@@ -53,7 +53,13 @@ get_header();
 					esc_html__('collecting achievements and points for all the Orbem character', 'miropelia') .
 					esc_html__(' choices and fully emersing in the universe of Orbem!', 'miropelia');
 					?>
+					<br>
 				</p>
+			<p>
+				No Account?
+				<br>
+				<a href="/register">Register Here</a>
+			</p>
 			<?php endif; ?>
 		</div>
 	</div>
@@ -87,7 +93,7 @@ get_header();
 		<span id="key-guide" href="/explore">
 			<img src="<?php echo get_template_directory_uri() . '/assets/src/images/keys.png'; ?>" />
 		</span>
-		<div style="top: 3600px; left: 1842px" id="map-character">
+		<div style="top: 3600px; left: 1942px" id="map-character">
 			<img data-character="" id="map-character-icon" src="" />
 		</div>
 		<?php the_content(); ?>

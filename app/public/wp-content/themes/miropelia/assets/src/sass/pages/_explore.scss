@@ -197,6 +197,40 @@
 
     .map-item {
       position: absolute;
+      z-index: 1;
+
+      &.ioana-map-item {
+        background: url('../../src/images/ioana-avatar.gif');
+        background-size: contain;
+        height: 100px;
+        left: 2642px;
+        top: 1743px;
+        width: 100px;
+      }
+
+      &.barracks-map-item {
+        background: url('../../src/images/barracks.png');
+        height: 130px;
+        left: 2242px;
+        top: 3782px;
+        width: 89px;
+      }
+
+      &.caninth-village-map-item {
+        background: url('../../src/images/caninth-village.png');
+        height: 112px;
+        left: 2351px;
+        top: 3382px;
+        width: 151px;
+      }
+
+      &.aster-farm-map-item {
+        background: url('../../src/images/ranch.png');
+        height: 82px;
+        left: 2642px;
+        top: 2043px;
+        width: 90px;
+      }
 
       &.gillimank-map-item {
         left: 1697px;
@@ -204,8 +238,11 @@
       }
 
       &.pool-map-item {
+        background: url('../../src/images/pool.png');
+        height: 99px;
         left: 2135px;
         top: 2394px;
+        width: 81px;
       }
 
       &.spinebeck-map-item {
@@ -263,6 +300,7 @@
       height: 100vh;
       position: absolute;
       width: 90vw;
+      z-index: 8;
 
       &:before {
         bottom: 30%;

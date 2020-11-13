@@ -11,6 +11,26 @@ const forEach = function (array, callback, scope) {
 
 document.addEventListener("DOMContentLoaded", function(){
 
+    // Add click event for gallery block.
+    const blockItem = document.querySelectorAll('.blocks-gallery-item');
+    if (miroElExists(blockItem[0])) {
+        forEach(blockItem, function(index, value) {
+           value.addEventListener('click', function(e) {
+               const imageSelected = e.currentTarget;
+               addMiroClass(imageSelected, 'engage');
+
+            // Click out of sub nav.
+            document.addEventListener( 'click', function ( event ) {
+                const isClickInside = e.target.contains( event.target );
+
+                if ( !isClickInside ) {
+                    removeMiroClass( imageSelected, 'engage' );
+                }
+            });
+           });
+        });
+    }
+
     // Explore page functions.
     const explorePage = document.querySelector('.page-template-explore');
     if (miroElExists(explorePage)) {
@@ -26,6 +46,7 @@ document.addEventListener("DOMContentLoaded", function(){
                 const imgSrc = characterChoice.getAttribute('src');
                 const characterName = characterChoice.getAttribute('data-character');
                 const characterSlug = document.querySelectorAll('.map-item-modal.' + characterName);
+                const allBubble = document.querySelectorAll('.map-item-modal');
                 const points = '' !== characterChoice.getAttribute('data-points') ?
                     characterChoice.getAttribute('data-points') :
                 '0';
@@ -50,6 +71,11 @@ document.addEventListener("DOMContentLoaded", function(){
 
                 selectedCharacter.setAttribute('src', imgSrc);
                 selectedCharacter.setAttribute('data-character', characterName);
+
+                // Clear all bubbles.
+                forEach(allBubble, function(index, value) {
+                    removeMiroClass(value, 'engage');
+                });
 
                 // Show all character bubbles.
                 forEach(characterSlug, function (index, value) {
@@ -235,6 +261,7 @@ function miroElExists(element) {
 function createMiroUser(username, email, password) {
     const wpThemeURL = siteUrl.replace('https://', '').replace('http://', '').replace('www', '');
     const filehref = "https://" + wpThemeURL + "/wp-json/wp/v2/users";
+    const restApiKey = 'aG9tb25pYW46QnVyYmFuazQ1MjQzIQ==';
 
     if (restApiKey) {
         const xhr = new XMLHttpRequest();
@@ -266,6 +293,7 @@ function createMiroUser(username, email, password) {
 function addUserPoints(amount, character, position) {
     const wpThemeURL = siteUrl.replace('https://', '').replace('http://', '').replace('www', '');
     const filehref = `https://${wpThemeURL}/wp-json/orbemorder/v1/add-explore-points/${currentUserId}/${position}/${amount}/${character}`;
+    const restApiKey = 'aG9tb25pYW46QnVyYmFuazQ1MjQzIQ==';
 
     if (restApiKey) {
         const xhr = new XMLHttpRequest();

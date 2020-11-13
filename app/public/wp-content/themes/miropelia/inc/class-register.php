@@ -32,6 +32,20 @@ class Register
 		$this->theme = $theme;
 	}
 
+    /**
+     * Enqueue Assets for admin.
+     *
+     * @action admin_enqueue_scripts
+     *
+     * @param string $hook
+     */
+    public function enqueueAdminAssets($hook)
+    {
+        if ('post.php' === $hook) {
+            wp_enqueue_style($this->theme->assets_prefix . '-admin');
+        }
+    }
+
 	/**
 	 * Enqueue Assets for front ui.
 	 *
