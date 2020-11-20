@@ -49,10 +49,14 @@
       }
 
       #engage-explore {
+        display: none;
         opacity: 0;
+        margin: 20px auto;
+        padding: 10px 20px;
         transition: all .5s;
 
         &.engage {
+          display: block;
           opacity: 1;
         }
       }
@@ -100,7 +104,35 @@
     position: relative;
     width: 5000px;
 
+    #return-to-map {
+      cursor: pointer;
+      display: none;
+      position: fixed;
+      right: 40px;
+      top: 40px;
+      z-index: 99999;
+
+      @media only screen and (max-width: 480px) {
+        right: 10px;
+        top: 10px;
+      }
+
+      &.engage {
+        display: block;
+      }
+    }
+
+    &.gillimank {
+      background: url("../../src/images/gillimank.jpg");
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: left top;
+      height: 2250px;
+      width: 3000px;
+    }
+
     #leave-map {
+      display: none;
       opacity: 0;
       position: fixed;
       right: 40px;
@@ -110,6 +142,11 @@
       @media only screen and (max-width: 480px) {
         right: 10px;
         top: 10px;
+      }
+
+      &.engage {
+        display: block;
+        opacity: 1;
       }
     }
 
@@ -199,61 +236,6 @@
       position: absolute;
       z-index: 1;
 
-      &.ioana-map-item {
-        background: url('../../src/images/ioana-avatar.gif');
-        background-size: contain;
-        height: 100px;
-        left: 2642px;
-        top: 1743px;
-        width: 100px;
-      }
-
-      &.barracks-map-item {
-        background: url('../../src/images/barracks.png');
-        height: 130px;
-        left: 2242px;
-        top: 3782px;
-        width: 89px;
-      }
-
-      &.caninth-village-map-item {
-        background: url('../../src/images/caninth-village.png');
-        height: 112px;
-        left: 2351px;
-        top: 3382px;
-        width: 151px;
-      }
-
-      &.aster-farm-map-item {
-        background: url('../../src/images/ranch.png');
-        height: 82px;
-        left: 2642px;
-        top: 2043px;
-        width: 90px;
-      }
-
-      &.gillimank-map-item {
-        left: 1697px;
-        top: 1952px;
-      }
-
-      &.pool-map-item {
-        background: url('../../src/images/pool.png');
-        height: 99px;
-        left: 2135px;
-        top: 2394px;
-        width: 81px;
-      }
-
-      &.spinebeck-map-item {
-        left: 2737px;
-        top: 2819px;
-      }
-
-      img {
-        width: 100px;
-      }
-
       .map-item-modal {
         background: #fff;
         border-radius: 55px;
@@ -292,6 +274,160 @@
             right: 122px;
             top: -66px;
           }
+        }
+      }
+    }
+
+    div[data-map-item-area] {
+      position: absolute;
+      height: 100%;
+      left: 0;
+      top: 0;
+      width: 100%;
+
+      &[data-map-item-area="gillimank"] {
+        .map-item {
+          &.orbem-academy-map-item {
+            height: 200px;
+            left: 1111px;
+            top: 955px;
+            width: 200px;
+          }
+        }
+      }
+    }
+
+    .default-map {
+      .enter-position {
+        opacity: 0;
+        transition: all .5s;
+        position: relative;
+        z-index: 99999;
+
+        &.engage {
+          opacity: 1;
+        }
+
+        &[data-position="caninth-village"] {
+          left: 260px;
+          top: 3445px;
+
+          @media only screen and (max-width: 480px) {
+            left: 2215px;
+          }
+        }
+
+        &[data-position="spinebeck"] {
+          left: 733px;
+          top: 2943px;
+          @media only screen and (max-width: 480px) {
+            left: 2688px;
+          }
+        }
+
+        &[data-position="wonderland"] {
+          left: 547px;
+          top: 3264px;
+          @media only screen and (max-width: 480px) {
+            left: 2502px;
+          }
+        }
+
+        &[data-position="gillimank"] {
+          left: -277px;
+          top: 1909px;
+          @media only screen and (max-width: 480px) {
+            left: 1733px;
+          }
+        }
+      }
+
+      .map-item {
+        position: absolute;
+        z-index: 1;
+
+        &.forno-map-item {
+          background: url('../../src/images/forno-avatar.gif');
+          background-size: contain;
+          height: 100px;
+          left: 2354px;
+          top: 3527px;
+          width: 100px;
+        }
+
+        &.ioana-map-item {
+          background: url('../../src/images/ioana-avatar.gif');
+          background-size: contain;
+          height: 100px;
+          left: 2642px;
+          top: 1743px;
+          width: 100px;
+        }
+
+        &.scarlett-map-item {
+          background: url('../../src/images/scarlett-avatar.gif');
+          background-size: contain;
+          height: 100px;
+          left: 3186px;
+          top: 2477px;
+          width: 100px;
+        }
+
+        &.barracks-map-item {
+          background: url('../../src/images/barracks.png');
+          height: 130px;
+          left: 2242px;
+          top: 3782px;
+          width: 89px;
+        }
+
+        &.caninth-village-map-item {
+          background: url('../../src/images/caninth-village.png');
+          height: 112px;
+          left: 2351px;
+          top: 3332px;
+          width: 151px;
+        }
+
+
+        &.aster-farm-map-item {
+          background: url('../../src/images/ranch.png');
+          height: 82px;
+          left: 2642px;
+          top: 2043px;
+          width: 90px;
+        }
+
+        &.gillimank-map-item {
+          left: 1697px;
+          top: 1952px;
+        }
+
+        &.wonderland-map-item {
+          left: 2702px;
+          top: 3124px;
+        }
+
+        &.deathwood-manor-map-item {
+          left: 1678px;
+          top: 3041px;
+        }
+
+        &.pool-map-item {
+          background: url('../../src/images/pool.png');
+          height: 99px;
+          left: 2135px;
+          top: 2394px;
+          width: 81px;
+        }
+
+        &.spinebeck-map-item {
+          left: 2737px;
+          top: 2819px;
+        }
+
+        img {
+          width: 100px;
         }
       }
     }
@@ -358,9 +494,16 @@
       width: 100%;
       z-index: -1;
 
+      &.do-mobile {
+        @media only screen and (max-width: 480px) {
+          z-index: 9;
+        }
+      }
+
       &.engage {
         @media only screen and (max-width: 480px) {
           opacity: .4;
+          z-index: 99;
         }
       }
 

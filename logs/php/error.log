@@ -4828,3 +4828,470 @@ Stack trace:
 [12-Nov-2020 22:23:18 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/plugins.php:0
 [12-Nov-2020 22:23:18 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/plugins.php:603
 [12-Nov-2020 22:23:18 UTC] PHP   3. header() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin-header.php:9
+[13-Nov-2020 23:58:36 UTC] PHP Warning:  call_user_func_array() expects parameter 1 to be a valid callback, class 'ShareThisReviews\Register' does not have a method 'st_deactivation_hook' in /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php on line 287
+[13-Nov-2020 23:58:36 UTC] PHP Stack trace:
+[13-Nov-2020 23:58:36 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/plugins.php:0
+[13-Nov-2020 23:58:36 UTC] PHP   2. deactivate_plugins() /Users/scott/sites/miropelia.com/app/public/wp-admin/plugins.php:208
+[13-Nov-2020 23:58:36 UTC] PHP   3. do_action() /Users/scott/sites/miropelia.com/app/public/wp-admin/includes/plugin.php:821
+[13-Nov-2020 23:58:36 UTC] PHP   4. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[13-Nov-2020 23:58:36 UTC] PHP   5. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[17-Nov-2020 21:58:28 UTC] PHP Parse error:  syntax error, unexpected 'var_dump' (T_STRING) in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php on line 267
+[17-Nov-2020 22:00:53 UTC] PHP Warning:  Illegal string offset 'contents' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php on line 265
+[17-Nov-2020 22:00:53 UTC] PHP Stack trace:
+[17-Nov-2020 22:00:53 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:0
+[17-Nov-2020 22:00:53 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:10
+[17-Nov-2020 22:00:53 UTC] PHP   3. do_action() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin.php:259
+[17-Nov-2020 22:00:53 UTC] PHP   4. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[17-Nov-2020 22:00:53 UTC] PHP   5. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[17-Nov-2020 22:00:53 UTC] PHP   6. AutoQuote\Auto_Quote->settings_page() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:287
+[17-Nov-2020 22:00:53 UTC] PHP   7. include_once() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:120
+[17-Nov-2020 22:00:53 UTC] PHP   8. do_shortcode() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/templates/settings-page.php:23
+[17-Nov-2020 22:00:53 UTC] PHP   9. preg_replace_callback() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:218
+[17-Nov-2020 22:00:53 UTC] PHP  10. do_shortcode_tag() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:218
+[17-Nov-2020 22:00:53 UTC] PHP  11. AutoQuote\Auto_Quote->display_auto_quote() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:343
+[17-Nov-2020 22:00:53 UTC] PHP  12. AutoQuote\Auto_Quote->getQuote() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:243
+[17-Nov-2020 22:00:53 UTC] PHP Warning:  Illegal string offset 'quotes' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php on line 265
+[17-Nov-2020 22:00:53 UTC] PHP Stack trace:
+[17-Nov-2020 22:00:53 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:0
+[17-Nov-2020 22:00:53 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:10
+[17-Nov-2020 22:00:53 UTC] PHP   3. do_action() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin.php:259
+[17-Nov-2020 22:00:53 UTC] PHP   4. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[17-Nov-2020 22:00:53 UTC] PHP   5. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[17-Nov-2020 22:00:53 UTC] PHP   6. AutoQuote\Auto_Quote->settings_page() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:287
+[17-Nov-2020 22:00:53 UTC] PHP   7. include_once() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:120
+[17-Nov-2020 22:00:53 UTC] PHP   8. do_shortcode() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/templates/settings-page.php:23
+[17-Nov-2020 22:00:53 UTC] PHP   9. preg_replace_callback() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:218
+[17-Nov-2020 22:00:53 UTC] PHP  10. do_shortcode_tag() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:218
+[17-Nov-2020 22:00:53 UTC] PHP  11. AutoQuote\Auto_Quote->display_auto_quote() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:343
+[17-Nov-2020 22:00:53 UTC] PHP  12. AutoQuote\Auto_Quote->getQuote() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:243
+[17-Nov-2020 22:01:14 UTC] PHP Warning:  Illegal string offset 'contents' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php on line 265
+[17-Nov-2020 22:01:14 UTC] PHP Stack trace:
+[17-Nov-2020 22:01:14 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:0
+[17-Nov-2020 22:01:14 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:10
+[17-Nov-2020 22:01:14 UTC] PHP   3. do_action() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin.php:259
+[17-Nov-2020 22:01:14 UTC] PHP   4. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[17-Nov-2020 22:01:14 UTC] PHP   5. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[17-Nov-2020 22:01:14 UTC] PHP   6. AutoQuote\Auto_Quote->settings_page() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:287
+[17-Nov-2020 22:01:14 UTC] PHP   7. include_once() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:120
+[17-Nov-2020 22:01:14 UTC] PHP   8. do_shortcode() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/templates/settings-page.php:23
+[17-Nov-2020 22:01:14 UTC] PHP   9. preg_replace_callback() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:218
+[17-Nov-2020 22:01:14 UTC] PHP  10. do_shortcode_tag() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:218
+[17-Nov-2020 22:01:14 UTC] PHP  11. AutoQuote\Auto_Quote->display_auto_quote() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:343
+[17-Nov-2020 22:01:14 UTC] PHP  12. AutoQuote\Auto_Quote->getQuote() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:243
+[17-Nov-2020 22:01:14 UTC] PHP Warning:  Illegal string offset 'quotes' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php on line 265
+[17-Nov-2020 22:01:14 UTC] PHP Stack trace:
+[17-Nov-2020 22:01:14 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:0
+[17-Nov-2020 22:01:14 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:10
+[17-Nov-2020 22:01:14 UTC] PHP   3. do_action() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin.php:259
+[17-Nov-2020 22:01:14 UTC] PHP   4. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[17-Nov-2020 22:01:14 UTC] PHP   5. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[17-Nov-2020 22:01:14 UTC] PHP   6. AutoQuote\Auto_Quote->settings_page() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:287
+[17-Nov-2020 22:01:14 UTC] PHP   7. include_once() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:120
+[17-Nov-2020 22:01:14 UTC] PHP   8. do_shortcode() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/templates/settings-page.php:23
+[17-Nov-2020 22:01:14 UTC] PHP   9. preg_replace_callback() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:218
+[17-Nov-2020 22:01:14 UTC] PHP  10. do_shortcode_tag() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:218
+[17-Nov-2020 22:01:14 UTC] PHP  11. AutoQuote\Auto_Quote->display_auto_quote() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:343
+[17-Nov-2020 22:01:14 UTC] PHP  12. AutoQuote\Auto_Quote->getQuote() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:243
+[17-Nov-2020 22:02:08 UTC] PHP Warning:  Illegal string offset 'contents' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php on line 265
+[17-Nov-2020 22:02:08 UTC] PHP Stack trace:
+[17-Nov-2020 22:02:08 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:0
+[17-Nov-2020 22:02:08 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:10
+[17-Nov-2020 22:02:08 UTC] PHP   3. do_action() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin.php:259
+[17-Nov-2020 22:02:08 UTC] PHP   4. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[17-Nov-2020 22:02:08 UTC] PHP   5. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[17-Nov-2020 22:02:08 UTC] PHP   6. AutoQuote\Auto_Quote->settings_page() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:287
+[17-Nov-2020 22:02:08 UTC] PHP   7. include_once() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:120
+[17-Nov-2020 22:02:08 UTC] PHP   8. do_shortcode() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/templates/settings-page.php:23
+[17-Nov-2020 22:02:08 UTC] PHP   9. preg_replace_callback() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:218
+[17-Nov-2020 22:02:08 UTC] PHP  10. do_shortcode_tag() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:218
+[17-Nov-2020 22:02:08 UTC] PHP  11. AutoQuote\Auto_Quote->display_auto_quote() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:343
+[17-Nov-2020 22:02:08 UTC] PHP  12. AutoQuote\Auto_Quote->getQuote() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:243
+[17-Nov-2020 22:02:08 UTC] PHP Warning:  Illegal string offset 'quotes' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php on line 265
+[17-Nov-2020 22:02:08 UTC] PHP Stack trace:
+[17-Nov-2020 22:02:08 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:0
+[17-Nov-2020 22:02:08 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:10
+[17-Nov-2020 22:02:08 UTC] PHP   3. do_action() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin.php:259
+[17-Nov-2020 22:02:08 UTC] PHP   4. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[17-Nov-2020 22:02:08 UTC] PHP   5. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[17-Nov-2020 22:02:08 UTC] PHP   6. AutoQuote\Auto_Quote->settings_page() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:287
+[17-Nov-2020 22:02:08 UTC] PHP   7. include_once() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:120
+[17-Nov-2020 22:02:08 UTC] PHP   8. do_shortcode() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/templates/settings-page.php:23
+[17-Nov-2020 22:02:08 UTC] PHP   9. preg_replace_callback() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:218
+[17-Nov-2020 22:02:08 UTC] PHP  10. do_shortcode_tag() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:218
+[17-Nov-2020 22:02:08 UTC] PHP  11. AutoQuote\Auto_Quote->display_auto_quote() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:343
+[17-Nov-2020 22:02:08 UTC] PHP  12. AutoQuote\Auto_Quote->getQuote() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:243
+[17-Nov-2020 22:02:08 UTC] PHP Warning:  Illegal string offset 'contents' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php on line 267
+[17-Nov-2020 22:02:08 UTC] PHP Stack trace:
+[17-Nov-2020 22:02:08 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:0
+[17-Nov-2020 22:02:08 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:10
+[17-Nov-2020 22:02:08 UTC] PHP   3. do_action() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin.php:259
+[17-Nov-2020 22:02:08 UTC] PHP   4. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[17-Nov-2020 22:02:08 UTC] PHP   5. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[17-Nov-2020 22:02:08 UTC] PHP   6. AutoQuote\Auto_Quote->settings_page() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:287
+[17-Nov-2020 22:02:08 UTC] PHP   7. include_once() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:120
+[17-Nov-2020 22:02:08 UTC] PHP   8. do_shortcode() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/templates/settings-page.php:23
+[17-Nov-2020 22:02:08 UTC] PHP   9. preg_replace_callback() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:218
+[17-Nov-2020 22:02:08 UTC] PHP  10. do_shortcode_tag() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:218
+[17-Nov-2020 22:02:08 UTC] PHP  11. AutoQuote\Auto_Quote->display_auto_quote() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:343
+[17-Nov-2020 22:02:08 UTC] PHP  12. AutoQuote\Auto_Quote->getQuote() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:243
+[17-Nov-2020 22:02:20 UTC] PHP Warning:  Illegal string offset 'contents' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php on line 265
+[17-Nov-2020 22:02:20 UTC] PHP Stack trace:
+[17-Nov-2020 22:02:20 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:0
+[17-Nov-2020 22:02:20 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:10
+[17-Nov-2020 22:02:20 UTC] PHP   3. do_action() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin.php:259
+[17-Nov-2020 22:02:20 UTC] PHP   4. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[17-Nov-2020 22:02:20 UTC] PHP   5. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[17-Nov-2020 22:02:20 UTC] PHP   6. AutoQuote\Auto_Quote->settings_page() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:287
+[17-Nov-2020 22:02:20 UTC] PHP   7. include_once() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:120
+[17-Nov-2020 22:02:20 UTC] PHP   8. do_shortcode() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/templates/settings-page.php:23
+[17-Nov-2020 22:02:20 UTC] PHP   9. preg_replace_callback() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:218
+[17-Nov-2020 22:02:20 UTC] PHP  10. do_shortcode_tag() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:218
+[17-Nov-2020 22:02:20 UTC] PHP  11. AutoQuote\Auto_Quote->display_auto_quote() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:343
+[17-Nov-2020 22:02:20 UTC] PHP  12. AutoQuote\Auto_Quote->getQuote() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:243
+[17-Nov-2020 22:02:20 UTC] PHP Warning:  Illegal string offset 'quotes' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php on line 265
+[17-Nov-2020 22:02:20 UTC] PHP Stack trace:
+[17-Nov-2020 22:02:20 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:0
+[17-Nov-2020 22:02:20 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:10
+[17-Nov-2020 22:02:20 UTC] PHP   3. do_action() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin.php:259
+[17-Nov-2020 22:02:20 UTC] PHP   4. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[17-Nov-2020 22:02:20 UTC] PHP   5. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[17-Nov-2020 22:02:20 UTC] PHP   6. AutoQuote\Auto_Quote->settings_page() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:287
+[17-Nov-2020 22:02:20 UTC] PHP   7. include_once() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:120
+[17-Nov-2020 22:02:20 UTC] PHP   8. do_shortcode() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/templates/settings-page.php:23
+[17-Nov-2020 22:02:20 UTC] PHP   9. preg_replace_callback() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:218
+[17-Nov-2020 22:02:20 UTC] PHP  10. do_shortcode_tag() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:218
+[17-Nov-2020 22:02:20 UTC] PHP  11. AutoQuote\Auto_Quote->display_auto_quote() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:343
+[17-Nov-2020 22:02:20 UTC] PHP  12. AutoQuote\Auto_Quote->getQuote() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:243
+[17-Nov-2020 22:02:33 UTC] PHP Warning:  Illegal string offset 'contents' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php on line 265
+[17-Nov-2020 22:02:33 UTC] PHP Stack trace:
+[17-Nov-2020 22:02:33 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:0
+[17-Nov-2020 22:02:33 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:10
+[17-Nov-2020 22:02:33 UTC] PHP   3. do_action() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin.php:259
+[17-Nov-2020 22:02:33 UTC] PHP   4. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[17-Nov-2020 22:02:33 UTC] PHP   5. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[17-Nov-2020 22:02:33 UTC] PHP   6. AutoQuote\Auto_Quote->settings_page() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:287
+[17-Nov-2020 22:02:33 UTC] PHP   7. include_once() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:120
+[17-Nov-2020 22:02:33 UTC] PHP   8. do_shortcode() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/templates/settings-page.php:23
+[17-Nov-2020 22:02:33 UTC] PHP   9. preg_replace_callback() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:218
+[17-Nov-2020 22:02:33 UTC] PHP  10. do_shortcode_tag() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:218
+[17-Nov-2020 22:02:33 UTC] PHP  11. AutoQuote\Auto_Quote->display_auto_quote() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:343
+[17-Nov-2020 22:02:33 UTC] PHP  12. AutoQuote\Auto_Quote->getQuote() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:243
+[17-Nov-2020 22:02:33 UTC] PHP Warning:  Illegal string offset 'quotes' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php on line 265
+[17-Nov-2020 22:02:33 UTC] PHP Stack trace:
+[17-Nov-2020 22:02:33 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:0
+[17-Nov-2020 22:02:33 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:10
+[17-Nov-2020 22:02:33 UTC] PHP   3. do_action() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin.php:259
+[17-Nov-2020 22:02:33 UTC] PHP   4. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[17-Nov-2020 22:02:33 UTC] PHP   5. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[17-Nov-2020 22:02:33 UTC] PHP   6. AutoQuote\Auto_Quote->settings_page() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:287
+[17-Nov-2020 22:02:33 UTC] PHP   7. include_once() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:120
+[17-Nov-2020 22:02:33 UTC] PHP   8. do_shortcode() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/templates/settings-page.php:23
+[17-Nov-2020 22:02:33 UTC] PHP   9. preg_replace_callback() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:218
+[17-Nov-2020 22:02:33 UTC] PHP  10. do_shortcode_tag() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:218
+[17-Nov-2020 22:02:33 UTC] PHP  11. AutoQuote\Auto_Quote->display_auto_quote() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:343
+[17-Nov-2020 22:02:33 UTC] PHP  12. AutoQuote\Auto_Quote->getQuote() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:243
+[17-Nov-2020 22:02:57 UTC] PHP Fatal error:  Uncaught Error: Cannot use object of type stdClass as array in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:265
+Stack trace:
+#0 /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php(243): AutoQuote\Auto_Quote->getQuote()
+#1 /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php(343): AutoQuote\Auto_Quote->display_auto_quote('', '', 'auto-quote')
+#2 [internal function]: do_shortcode_tag(Array)
+#3 /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php(218): preg_replace_callback('/\\[(\\[?)(auto\\-...', 'do_shortcode_ta...', '[auto-quote]')
+#4 /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/templates/settings-page.php(23): do_shortcode('[auto-quote]')
+#5 /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php(120): include_once('/Users/scott/si...')
+#6 /Users/scott/sites/miropelia.com/app/public/wp-includes/class-w in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php on line 265
+[17-Nov-2020 22:03:27 UTC] PHP Warning:  Illegal string offset 'contents' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php on line 265
+[17-Nov-2020 22:03:27 UTC] PHP Stack trace:
+[17-Nov-2020 22:03:27 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:0
+[17-Nov-2020 22:03:27 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:10
+[17-Nov-2020 22:03:27 UTC] PHP   3. do_action() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin.php:259
+[17-Nov-2020 22:03:27 UTC] PHP   4. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[17-Nov-2020 22:03:27 UTC] PHP   5. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[17-Nov-2020 22:03:27 UTC] PHP   6. AutoQuote\Auto_Quote->settings_page() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:287
+[17-Nov-2020 22:03:27 UTC] PHP   7. include_once() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:120
+[17-Nov-2020 22:03:27 UTC] PHP   8. do_shortcode() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/templates/settings-page.php:23
+[17-Nov-2020 22:03:27 UTC] PHP   9. preg_replace_callback() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:218
+[17-Nov-2020 22:03:27 UTC] PHP  10. do_shortcode_tag() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:218
+[17-Nov-2020 22:03:27 UTC] PHP  11. AutoQuote\Auto_Quote->display_auto_quote() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:343
+[17-Nov-2020 22:03:27 UTC] PHP  12. AutoQuote\Auto_Quote->getQuote() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:243
+[17-Nov-2020 22:03:27 UTC] PHP Warning:  Illegal string offset 'quotes' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php on line 265
+[17-Nov-2020 22:03:27 UTC] PHP Stack trace:
+[17-Nov-2020 22:03:27 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:0
+[17-Nov-2020 22:03:27 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:10
+[17-Nov-2020 22:03:27 UTC] PHP   3. do_action() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin.php:259
+[17-Nov-2020 22:03:27 UTC] PHP   4. WP_Hook->do_action() /Users/scott/sites/miropelia.com/app/public/wp-includes/plugin.php:478
+[17-Nov-2020 22:03:27 UTC] PHP   5. WP_Hook->apply_filters() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:311
+[17-Nov-2020 22:03:27 UTC] PHP   6. AutoQuote\Auto_Quote->settings_page() /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php:287
+[17-Nov-2020 22:03:27 UTC] PHP   7. include_once() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:120
+[17-Nov-2020 22:03:27 UTC] PHP   8. do_shortcode() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/templates/settings-page.php:23
+[17-Nov-2020 22:03:27 UTC] PHP   9. preg_replace_callback() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:218
+[17-Nov-2020 22:03:27 UTC] PHP  10. do_shortcode_tag() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:218
+[17-Nov-2020 22:03:27 UTC] PHP  11. AutoQuote\Auto_Quote->display_auto_quote() /Users/scott/sites/miropelia.com/app/public/wp-includes/shortcodes.php:343
+[17-Nov-2020 22:03:27 UTC] PHP  12. AutoQuote\Auto_Quote->getQuote() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:243
+[17-Nov-2020 22:32:22 UTC] PHP Parse error:  syntax error, unexpected 'ob_start' (T_STRING) in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php on line 235
+[17-Nov-2020 22:44:50 UTC] PHP Warning:  call_user_func() expects parameter 1 to be a valid callback, class 'AutoQuote\Plugin' does not have a method 'add_action' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php on line 263
+[17-Nov-2020 22:44:50 UTC] PHP Stack trace:
+[17-Nov-2020 22:44:50 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin-ajax.php:0
+[17-Nov-2020 22:44:50 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin-ajax.php:22
+[17-Nov-2020 22:44:50 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[17-Nov-2020 22:44:50 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[17-Nov-2020 22:44:50 UTC] PHP   5. include_once() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:377
+[17-Nov-2020 22:44:50 UTC] PHP   6. require_once() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/auto-quote.php:14
+[17-Nov-2020 22:44:50 UTC] PHP   7. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/instance.php:15
+[17-Nov-2020 22:44:50 UTC] PHP   8. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php:18
+[17-Nov-2020 22:44:50 UTC] PHP   9. AutoQuote\Plugin->addDocHooks() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:79
+[17-Nov-2020 22:44:50 UTC] PHP  10. call_user_func:{/Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263}() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263
+[17-Nov-2020 22:44:50 UTC] PHP Warning:  call_user_func() expects parameter 1 to be a valid callback, class 'AutoQuote\Plugin' does not have a method 'add_action' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php on line 263
+[17-Nov-2020 22:44:50 UTC] PHP Stack trace:
+[17-Nov-2020 22:44:50 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin-ajax.php:0
+[17-Nov-2020 22:44:50 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin-ajax.php:22
+[17-Nov-2020 22:44:50 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[17-Nov-2020 22:44:50 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[17-Nov-2020 22:44:50 UTC] PHP   5. include_once() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:377
+[17-Nov-2020 22:44:50 UTC] PHP   6. require_once() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/auto-quote.php:14
+[17-Nov-2020 22:44:50 UTC] PHP   7. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/instance.php:15
+[17-Nov-2020 22:44:50 UTC] PHP   8. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php:18
+[17-Nov-2020 22:44:50 UTC] PHP   9. AutoQuote\Plugin->addDocHooks() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:79
+[17-Nov-2020 22:44:50 UTC] PHP  10. call_user_func:{/Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263}() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263
+[17-Nov-2020 22:44:50 UTC] PHP Fatal error:  Uncaught Error: Call to undefined method AutoQuote\Plugin::add_doc_hooks() in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php:27
+Stack trace:
+#0 /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/instance.php(15): AutoQuote\Plugin->__construct()
+#1 /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/auto-quote.php(14): require_once('/Users/scott/si...')
+#2 /Users/scott/sites/miropelia.com/app/public/wp-settings.php(377): include_once('/Users/scott/si...')
+#3 /Users/scott/sites/miropelia.com/app/public/wp-config.php(77): require_once('/Users/scott/si...')
+#4 /Users/scott/sites/miropelia.com/app/public/wp-load.php(37): require_once('/Users/scott/si...')
+#5 /Users/scott/sites/miropelia.com/app/public/wp-admin/admin-ajax.php(22): require_once('/Users/scott/si...')
+#6 {main}
+  thrown in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php on line 27
+[17-Nov-2020 22:46:50 UTC] PHP Warning:  call_user_func() expects parameter 1 to be a valid callback, class 'AutoQuote\Plugin' does not have a method 'add_action' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php on line 263
+[17-Nov-2020 22:46:50 UTC] PHP Stack trace:
+[17-Nov-2020 22:46:50 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin-ajax.php:0
+[17-Nov-2020 22:46:50 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin-ajax.php:22
+[17-Nov-2020 22:46:50 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[17-Nov-2020 22:46:50 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[17-Nov-2020 22:46:50 UTC] PHP   5. include_once() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:377
+[17-Nov-2020 22:46:50 UTC] PHP   6. require_once() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/auto-quote.php:14
+[17-Nov-2020 22:46:50 UTC] PHP   7. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/instance.php:15
+[17-Nov-2020 22:46:50 UTC] PHP   8. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php:18
+[17-Nov-2020 22:46:50 UTC] PHP   9. AutoQuote\Plugin->addDocHooks() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:79
+[17-Nov-2020 22:46:50 UTC] PHP  10. call_user_func:{/Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263}() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263
+[17-Nov-2020 22:46:50 UTC] PHP Warning:  call_user_func() expects parameter 1 to be a valid callback, class 'AutoQuote\Plugin' does not have a method 'add_action' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php on line 263
+[17-Nov-2020 22:46:50 UTC] PHP Stack trace:
+[17-Nov-2020 22:46:50 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin-ajax.php:0
+[17-Nov-2020 22:46:50 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin-ajax.php:22
+[17-Nov-2020 22:46:50 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[17-Nov-2020 22:46:50 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[17-Nov-2020 22:46:50 UTC] PHP   5. include_once() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:377
+[17-Nov-2020 22:46:50 UTC] PHP   6. require_once() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/auto-quote.php:14
+[17-Nov-2020 22:46:50 UTC] PHP   7. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/instance.php:15
+[17-Nov-2020 22:46:50 UTC] PHP   8. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php:18
+[17-Nov-2020 22:46:50 UTC] PHP   9. AutoQuote\Plugin->addDocHooks() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:79
+[17-Nov-2020 22:46:50 UTC] PHP  10. call_user_func:{/Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263}() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263
+[17-Nov-2020 22:46:50 UTC] PHP Fatal error:  Uncaught Error: Call to undefined method AutoQuote\Plugin::add_doc_hooks() in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php:27
+Stack trace:
+#0 /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/instance.php(15): AutoQuote\Plugin->__construct()
+#1 /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/auto-quote.php(14): require_once('/Users/scott/si...')
+#2 /Users/scott/sites/miropelia.com/app/public/wp-settings.php(377): include_once('/Users/scott/si...')
+#3 /Users/scott/sites/miropelia.com/app/public/wp-config.php(77): require_once('/Users/scott/si...')
+#4 /Users/scott/sites/miropelia.com/app/public/wp-load.php(37): require_once('/Users/scott/si...')
+#5 /Users/scott/sites/miropelia.com/app/public/wp-admin/admin-ajax.php(22): require_once('/Users/scott/si...')
+#6 {main}
+  thrown in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php on line 27
+[17-Nov-2020 22:48:50 UTC] PHP Warning:  call_user_func() expects parameter 1 to be a valid callback, class 'AutoQuote\Plugin' does not have a method 'add_action' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php on line 263
+[17-Nov-2020 22:48:50 UTC] PHP Stack trace:
+[17-Nov-2020 22:48:50 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin-ajax.php:0
+[17-Nov-2020 22:48:50 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin-ajax.php:22
+[17-Nov-2020 22:48:50 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[17-Nov-2020 22:48:50 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[17-Nov-2020 22:48:50 UTC] PHP   5. include_once() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:377
+[17-Nov-2020 22:48:50 UTC] PHP   6. require_once() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/auto-quote.php:14
+[17-Nov-2020 22:48:50 UTC] PHP   7. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/instance.php:15
+[17-Nov-2020 22:48:50 UTC] PHP   8. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php:18
+[17-Nov-2020 22:48:50 UTC] PHP   9. AutoQuote\Plugin->addDocHooks() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:79
+[17-Nov-2020 22:48:50 UTC] PHP  10. call_user_func:{/Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263}() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263
+[17-Nov-2020 22:48:50 UTC] PHP Warning:  call_user_func() expects parameter 1 to be a valid callback, class 'AutoQuote\Plugin' does not have a method 'add_action' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php on line 263
+[17-Nov-2020 22:48:50 UTC] PHP Stack trace:
+[17-Nov-2020 22:48:50 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin-ajax.php:0
+[17-Nov-2020 22:48:50 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin-ajax.php:22
+[17-Nov-2020 22:48:50 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[17-Nov-2020 22:48:50 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[17-Nov-2020 22:48:50 UTC] PHP   5. include_once() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:377
+[17-Nov-2020 22:48:50 UTC] PHP   6. require_once() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/auto-quote.php:14
+[17-Nov-2020 22:48:50 UTC] PHP   7. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/instance.php:15
+[17-Nov-2020 22:48:50 UTC] PHP   8. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php:18
+[17-Nov-2020 22:48:50 UTC] PHP   9. AutoQuote\Plugin->addDocHooks() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:79
+[17-Nov-2020 22:48:50 UTC] PHP  10. call_user_func:{/Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263}() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263
+[17-Nov-2020 22:48:50 UTC] PHP Fatal error:  Uncaught Error: Call to undefined method AutoQuote\Plugin::add_doc_hooks() in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php:27
+Stack trace:
+#0 /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/instance.php(15): AutoQuote\Plugin->__construct()
+#1 /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/auto-quote.php(14): require_once('/Users/scott/si...')
+#2 /Users/scott/sites/miropelia.com/app/public/wp-settings.php(377): include_once('/Users/scott/si...')
+#3 /Users/scott/sites/miropelia.com/app/public/wp-config.php(77): require_once('/Users/scott/si...')
+#4 /Users/scott/sites/miropelia.com/app/public/wp-load.php(37): require_once('/Users/scott/si...')
+#5 /Users/scott/sites/miropelia.com/app/public/wp-admin/admin-ajax.php(22): require_once('/Users/scott/si...')
+#6 {main}
+  thrown in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php on line 27
+[17-Nov-2020 22:50:01 UTC] PHP Warning:  call_user_func() expects parameter 1 to be a valid callback, class 'AutoQuote\Plugin' does not have a method 'add_action' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php on line 263
+[17-Nov-2020 22:50:01 UTC] PHP Stack trace:
+[17-Nov-2020 22:50:01 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin-ajax.php:0
+[17-Nov-2020 22:50:01 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin-ajax.php:22
+[17-Nov-2020 22:50:01 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[17-Nov-2020 22:50:01 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[17-Nov-2020 22:50:01 UTC] PHP   5. include_once() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:377
+[17-Nov-2020 22:50:01 UTC] PHP   6. require_once() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/auto-quote.php:14
+[17-Nov-2020 22:50:01 UTC] PHP   7. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/instance.php:15
+[17-Nov-2020 22:50:01 UTC] PHP   8. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php:18
+[17-Nov-2020 22:50:01 UTC] PHP   9. AutoQuote\Plugin->addDocHooks() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:79
+[17-Nov-2020 22:50:01 UTC] PHP  10. call_user_func:{/Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263}() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263
+[17-Nov-2020 22:50:01 UTC] PHP Warning:  call_user_func() expects parameter 1 to be a valid callback, class 'AutoQuote\Plugin' does not have a method 'add_action' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php on line 263
+[17-Nov-2020 22:50:01 UTC] PHP Stack trace:
+[17-Nov-2020 22:50:01 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin-ajax.php:0
+[17-Nov-2020 22:50:01 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin-ajax.php:22
+[17-Nov-2020 22:50:01 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[17-Nov-2020 22:50:01 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[17-Nov-2020 22:50:01 UTC] PHP   5. include_once() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:377
+[17-Nov-2020 22:50:01 UTC] PHP   6. require_once() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/auto-quote.php:14
+[17-Nov-2020 22:50:01 UTC] PHP   7. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/instance.php:15
+[17-Nov-2020 22:50:01 UTC] PHP   8. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php:18
+[17-Nov-2020 22:50:01 UTC] PHP   9. AutoQuote\Plugin->addDocHooks() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:79
+[17-Nov-2020 22:50:01 UTC] PHP  10. call_user_func:{/Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263}() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263
+[17-Nov-2020 22:50:01 UTC] PHP Fatal error:  Uncaught Error: Call to undefined method AutoQuote\Plugin::add_doc_hooks() in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php:27
+Stack trace:
+#0 /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/instance.php(15): AutoQuote\Plugin->__construct()
+#1 /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/auto-quote.php(14): require_once('/Users/scott/si...')
+#2 /Users/scott/sites/miropelia.com/app/public/wp-settings.php(377): include_once('/Users/scott/si...')
+#3 /Users/scott/sites/miropelia.com/app/public/wp-config.php(77): require_once('/Users/scott/si...')
+#4 /Users/scott/sites/miropelia.com/app/public/wp-load.php(37): require_once('/Users/scott/si...')
+#5 /Users/scott/sites/miropelia.com/app/public/wp-admin/admin-ajax.php(22): require_once('/Users/scott/si...')
+#6 {main}
+  thrown in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php on line 27
+[17-Nov-2020 22:50:01 UTC] PHP Warning:  call_user_func() expects parameter 1 to be a valid callback, class 'AutoQuote\Plugin' does not have a method 'add_action' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php on line 263
+[17-Nov-2020 22:50:01 UTC] PHP Stack trace:
+[17-Nov-2020 22:50:01 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:0
+[17-Nov-2020 22:50:01 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:10
+[17-Nov-2020 22:50:01 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin.php:34
+[17-Nov-2020 22:50:01 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[17-Nov-2020 22:50:01 UTC] PHP   5. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[17-Nov-2020 22:50:01 UTC] PHP   6. include_once() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:377
+[17-Nov-2020 22:50:01 UTC] PHP   7. require_once() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/auto-quote.php:14
+[17-Nov-2020 22:50:01 UTC] PHP   8. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/instance.php:15
+[17-Nov-2020 22:50:01 UTC] PHP   9. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php:18
+[17-Nov-2020 22:50:01 UTC] PHP  10. AutoQuote\Plugin->addDocHooks() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:79
+[17-Nov-2020 22:50:01 UTC] PHP  11. call_user_func:{/Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263}() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263
+[17-Nov-2020 22:50:01 UTC] PHP Warning:  call_user_func() expects parameter 1 to be a valid callback, class 'AutoQuote\Plugin' does not have a method 'add_action' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php on line 263
+[17-Nov-2020 22:50:01 UTC] PHP Stack trace:
+[17-Nov-2020 22:50:01 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:0
+[17-Nov-2020 22:50:01 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:10
+[17-Nov-2020 22:50:01 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin.php:34
+[17-Nov-2020 22:50:01 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[17-Nov-2020 22:50:01 UTC] PHP   5. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[17-Nov-2020 22:50:01 UTC] PHP   6. include_once() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:377
+[17-Nov-2020 22:50:01 UTC] PHP   7. require_once() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/auto-quote.php:14
+[17-Nov-2020 22:50:01 UTC] PHP   8. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/instance.php:15
+[17-Nov-2020 22:50:01 UTC] PHP   9. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php:18
+[17-Nov-2020 22:50:01 UTC] PHP  10. AutoQuote\Plugin->addDocHooks() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:79
+[17-Nov-2020 22:50:01 UTC] PHP  11. call_user_func:{/Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263}() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263
+[17-Nov-2020 22:50:01 UTC] PHP Fatal error:  Uncaught Error: Call to undefined method AutoQuote\Plugin::add_doc_hooks() in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php:27
+Stack trace:
+#0 /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/instance.php(15): AutoQuote\Plugin->__construct()
+#1 /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/auto-quote.php(14): require_once('/Users/scott/si...')
+#2 /Users/scott/sites/miropelia.com/app/public/wp-settings.php(377): include_once('/Users/scott/si...')
+#3 /Users/scott/sites/miropelia.com/app/public/wp-config.php(77): require_once('/Users/scott/si...')
+#4 /Users/scott/sites/miropelia.com/app/public/wp-load.php(37): require_once('/Users/scott/si...')
+#5 /Users/scott/sites/miropelia.com/app/public/wp-admin/admin.php(34): require_once('/Users/scott/si...')
+#6 /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php(10): require_once('/Users/scott/si...')
+#7 {main}
+  thrown in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php on line 27
+[17-Nov-2020 22:50:34 UTC] PHP Warning:  call_user_func() expects parameter 1 to be a valid callback, class 'AutoQuote\Plugin' does not have a method 'add_action' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php on line 263
+[17-Nov-2020 22:50:34 UTC] PHP Stack trace:
+[17-Nov-2020 22:50:34 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:0
+[17-Nov-2020 22:50:34 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:10
+[17-Nov-2020 22:50:34 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin.php:34
+[17-Nov-2020 22:50:34 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[17-Nov-2020 22:50:34 UTC] PHP   5. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[17-Nov-2020 22:50:34 UTC] PHP   6. include_once() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:377
+[17-Nov-2020 22:50:34 UTC] PHP   7. require_once() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/auto-quote.php:14
+[17-Nov-2020 22:50:34 UTC] PHP   8. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/instance.php:15
+[17-Nov-2020 22:50:34 UTC] PHP   9. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php:18
+[17-Nov-2020 22:50:34 UTC] PHP  10. AutoQuote\Plugin->addDocHooks() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:79
+[17-Nov-2020 22:50:34 UTC] PHP  11. call_user_func:{/Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263}() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263
+[17-Nov-2020 22:50:34 UTC] PHP Warning:  call_user_func() expects parameter 1 to be a valid callback, class 'AutoQuote\Plugin' does not have a method 'add_action' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php on line 263
+[17-Nov-2020 22:50:34 UTC] PHP Stack trace:
+[17-Nov-2020 22:50:34 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:0
+[17-Nov-2020 22:50:34 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:10
+[17-Nov-2020 22:50:34 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin.php:34
+[17-Nov-2020 22:50:34 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[17-Nov-2020 22:50:34 UTC] PHP   5. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[17-Nov-2020 22:50:34 UTC] PHP   6. include_once() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:377
+[17-Nov-2020 22:50:34 UTC] PHP   7. require_once() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/auto-quote.php:14
+[17-Nov-2020 22:50:34 UTC] PHP   8. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/instance.php:15
+[17-Nov-2020 22:50:34 UTC] PHP   9. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php:18
+[17-Nov-2020 22:50:34 UTC] PHP  10. AutoQuote\Plugin->addDocHooks() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:79
+[17-Nov-2020 22:50:34 UTC] PHP  11. call_user_func:{/Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263}() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263
+[17-Nov-2020 22:50:34 UTC] PHP Fatal error:  Uncaught Error: Call to undefined method AutoQuote\Plugin::add_doc_hooks() in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php:27
+Stack trace:
+#0 /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/instance.php(15): AutoQuote\Plugin->__construct()
+#1 /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/auto-quote.php(14): require_once('/Users/scott/si...')
+#2 /Users/scott/sites/miropelia.com/app/public/wp-settings.php(377): include_once('/Users/scott/si...')
+#3 /Users/scott/sites/miropelia.com/app/public/wp-config.php(77): require_once('/Users/scott/si...')
+#4 /Users/scott/sites/miropelia.com/app/public/wp-load.php(37): require_once('/Users/scott/si...')
+#5 /Users/scott/sites/miropelia.com/app/public/wp-admin/admin.php(34): require_once('/Users/scott/si...')
+#6 /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php(10): require_once('/Users/scott/si...')
+#7 {main}
+  thrown in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php on line 27
+[17-Nov-2020 22:50:36 UTC] PHP Warning:  call_user_func() expects parameter 1 to be a valid callback, class 'AutoQuote\Plugin' does not have a method 'add_action' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php on line 263
+[17-Nov-2020 22:50:36 UTC] PHP Stack trace:
+[17-Nov-2020 22:50:36 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:0
+[17-Nov-2020 22:50:36 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:10
+[17-Nov-2020 22:50:36 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin.php:34
+[17-Nov-2020 22:50:36 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[17-Nov-2020 22:50:36 UTC] PHP   5. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[17-Nov-2020 22:50:36 UTC] PHP   6. include_once() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:377
+[17-Nov-2020 22:50:36 UTC] PHP   7. require_once() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/auto-quote.php:14
+[17-Nov-2020 22:50:36 UTC] PHP   8. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/instance.php:15
+[17-Nov-2020 22:50:36 UTC] PHP   9. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php:18
+[17-Nov-2020 22:50:36 UTC] PHP  10. AutoQuote\Plugin->addDocHooks() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:79
+[17-Nov-2020 22:50:36 UTC] PHP  11. call_user_func:{/Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263}() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263
+[17-Nov-2020 22:50:36 UTC] PHP Warning:  call_user_func() expects parameter 1 to be a valid callback, class 'AutoQuote\Plugin' does not have a method 'add_action' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php on line 263
+[17-Nov-2020 22:50:36 UTC] PHP Stack trace:
+[17-Nov-2020 22:50:36 UTC] PHP   1. {main}() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:0
+[17-Nov-2020 22:50:36 UTC] PHP   2. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php:10
+[17-Nov-2020 22:50:36 UTC] PHP   3. require_once() /Users/scott/sites/miropelia.com/app/public/wp-admin/admin.php:34
+[17-Nov-2020 22:50:36 UTC] PHP   4. require_once() /Users/scott/sites/miropelia.com/app/public/wp-load.php:37
+[17-Nov-2020 22:50:36 UTC] PHP   5. require_once() /Users/scott/sites/miropelia.com/app/public/wp-config.php:77
+[17-Nov-2020 22:50:36 UTC] PHP   6. include_once() /Users/scott/sites/miropelia.com/app/public/wp-settings.php:377
+[17-Nov-2020 22:50:36 UTC] PHP   7. require_once() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/auto-quote.php:14
+[17-Nov-2020 22:50:36 UTC] PHP   8. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/instance.php:15
+[17-Nov-2020 22:50:36 UTC] PHP   9. AutoQuote\Plugin->__construct() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php:18
+[17-Nov-2020 22:50:36 UTC] PHP  10. AutoQuote\Plugin->addDocHooks() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:79
+[17-Nov-2020 22:50:36 UTC] PHP  11. call_user_func:{/Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263}() /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin-base.php:263
+[17-Nov-2020 22:50:36 UTC] PHP Fatal error:  Uncaught Error: Call to undefined method AutoQuote\Plugin::add_doc_hooks() in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php:27
+Stack trace:
+#0 /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/instance.php(15): AutoQuote\Plugin->__construct()
+#1 /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/auto-quote.php(14): require_once('/Users/scott/si...')
+#2 /Users/scott/sites/miropelia.com/app/public/wp-settings.php(377): include_once('/Users/scott/si...')
+#3 /Users/scott/sites/miropelia.com/app/public/wp-config.php(77): require_once('/Users/scott/si...')
+#4 /Users/scott/sites/miropelia.com/app/public/wp-load.php(37): require_once('/Users/scott/si...')
+#5 /Users/scott/sites/miropelia.com/app/public/wp-admin/admin.php(34): require_once('/Users/scott/si...')
+#6 /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php(10): require_once('/Users/scott/si...')
+#7 {main}
+  thrown in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php on line 27
+[17-Nov-2020 22:51:17 UTC] PHP Fatal error:  Uncaught Error: Call to undefined method AutoQuote\Plugin::add_doc_hooks() in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php:27
+Stack trace:
+#0 /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/instance.php(15): AutoQuote\Plugin->__construct()
+#1 /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/auto-quote.php(14): require_once('/Users/scott/si...')
+#2 /Users/scott/sites/miropelia.com/app/public/wp-settings.php(377): include_once('/Users/scott/si...')
+#3 /Users/scott/sites/miropelia.com/app/public/wp-config.php(77): require_once('/Users/scott/si...')
+#4 /Users/scott/sites/miropelia.com/app/public/wp-load.php(37): require_once('/Users/scott/si...')
+#5 /Users/scott/sites/miropelia.com/app/public/wp-admin/admin.php(34): require_once('/Users/scott/si...')
+#6 /Users/scott/sites/miropelia.com/app/public/wp-admin/options-general.php(10): require_once('/Users/scott/si...')
+#7 {main}
+  thrown in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-plugin.php on line 27
+[17-Nov-2020 22:51:30 UTC] PHP Fatal error:  Uncaught TypeError: Return value of AutoQuote\Auto_Quote::getOptionArray() must be of the type array, string returned in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php:229
+Stack trace:
+#0 /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php(194): AutoQuote\Auto_Quote->getOptionArray('color')
+#1 /Users/scott/sites/miropelia.com/app/public/wp-admin/includes/template.php(1737): AutoQuote\Auto_Quote->settingTemplates('color')
+#2 /Users/scott/sites/miropelia.com/app/public/wp-admin/includes/template.php(1695): do_settings_fields('auto_quote', 'auto_quote_0')
+#3 /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/templates/settings-page.php(16): do_settings_sections('auto_quote')
+#4 /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php(114): include_once('/Users/scott/si...')
+#5 /Users/scott/sites/miropelia.com/app/public/wp-includes/class-wp-hook.php(2 in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php on line 229
+[17-Nov-2020 22:52:05 UTC] PHP Parse error:  syntax error, unexpected '|', expecting ';' or '{' in /Users/scott/sites/miropelia.com/app/public/wp-content/plugins/auto-quote/php/class-auto-quote.php on line 206

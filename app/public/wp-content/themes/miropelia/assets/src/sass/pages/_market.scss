@@ -1,0 +1,118 @@
+#market-wrap {
+  display: flex;
+  position: relative;
+
+  .market-menu {
+    position: absolute;
+    right: 62px;
+    top: -2000px;
+    transition: all .9s;
+    transition-delay: 1s;
+    z-index: -2;
+
+    ul {
+      li {
+        background: url('../../src/images/blank-sign.png');
+        background-size: 100%;
+        background-position: 0 -58px;
+        height: 131px;
+        list-style: none;
+        position: relative;
+        text-align: center;
+        width: 320px;
+
+        a {
+          border-bottom: 0;
+          font-size: 30px;
+          left: 50%;
+          position: absolute;
+          top: 50%;
+          transform: translate(-50%, -5%);
+        }
+      }
+    }
+  }
+
+  .market-sign.engage + .market-menu {
+    top: 85px;
+    z-index: 1;
+  }
+
+  .market-sign {
+    height: 200px;
+    overflow: hidden;
+    position: relative;
+    right: 0;
+    top: -77px;
+    width: 40%;
+    z-index: -1;
+
+    img {
+      height: auto;
+      left: 52%;
+      max-width: 400px;
+      position: absolute;
+      top: -300px;
+      transform: translate(-50%, -43%);
+      transition: all .5s;
+      width: 100%;
+    }
+
+    &.engage {
+      img {
+        top: 50px;
+      }
+    }
+  }
+
+  .market-cart-1 {
+    align-items: flex-end;
+    background: url('../../src/images/market-cart.png');
+    background-size: 100%;
+    background-repeat: no-repeat;
+    background-position: top;
+    display: flex;
+    left: -1000px;
+    min-height: 555px;
+    position: relative;
+    top: -30%;
+    transition: all 1s;
+    width: 60%;
+
+    &.engage {
+      left: -40px;
+    }
+  }
+
+  .wp-block-image {
+    cursor: pointer;
+    height: auto;
+    position: absolute;
+
+    img {
+      width: 100%;
+    }
+
+    &.books {
+      left: 176px;
+      top: 211px;
+      width: 124px;
+      z-index: 2;
+
+      &:hover {
+        width: 130px;
+      }
+    }
+
+    &.clothes {
+      left: 318px;
+      top: 79px;
+      width: 176px;
+      z-index: 1;
+
+      &:hover {
+        width: 180px;
+      }
+    }
+  }
+}

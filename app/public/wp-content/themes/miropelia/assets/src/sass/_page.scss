@@ -72,105 +72,6 @@
     .home & {
       margin-top: 20px;
     }
-
-    #market-wrap {
-      display: flex;
-      position: relative;
-
-      .market-menu {
-        position: absolute;
-        right: 62px;
-        top: -2000px;
-        transition: all .9s;
-        transition-delay: 1s;
-        z-index: -2;
-
-        ul {
-          li {
-            background: url('../../src/images/blank-sign.png');
-            background-size: 100%;
-            background-position: 0 -58px;
-            height: 131px;
-            list-style: none;
-            position: relative;
-            text-align: center;
-            width: 320px;
-
-            a {
-              border-bottom: 0;
-              font-size: 30px;
-              left: 50%;
-              position: absolute;
-              top: 50%;
-              transform: translate(-50%, -5%);
-            }
-          }
-        }
-      }
-
-      .market-sign.engage + .market-menu {
-        top: 85px;
-        z-index: 1;
-      }
-
-      .market-sign {
-        height: 200px;
-        overflow: hidden;
-        position: relative;
-        right: 34px;
-        top: -77px;
-        width: 40%;
-        z-index: -1;
-
-        img {
-          height: auto;
-          left: 52%;
-          max-width: 400px;
-          position: absolute;
-          top: -300px;
-          transform: translate(-50%, -43%);
-          transition: all .5s;
-          width: 100%;
-        }
-
-        &.engage {
-          img {
-            top: 50px;
-          }
-        }
-      }
-
-      .market-cart-1 {
-        align-items: flex-end;
-        background: url('../../src/images/market-cart.png');
-        background-size: 100%;
-        background-repeat: no-repeat;
-        background-position: top;
-        display: flex;
-        left: -1000px;
-        min-height: 100vh;
-        position: relative;
-        top: -30%;
-        transition: all 1s;
-        width: 60%;
-
-        &.engage {
-          left: -40px;
-        }
-      }
-
-      img {
-        height: auto;
-        left: 196px;
-        position: absolute;
-        top: 211px;
-        width: 19%;
-
-        &:hover {
-          box-shadow: 5px 5px 5px 5px $light_blue;
-        }
-      }
-    }
   }
 }
 
@@ -210,3 +111,4 @@ html {
 
 @import "./pages/explore";
 @import "./pages/art";
+@import "./pages/market";

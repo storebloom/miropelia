@@ -45,17 +45,11 @@ document.addEventListener("DOMContentLoaded", function(){
                 const characterChoice = e.target;
                 const imgSrc = characterChoice.getAttribute('src');
                 const characterName = characterChoice.getAttribute('data-character');
-                const characterSlug = document.querySelectorAll('.map-item-modal.' + characterName);
-                const allBubble = document.querySelectorAll('.map-item-modal');
                 const points = '' !== characterChoice.getAttribute('data-points') ?
                     characterChoice.getAttribute('data-points') :
                 '0';
-                const selectedCharacterPositions = undefined !== explorePoints[characterName] ? explorePoints[characterName]['positions'] : [];
 
-                // Add no point class to positions already gotten.
-                forEach(selectedCharacterPositions, function(index, value) {
-                    addMiroClass(document.querySelector('.' + value), 'no-point');
-                });
+                addNoPoints(characterName);
 
                 // Set points.
                 document.querySelector('#explore-points span.point-amount').innerHTML = points;
@@ -71,16 +65,6 @@ document.addEventListener("DOMContentLoaded", function(){
 
                 selectedCharacter.setAttribute('src', imgSrc);
                 selectedCharacter.setAttribute('data-character', characterName);
-
-                // Clear all bubbles.
-                forEach(allBubble, function(index, value) {
-                    removeMiroClass(value, 'engage');
-                });
-
-                // Show all character bubbles.
-                forEach(characterSlug, function (index, value) {
-                    addMiroClass( value, 'engage' );
-                });
             } );
         });
 
@@ -94,8 +78,40 @@ document.addEventListener("DOMContentLoaded", function(){
 
                 removeMiroClass( document.querySelector( '.explore-overlay' ), 'engage' );
                 body.style.position = 'unset';
+                addMiroClass(document.querySelector('.touch-buttons'), 'do-mobile');
             } );
         }
+
+        // Add enter buttons to map items.
+        const mapItems = document.querySelectorAll('.map-item');
+
+        forEach(mapItems, function(index, value) {
+            const position = value.className.replace('wp-block-group map-item ', '').replace('-map-item', '');
+            const enterable = [
+                'gillimank',
+                'caninth-village',
+                'wonderland',
+                'spinebeck'
+            ];
+
+            // Add data point to button.
+            if (-1 !== enterable.indexOf(position)) {
+                const enterButton = document.createElement('button');
+
+                addMiroClass(enterButton, 'enter-position');
+                enterButton.setAttribute( 'data-position', position );
+                enterButton.textContent = 'Enter';
+
+                // Add button next to map-item.
+                miroInsertBefore(value, enterButton);
+
+                enterButton.addEventListener('click', function(e) {
+                  const enterPosition = e.target.getAttribute('data-position');
+
+                  enterNewArea(enterPosition);
+                });
+            }
+        });
     }
 
     // Add swing in effect to market sign.
@@ -216,6 +232,15 @@ function addMiroClass(element, name) {
 }
 
 /**
+ * Helper function to insert element before another.
+ * @param firstEl
+ * @param insertEl
+ */
+function miroInsertBefore(firstEl, insertEl) {
+    firstEl.parentNode.insertBefore( insertEl, firstEl.nextSibling);
+}
+
+/**
  * Helper class that adds/removes class if class exists/doesn't exist.
  *
  * @param element
@@ -274,7 +299,7 @@ function createMiroUser(username, email, password) {
             password: password
         } ) );
 
-        xhr.addEventListener( "load", function (e) { console.log(e.currentTarget);
+        xhr.addEventListener( "load", function (e) {
             if (undefined !== JSON.parse(e.currentTarget.response).id) {
                 window.location.href = '/?loginuser=' + username;
             } else {
@@ -301,9 +326,82 @@ function addUserPoints(amount, character, position) {
         xhr.setRequestHeader( 'Content-Type', 'application/json' );
         xhr.setRequestHeader( 'Authorization', 'Basic ' + restApiKey );
         xhr.send();
+    }
+}
 
-        xhr.addEventListener( "load", function (e) { console.log(e.currentTarget);
+/**
+ * Pull new area html.
+ *
+ * @param position
+ */
+function enterNewArea(position) {
+    const wpThemeURL = siteUrl.replace('https://', '').replace('http://', '').replace('www', '');
+    const filehref = `https://${wpThemeURL}/wp-json/orbemorder/v1/area/${position}`;
+    const restApiKey = 'aG9tb25pYW46QnVyYmFuazQ1MjQzIQ==';
 
+    if (restApiKey) {
+        const xhr = new XMLHttpRequest();
+        xhr.open( "GET", filehref, true );
+        xhr.setRequestHeader( 'Content-Type', 'application/json' );
+        xhr.setRequestHeader( 'Authorization', 'Basic ' + restApiKey );
+        xhr.send();
+
+        xhr.addEventListener( "load", function (e) {
+            const newArea = document.createElement('div');
+            const defaultMap = document.querySelector('.default-map');
+            const chracterItem = document.getElementById('map-character');
+            const characterName = document.getElementById('map-character-icon').getAttribute('data-character');
+            const returnToMap = document.getElementById('return-to-map');
+            const leaveMap = document.getElementById('leave-map');
+
+            // Hide leave map.
+            removeMiroClass(leaveMap, 'engage');
+
+            // Show return to map.
+            addMiroClass(returnToMap, 'engage');
+
+            // Set id.
+            newArea.setAttribute('data-map-item-area', position);
+            miroInsertBefore(defaultMap, newArea);
+
+            // Add map items.
+            newArea.innerHTML = JSON.parse(e.currentTarget.response);
+
+            const mapContainer = document.querySelector('.container');
+
+            addMiroClass(mapContainer, position);
+
+            switch ( position ) {
+                case 'gillimank' :
+                    chracterItem.style.top = '1419px';
+                    chracterItem.style.left = '1117px';
+                break;
+            }
+
+            defaultMap.style.display = 'none';
+
+            // Run no point class adder again
+            addNoPoints(characterName);
+
+            // Add click event for return to map.
+            returnToMap.addEventListener('click', function(e) {
+                // Remove area map items.
+                document.querySelector(`div[data-map-item-area="${position}"]`).remove();
+
+                // Remove area class.
+                removeMiroClass(mapContainer, position);
+                document.querySelector('.default-map').style.display = 'block';
+
+                // Reset character position.
+                chracterItem.style.top = '3600px';
+                chracterItem.style.left = '1942px';
+
+                // Show leave map.
+                addMiroClass(leaveMap, 'engage');
+
+                // Hide return to map.
+                removeMiroClass(returnToMap, 'engage');
+            });
         } );
     }
 }
@@ -316,6 +414,32 @@ function addUserPoints(amount, character, position) {
  */
 function miroHasClass(element,selector) {
     return element.classList.contains(selector);
+}
+
+/**
+ * Helper function to add no points class to areas that have points already.
+ */
+function addNoPoints(characterName) {
+    const selectedCharacterPositions = undefined !== explorePoints[characterName] ? explorePoints[characterName]['positions'] : [];
+
+    // Add no point class to positions already gotten.
+    forEach(selectedCharacterPositions, function(index, value) {
+        if (miroElExists(document.querySelector('.' + value))) {
+            addMiroClass( document.querySelector( '.' + value ), 'no-point' );
+        }
+    });
+
+    // Clear all bubbles.
+    const characterSlug = document.querySelectorAll('.map-item-modal.' + characterName);
+    const allBubble = document.querySelectorAll('.map-item-modal');
+    forEach(allBubble, function(index, value) {
+        removeMiroClass(value, 'engage');
+    });
+
+    // Show all character bubbles.
+    forEach(characterSlug, function (index, value) {
+        addMiroClass( value, 'engage' );
+    });
 }
 
 /**
@@ -332,7 +456,7 @@ function engageExploreGame() {
     playAdventureSong();
 
     // Show leave map link and keys guide.
-    document.getElementById('leave-map').style.opacity = '1';
+    addMiroClass(document.getElementById('leave-map'), 'engage');
     document.getElementById('explore-points').style.opacity = '1';
     document.getElementById('sound-control').style.opacity = '1';
 
@@ -341,7 +465,6 @@ function engageExploreGame() {
     spinMiroLogo(keyGuide, 'engage');
 
     // Bring touch buttons forward and flash arrows.
-    document.querySelector('.touch-buttons').style.zIndex = '99';
     spinMiroLogo(touchButtons, 'engage');
 
     // Run arrow flash intermittently.
@@ -506,7 +629,7 @@ function engageExploreGame() {
         const topValInt = parseInt(topVal, 10);
 
         // Kill character if they hit these positions.
-        if (leftValInt >= 3632 || leftValInt <= 450 || topValInt >= 3989 || topValInt === 0 ) {
+        if (!miroHasClass(document.querySelector('.container'), 'gillimank') && (leftValInt >= 3632 || leftValInt <= 450 || topValInt >= 3989 || topValInt === 0) ) {
             playSplashSound();
             const overlayModalWrap = document.querySelector('.explore-overlay');
 
@@ -519,15 +642,14 @@ function engageExploreGame() {
 
             setTimeout(function() {
                 window.location = '/explore/';
-            }, 1000);
+            }, 500);
         }
 
         box.style.left = miroExplorePosition( leftVal, 37, 39 ).toString() + 'px';
         box.style.top = miroExplorePosition( topVal, 38, 40 ).toString() + 'px';
 
         box.scrollIntoView();
-    }, 15 );
-
+    }, 20 );
 
     /**
      * Helper function that returns position of element.
@@ -542,18 +664,27 @@ function engageExploreGame() {
         const box = document.querySelector( '#map-character img' );
         const modal = document.querySelectorAll('.map-item');
         const boxSrc = box.getAttribute('src');
-        const character = box.getAttribute('data-character');
 
         // Overlap check for map item.
         forEach(modal, function(index, value) {
             const position = value.className.replace('wp-block-group map-item ', '');
+            const positionEnter = document.querySelector(
+                `.enter-position[data-position="${
+                    position.replace('-map-item', '').replace(' no-point', '')
+                }"]`
+            );
 
             if ( elementsOverlap( box.getBoundingClientRect(), value.getBoundingClientRect() ) ) {
                 if (!miroHasClass(value, 'engage')) {
+                    if (miroElExists(positionEnter)) {
+                        addMiroClass( positionEnter, 'engage' );
+                    }
+
                     addMiroClass( value, 'engage' );
 
+
                     // Play interest sound effect.
-                    playInterestSound(character);
+                    playInterestSound();
 
                     if (!miroHasClass(value, 'no-point')) {
                         const thePoints = document.querySelector('#explore-points span.point-amount');
@@ -578,6 +709,10 @@ function engageExploreGame() {
             } else {
                 if (miroHasClass(value, 'engage')) {
                     removeMiroClass( value, 'engage' );
+                }
+
+                if (miroElExists(positionEnter)) {
+                    removeMiroClass( positionEnter, 'engage' );
                 }
             }
         });
@@ -641,7 +776,7 @@ function engageExploreGame() {
     function playWalkSound() {
         const walkingSound = document.getElementById('walking');
         walkingSound.loop = true;
-        walkingSound.volume = 0.5;
+        walkingSound.volume = 0.6;
         walkingSound.play();
 
         return false;
@@ -662,10 +797,10 @@ function engageExploreGame() {
         return false;
     }
 
-    function playInterestSound(type) {
-        const interestSound = document.getElementById(type + '-interest');
+    function playInterestSound() {
+        const interestSound = document.getElementById('interest');
 
-        interestSound.volume = 0.6;
+        interestSound.volume = 0.5;
         interestSound.play();
 
         return false;

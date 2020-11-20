@@ -18,15 +18,15 @@ get_header();
 <main id="primary" class="site-main">
 	<div class="explore-overlay">
 		<div class="you-died-message">
-			<h2><?php esc_html_e('Whoops. I don\'t have a boat. Guess I\'ll try again!'); ?></h2>
+			<h2><?php esc_html_e('Whoops. I don\'t have a boat. Guess I\'ll have to try again!'); ?></h2>
 		</div>
 		<div class="greeting-message">
 			<h1>
-				<?php esc_html_e('Welcome to the Orbem explore page.', 'miropelia'); ?>
+				<?php esc_html_e('Welcome to Orbem Explore!', 'miropelia'); ?>
 			</h1>
 			<?php if (is_user_logged_in()) : ?>
 				<p>
-					<?php esc_html_e('Go ahead and choose your Orbem avatar.', 'miropelia'); ?>
+					<?php esc_html_e('Go ahead and choose your Orbem avatar. Every character has a unique experience.', 'miropelia'); ?>
 				</p>
 				<div class="character-choice">
 					<?php foreach ($characters as $name => $character) : ?>
@@ -55,15 +55,18 @@ get_header();
 					?>
 					<br>
 				</p>
-			<p>
-				No Account?
-				<br>
-				<a href="/register">Register Here</a>
-			</p>
+				<p>
+					<?php esc_html_e('No Account?', 'miropelia'); ?>
+					<br>
+					<a href="/register">
+						<?php esc_html_e('Register Here', 'miropelia'); ?>
+					</a>
+				</p>
 			<?php endif; ?>
 		</div>
 	</div>
 	<div class="container">
+		<a id="return-to-map"><?php esc_html_e('Return to Map', 'miropelia'); ?></a>
 		<a id="leave-map" href="/explore"><?php esc_html_e('Leave Map', 'miropelia'); ?></a>
 		<div id="explore-points">
 			<span class="point-amount">0</span> / 10000
@@ -96,7 +99,9 @@ get_header();
 		<div style="top: 3600px; left: 1942px" id="map-character">
 			<img data-character="" id="map-character-icon" src="" />
 		</div>
-		<?php the_content(); ?>
+		<div class="default-map">
+			<?php the_content(); ?>
+		</div>
 	</div>
 	<?php include get_template_directory() . '/page-templates/components/sounds.php'; ?>
 </main>

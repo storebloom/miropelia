@@ -82,6 +82,33 @@ class Register
         }
 	}
 
+    /**
+     * Register post type for page components.
+     *
+     * @action init
+     */
+    public function registerPostType() {
+
+        $args = array(
+            'label'     => __( 'Explore Area', 'sharethis-custom' ),
+            'menu_icon' => 'dashicons-location-alt',
+            'public'             => false,
+            'publicly_queryable' => false,
+            'show_ui'            => true,
+            'show_in_menu'       => true,
+            'query_var'          => true,
+            'rewrite'            => array( 'slug' => 'explore-area' ),
+            'capability_type'    => 'page',
+            'has_archive'        => false,
+            'hierarchical'       => false,
+            'menu_position'      => null,
+            'show_in_rest' => true,
+            'supports'           => array( 'title', 'editor', 'author', 'thumbnail'),
+        );
+
+        register_post_type( 'explore-area', $args );
+    }
+
 	/**
      * Hide admin bar for non-admins and keep users out of admin.
      *
@@ -172,10 +199,18 @@ class Register
      */
     public function create_api_posts_meta_field()
     {
+        $namespace = 'orbemorder/v1';
+
         // Register route for getting event by location.
-        register_rest_route('orbemorder/v1', '/add-explore-points/(?P<user>\d+)/(?P<position>[a-zA-Z0-9-]+)/(?P<point>\d+)/(?P<character>[a-zA-Z0-9-]+)', array(
+        register_rest_route($namespace, '/add-explore-points/(?P<user>\d+)/(?P<position>[a-zA-Z0-9-]+)/(?P<point>\d+)/(?P<character>[a-zA-Z0-9-]+)', array(
             'methods'  => 'GET',
             'callback' => [$this, 'addCharacterPoints'],
+        ));
+
+        // Register route for getting event by location.
+        register_rest_route($namespace, '/area/(?P<position>[a-zA-Z0-9-]+)', array(
+            'methods'  => 'GET',
+            'callback' => [$this, 'getOrbemArea'],
         ));
     }
 
@@ -206,5 +241,23 @@ class Register
 
             update_user_meta($user, 'explore_points', $explore_points);
         }
+    }
+
+    /**
+     * Call back function for rest route that adds points to user's explore game.
+     * @param object $return The arg values from rest route.
+     */
+    public function getOrbemArea(object $return)
+    {
+        $position = isset($return['position']) ? sanitize_text_field(wp_unslash($return['position'])) : '';
+
+        // Get content from explore-area post type.
+        $area = get_posts(['post_type' => 'explore-area', 'slug' => $position]);
+
+        if (is_wp_error($area) || !isset($area[0])) {
+            return;
+        }
+
+        return $area[0]->post_content;
     }
 }
