@@ -13,12 +13,19 @@
         z-index: 9999;
 
         figure {
-          height: auto;
+          height: 100%;
           left: 50%;
+          max-width: 100%;
           position: absolute;
           top: 50%;
           transform: translate(-50%, -50%);
-          width: 60%;
+          width: 100%;
+
+          img {
+            height: 80vh;
+            object-fit: contain;
+            max-width: 100%;
+          }
         }
       }
     }

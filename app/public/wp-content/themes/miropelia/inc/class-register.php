@@ -120,11 +120,21 @@ class Register
             show_admin_bar(false);
         }
 
-        if ( is_admin() && !current_user_can('administrator') &&
-             ! ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
-            wp_redirect( home_url() );
+        if (is_admin() && !current_user_can('administrator') &&
+             ! (wp_doing_ajax())) {
+            wp_redirect(home_url());
             exit;
         }
+    }
+
+    /**
+     * Don't allow access to wp-login.php
+     *
+     * @action login_init
+     */
+    public function noLoginPage()
+    {
+        wp_redirect(home_url());
     }
 
     /**

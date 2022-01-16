@@ -25,40 +25,6 @@
       }
     }
 
-    .single & {
-      nav {
-        padding-bottom: 20px;
-      }
-
-      #respond {
-        margin-top: -20px;
-      }
-
-      #comments {
-        margin-top: 20px;
-      }
-
-      article {
-        display: flex;
-        flex-wrap: wrap;
-
-        header {
-          width: 100%;
-        }
-        .entry-content {
-          margin-right: 1%;
-          width: 49%;
-        }
-        .feature-image {
-          width: 50%;
-
-          img {
-            width: 100%;
-          }
-        }
-      }
-    }
-
     p {
       margin-bottom: 20px;
       margin-top: 20px;

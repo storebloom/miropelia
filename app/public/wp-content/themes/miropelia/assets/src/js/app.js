@@ -10,7 +10,6 @@ const forEach = function (array, callback, scope) {
 };
 
 document.addEventListener("DOMContentLoaded", function(){
-
     // Add click event for gallery block.
     const blockItem = document.querySelectorAll('.blocks-gallery-item');
     if (miroElExists(blockItem[0])) {

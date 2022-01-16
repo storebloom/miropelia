@@ -24,17 +24,24 @@
     margin: auto;
     max-width: 600px;
 
+    .post-thumb {
+      max-width: 400px;
+      img {
+        width: 100%;
+      }
+    }
+
     .post-list {
       padding-top: 19%;
       position: relative;
 
       &::before {
         background: url('../../src/images/tree-long.png');
-        background-size: 100%;
+        background-size: cover;
         background-repeat: no-repeat;
         content: '';
         height: 100%;
-        left: -250px;
+        left: -252px;
         padding-bottom: 60px;
         position: absolute;
         top: 0;
@@ -66,6 +73,56 @@
             height: 48px;
           }
         }
+      }
+    }
+  }
+}
+
+.single {
+  nav {
+    padding-bottom: 20px;
+  }
+
+  #respond {
+    margin-top: -20px;
+  }
+
+  #comments {
+    margin-top: 20px;
+  }
+
+  &.single-post {
+    .entry-content {
+      margin-right: 1%;
+      max-width: 100%;
+      width: 49%;
+    }
+
+    header {
+      text-align: left;
+    }
+  }
+
+  article {
+    display: flex;
+    flex-wrap: wrap;
+
+    header {
+      text-align: center;
+      width: 100%;
+    }
+
+    .entry-content {
+      margin: auto;
+      max-width: 700px;
+      width: 100%;
+    }
+
+    .feature-image {
+      width: 50%;
+
+      img {
+        width: 100%;
       }
     }
   }
