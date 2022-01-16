@@ -6,7 +6,7 @@ $error = '';
 
 function sirv_check_s3_api_credentials()
 {
-  require_once __DIR__ . '/../options-service.php';
+  require_once __DIR__ . '/../classes/options-service.class.php';
 
   $host = getValue::getOption('SIRV_AWS_HOST');
   $bucket = getValue::getOption('SIRV_AWS_BUCKET');
@@ -97,7 +97,7 @@ if ($sirvStatus) {
                 <?php } ?>
               </td>
             </tr>
-           <!--  <tr>
+          <!--  <tr>
               <th>Calc images storage size:</th>
               <td>
                 <style>
@@ -287,8 +287,10 @@ if ($sirvStatus) {
                 </tr>
               </thead>
               <tbody class='sirv-api-usage-content'>
-                <?php foreach ($storageInfo['limits'] as $limit) {
-                  $is_limit_reached = ((int) $limit['count'] >= (int) $limit['limit']) ? 'style="color: red;"' : '';
+                <?php
+                //sirv_debug_msg($storageInfo['limits']);
+                foreach ($storageInfo['limits'] as $limit) {
+                  $is_limit_reached = ((int) $limit['count'] >= (int) $limit['limit'] && (int) $limit['limit'] > 0) ? 'style="color: red;"' : '';
                 ?>
                   <tr <?php echo $is_limit_reached; ?>>
                     <td><?php echo $limit['type'] ?></td>

@@ -10,17 +10,12 @@ if (! isset($data)) {
 $isGroupUnloaded  = $data['row']['is_group_unloaded'];
 $anyUnloadRuleSet = ($isGroupUnloaded || $data['row']['checked']);
 ?>
-<div class="wpacu_asset_options_wrap <?php if (! $anyUnloadRuleSet) { echo 'wpacu_hide'; } ?>">
-	<div data-script-handle="<?php echo $data['row']['obj']->handle; ?>"
-	     style="margin-bottom: 12px;"
-	     class="wpacu_exception_options_area_wrap">
-		<div class="wpacu_area_one">
-			<?php if ($isGroupUnloaded) { ?>
-				<strong>Make an exception</strong> and always:
-			<?php } else { ?>
-                <strong>Make an exception</strong> if unloaded and always:
-			<?php } ?>
-		</div>
+<div class="wpacu_exception_options_area_load_exception <?php if (! $anyUnloadRuleSet) { echo 'wpacu_hide'; } ?>">
+    <div data-script-handle="<?php echo $data['row']['obj']->handle; ?>"
+         class="wpacu_exception_options_area_wrap">
+        <fieldset>
+            <legend>Make an exception from any unload rule &amp; <strong>always load it</strong>:</legend>
+
 		<ul class="wpacu_area_two wpacu_asset_options wpacu_exception_options_area">
 			<li id="wpacu_load_it_option_script_<?php echo $data['row']['obj']->handle; ?>">
 				<label><input data-handle="<?php echo $data['row']['obj']->handle; ?>"
@@ -30,8 +25,40 @@ $anyUnloadRuleSet = ($isGroupUnloaded || $data['row']['checked']);
 						<?php if ($data['row']['is_load_exception_per_page']) { ?> checked="checked" <?php } ?>
 						      name="wpacu_scripts_load_it[]"
 						      value="<?php echo $data['row']['obj']->handle; ?>" />
-                    <span>Load it on this page</span></label>
+                    <span>On this page</span></label>
 			</li>
+
+			<?php
+			if ($data['bulk_unloaded_type'] === 'post_type') {
+				// Only show it on edit post/page/custom post type
+				switch ($data['post_type']) {
+					case 'product':
+						$loadBulkText = __('On all WooCommerce "Product" pages', 'wp-asset-clean-up');
+						break;
+					case 'download':
+						$loadBulkText = __('On all Easy Digital Downloads "Download" pages', 'wp-asset-clean-up');
+						break;
+					default:
+						$loadBulkText = sprintf(__('On All Pages of "<strong>%s</strong>" post type', 'wp-asset-clean-up'), $data['post_type']);
+				}
+				?>
+                <li id="wpacu_load_it_post_type_option_script_<?php echo $data['row']['obj']->handle; ?>">
+                    <input type="hidden"
+                           name="wpacu_scripts_load_it_post_type[<?php echo $data['post_type']; ?>][<?php echo $data['row']['obj']->handle; ?>]"
+                           value="" />
+                    <label><input data-handle="<?php echo $data['row']['obj']->handle; ?>"
+                                  id="wpacu_script_load_it_post_type_<?php echo $data['row']['obj']->handle; ?>"
+                                  class="wpacu_load_it_option_post_type wpacu_script wpacu_load_exception"
+                                  type="checkbox"
+							<?php if ($data['row']['is_load_exception_post_type']) { ?> checked="checked" <?php } ?>
+                                  name="wpacu_scripts_load_it_post_type[<?php echo $data['post_type']; ?>][<?php echo $data['row']['obj']->handle; ?>]"
+                                  value="1"/>
+                        <span><?php echo $loadBulkText; ?></span></label>
+                </li>
+				<?php
+			}
+			?>
+
 			<li>
 				<label for="wpacu_load_it_regex_option_script_<?php echo $data['row']['obj']->handle; ?>"><input
 						data-handle="<?php echo $data['row']['obj']->handle; ?>"
@@ -62,9 +89,10 @@ $anyUnloadRuleSet = ($isGroupUnloaded || $data['row']['checked']);
 						<?php if ($isLoadItLoggedIn) { ?> checked="checked" <?php } ?>
                               name="wpacu_load_it_logged_in[scripts][<?php echo $data['row']['obj']->handle; ?>]"
                               value="1"/>
-                    <span>Load it if the user is logged-in</span></label>
+                    <span>If the user is logged-in</span></label>
             </li>
 		</ul>
         <div class="wpacu-clearfix"></div>
+        </fieldset>
 	</div>
 </div>

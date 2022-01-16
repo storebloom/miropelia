@@ -348,9 +348,11 @@ class Reviews {
 		if ( is_array( $current_ratings ) && array() !== $current_ratings ) {
 			foreach ( $current_ratings as $rating ) {
 				if ( isset( $rating['rating'] ) ) {
-					$overall_rating += intval( $rating['rating'] );
-
-					$count++;
+					$the_rating = $this->format_rating(intval( $rating['rating'] ));
+					if ( $the_rating ) {
+						$overall_rating += $the_rating;
+						$count++;
+					}
 				}
 			}
 
@@ -368,14 +370,16 @@ class Reviews {
 	 */
 	public function enqueue_front_scripts() {
 		wp_enqueue_style( "{$this->plugin->assets_prefix}-review" );
-		wp_enqueue_script( "{$this->plugin->assets_prefix}-review" );
-		wp_add_inline_script( "{$this->plugin->assets_prefix}-review", sprintf( 'Review.boot( %s );',
-			wp_json_encode( array(
-				'postid'   => get_the_id(),
-				'approval' => $this->register->review_approval,
-				'nonce'    => wp_create_nonce( $this->plugin->meta_prefix ),
-			) )
-		) );
+		if (!wp_script_is( "{$this->plugin->assets_prefix}-review", 'enqueued' )) {
+			wp_enqueue_script("{$this->plugin->assets_prefix}-review");
+			wp_add_inline_script("{$this->plugin->assets_prefix}-review", sprintf('Review.boot( %s );',
+				wp_json_encode(array(
+					'postid'   => get_the_id(),
+					'approval' => $this->register->review_approval,
+					'nonce'    => wp_create_nonce($this->plugin->meta_prefix),
+				))
+			));
+		}
 	}
 
 	/**
@@ -723,18 +727,22 @@ class Reviews {
 			return;
 		}
 
-		$html  = '<div class="google-review-schema" itemscope itemtype="http://schema.org/Thing">';
-		$html .= '<h2 itemprop="name"> ' . $title . ' </h2>';
-		$html .= '<div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">';
-		$html .= '<div>Rating: ';
-		$html .= '<span itemprop="ratingValue">' . $average . '</span> out of ';
-		$html .= '<span itemprop="bestRating">5</span> with ';
-		$html .= '<span itemprop="ratingCount">' . $count . '</span> ratings';
-		$html .= '</div>';
-		$html .= '</div>';
-		$html .= '</div>';
-
-		return $html;
+		return '<script type="application/ld+json">
+    {
+	   "@context": "https://schema.org/",
+    "@type": "Product",
+    "name": "' . $title . '",
+    "brand": {
+      "@type": "Thing",
+      "name": "' . home_url() . '"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "' . $average . '",
+      "ratingCount": "' . $count . '"
+    }
+    }
+    </script>';
 	}
 
 	/**
@@ -770,5 +778,18 @@ class Reviews {
 		}
 
 		return $final_reviews;
+	}
+
+	/**
+	 * Format rating.
+	 */
+	public function format_rating($rating) {
+		if ( 5 < $rating ) {
+			return 5;
+		} elseif (0 === $rating) {
+			return false;
+		}
+
+		return $rating;
 	}
 }

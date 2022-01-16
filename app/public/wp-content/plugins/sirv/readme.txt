@@ -2,8 +2,9 @@
 Contributors: Sirv
 Donate link: https://sirv.com/
 Tags: compress, optimize, image, resize, CDN
+Requires PHP: 5.6
 Requires at least: 3.0.1
-Tested up to: 5.6
+Tested up to: 5.7.2
 Stable tag: 4.7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -233,6 +234,62 @@ The official [Sirv Help Center](https://sirv.com/help/) is full of easy advice, 
 18. To upload images to your Sirv library, go to the Media Library page within the Sirv sub-menu (in the left navigation column).
 
 == Changelog ==
+
+== 6.3.2 ==
+* Fixed small issue with plugin folder.
+
+== 6.3.1 ==
+* Fixed small issue with plugin folder.
+
+== 6.3.0 ==
+* Added new TTL option to automatically clear product Sirv gallery cache.
+* Fixed issues with captions under images in product gallery.
+* Fixed issue with undefined getBoundingClientRect.
+* Improved CSS sync.
+* Removed some deprecated jQuery methods.
+* Style improvements for WooCommerce options.
+* Small fixes and optimizations.
+
+== 6.2.1 ==
+* Fixed issue with Undefined array key "spinHeight".
+
+== 6.2.0 ==
+* Improved parsing to sync images missing an HTTP(S) protocol.
+* Improved CSS image sync feature.
+* Added ability to search in current folder.
+* Added width/height to responsive and static images, to prevent Cumulative Layout Shift.
+* Improved crop for Sirv images.
+* Added support for rich HTML text captions on galleries.
+* Added ability to show text captions under WooCommerce product galleries with Sirv Media Viewer.
+* Added option to show/hide Sirv Media Viewer product gallery skeleton.
+* Added spin height option when embedding 360 spin in page/post.
+* Added Sirv JS v3 spin options when embedding 360 spin in page/post.
+* Small fixes and improvements.
+
+== 6.1.0 ==
+* Added option to exclude files/folders from CDN sync.
+* Added mobile profile, to apply different product gallery settings on mobiles.
+* Added the hook "sirv_after_product_smv" to mimic the hook "woocommerce_product_thumbnails".
+* Added option to apply CSS styles to product galleries.
+* Removed sirv.js components.
+* Improved compatibility with WPBakery images.
+* Improved and optimized static image parsing.
+* Improved CSS background images feature.
+* Improved handling when frontend Ajax requests images.
+* Fixed issue with multiline caption in Sirv galleries.
+* Improved styling on the settings page.
+* Many small fixes and improvements.
+
+== 6.0.0 ==
+* Plugin tested with the latest WordPress version - 5.7.
+* Recommendation to switch to Sirv JS v3 from Sirv JS v2 before it is deprecated in 6 months.
+* Added new feature to sync CSS background images (beta) and serve them from CDN.
+* Various settings changes and optimizations.
+* Added styles to improve for WooCommerce layout of Sirv Media Viewer.
+* Added new image zoom option for WooCommerce gallery.
+* Added optimizations for WooCommerce product image gallery.
+* Added optimizations for faster content parsing.
+* Small fixes and optimizations.
 
 == 5.8.0 ==
 * Reduced size of plugin autoload options - may require reconnection of Sirv account.

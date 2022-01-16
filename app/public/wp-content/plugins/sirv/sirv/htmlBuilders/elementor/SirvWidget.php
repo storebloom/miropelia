@@ -146,6 +146,24 @@ class SirvWidget extends \Elementor\Widget_Base {
 				}
 			}
 
+
+				if($isResponsive){
+					if ($imageData['img_width'] !== '0') {
+						$this->add_render_attribute('figure__img', 'width', $imageData['img_width']);
+					}
+					if($imageData['img_height'] !== '0'){
+					$this->add_render_attribute('figure__img', 'height', $imageData['img_height']);
+					}
+				}else{
+					$img_size = $this->calcImgSize($imageData['img_width'], $imageData['img_height'], $width);
+					if ($imageData['img_width'] !== '0') {
+						$this->add_render_attribute('figure__img', 'width', $img_size['width']);
+					}
+					if ($imageData['img_height'] !== '0') {
+						$this->add_render_attribute('figure__img', 'height', $img_size['height']);
+					}
+				}
+
 			//$srcAttr = $isResponsive ? 'src="' . $placehodler_grey .'"' : 'src="' . $imageData['modUrl'] . '"';
 			$srcAttr = $isResponsive ? 'src="' . $imageData['origUrl'] . $placeholder_grey_params .'"' : 'src="' . $imageData['modUrl'] . '"';
 			$dataSrcAttr = $isResponsive ? ' data-src="' . $imageData['modUrl'] . '"' : '';
@@ -162,6 +180,23 @@ class SirvWidget extends \Elementor\Widget_Base {
 
 		return $images;
 
+	}
+
+
+	protected function calcImgSize($orig_width, $orig_height, $width){
+		$size = array('width' => $orig_width, 'height' => $orig_height);
+
+			if($width){
+					$size['width'] = $width;
+					$size['height'] = floor( (int)$width * $this->calcProportion($orig_width, $orig_height) );
+			}
+
+    return $size;
+	}
+
+
+	protected function calcProportion($width, $height){
+		return (int)$height / (int)$width;
 	}
 
 	/**

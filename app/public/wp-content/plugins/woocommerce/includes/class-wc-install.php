@@ -157,6 +157,10 @@ class WC_Install {
 			'wc_update_450_sanitize_coupons_code',
 			'wc_update_450_db_version',
 		),
+		'5.0.0' => array(
+			'wc_update_500_fix_product_review_count',
+			'wc_update_500_db_version',
+		),
 	);
 
 	/**
@@ -221,16 +225,17 @@ class WC_Install {
 	/**
 	 * Run an update callback when triggered by ActionScheduler.
 	 *
+	 * @param string $update_callback Callback name.
+	 *
 	 * @since 3.6.0
-	 * @param string $callback Callback name.
 	 */
-	public static function run_update_callback( $callback ) {
+	public static function run_update_callback( $update_callback ) {
 		include_once dirname( __FILE__ ) . '/wc-update-functions.php';
 
-		if ( is_callable( $callback ) ) {
-			self::run_update_callback_start( $callback );
-			$result = (bool) call_user_func( $callback );
-			self::run_update_callback_end( $callback, $result );
+		if ( is_callable( $update_callback ) ) {
+			self::run_update_callback_start( $update_callback );
+			$result = (bool) call_user_func( $update_callback );
+			self::run_update_callback_end( $update_callback, $result );
 		}
 	}
 
@@ -305,6 +310,7 @@ class WC_Install {
 		self::create_files();
 		self::maybe_create_pages();
 		self::maybe_set_activation_transients();
+		self::set_paypal_standard_load_eligibility();
 		self::update_wc_version();
 		self::maybe_update_db_version();
 
@@ -520,7 +526,8 @@ class WC_Install {
 		$held_duration = get_option( 'woocommerce_hold_stock_minutes', '60' );
 
 		if ( '' !== $held_duration ) {
-			wp_schedule_single_event( time() + ( absint( $held_duration ) * 60 ), 'woocommerce_cancel_unpaid_orders' );
+			$cancel_unpaid_interval = apply_filters( 'woocommerce_cancel_unpaid_orders_interval_minutes', absint( $held_duration ) );
+			wp_schedule_single_event( time() + ( absint( $cancel_unpaid_interval ) * 60 ), 'woocommerce_cancel_unpaid_orders' );
 		}
 
 		// Delay the first run of `woocommerce_cleanup_personal_data` by 10 seconds
@@ -597,6 +604,11 @@ class WC_Install {
 			}
 			$subsections = array_unique( array_merge( array( '' ), array_keys( $section->get_sections() ) ) );
 
+			/**
+			 * We are using 'WC_Settings_Page::get_settings' on purpose even thought it's deprecated.
+			 * See the method documentation for an explanation.
+			 */
+
 			foreach ( $subsections as $subsection ) {
 				foreach ( $section->get_settings( $subsection ) as $value ) {
 					if ( isset( $value['default'] ) && isset( $value['id'] ) ) {
@@ -613,9 +625,11 @@ class WC_Install {
 		add_option( 'woocommerce_checkout_highlight_required_fields', 'yes', '', 'yes' );
 		add_option( 'woocommerce_demo_store', 'no', '', 'no' );
 
-		// Define initial tax classes.
-		WC_Tax::create_tax_class( __( 'Reduced rate', 'woocommerce' ) );
-		WC_Tax::create_tax_class( __( 'Zero rate', 'woocommerce' ) );
+		if ( self::is_new_install() ) {
+			// Define initial tax classes.
+			WC_Tax::create_tax_class( __( 'Reduced rate', 'woocommerce' ) );
+			WC_Tax::create_tax_class( __( 'Zero rate', 'woocommerce' ) );
+		}
 	}
 
 	/**
@@ -1326,7 +1340,12 @@ CREATE TABLE {$wpdb->prefix}wc_reserved_stock (
 			'post_content'   => '',
 			'post_status'    => 'inherit',
 		);
-		$attach_id  = wp_insert_attachment( $attachment, $filename );
+
+		$attach_id = wp_insert_attachment( $attachment, $filename );
+		if ( is_wp_error( $attach_id ) ) {
+			update_option( 'woocommerce_placeholder_image', 0 );
+			return;
+		}
 
 		update_option( 'woocommerce_placeholder_image', $attach_id );
 
@@ -1373,7 +1392,7 @@ CREATE TABLE {$wpdb->prefix}wc_reserved_stock (
 		);
 
 		if ( WCConnectionHelper::is_connected() ) {
-			$row_meta['premium_support'] = '<a href="' . esc_url( apply_filters( 'woocommerce_support_url', 'https://woocommerce.com/my-account/tickets/' ) ) . '" aria-label="' . esc_attr__( 'Visit premium customer support', 'woocommerce' ) . '">' . esc_html__( 'Premium support', 'woocommerce' ) . '</a>';
+			$row_meta['premium_support'] = '<a href="' . esc_url( apply_filters( 'woocommerce_support_url', 'https://woocommerce.com/my-account/create-a-ticket/' ) ) . '" aria-label="' . esc_attr__( 'Visit premium customer support', 'woocommerce' ) . '">' . esc_html__( 'Premium support', 'woocommerce' ) . '</a>';
 		}
 
 		return array_merge( $links, $row_meta );
@@ -1615,6 +1634,18 @@ CREATE TABLE {$wpdb->prefix}wc_reserved_stock (
 
 			// Discard feedback.
 			ob_end_clean();
+		}
+	}
+
+	/**
+	 * Sets whether PayPal Standard will be loaded on install.
+	 *
+	 * @since 5.5.0
+	 */
+	private static function set_paypal_standard_load_eligibility() {
+		// Initiating the payment gateways sets the flag.
+		if ( class_exists( 'WC_Gateway_Paypal' ) ) {
+			( new WC_Gateway_Paypal() )->should_load();
 		}
 	}
 }

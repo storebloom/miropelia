@@ -1,9 +1,9 @@
-=== Google Analytics ===
-Contributors: sharethis, scottstorebloom
+=== ShareThis Dashboard for Google Analytics ===
+Contributors: sharethis, scottstorebloom, scottmweaver
 Tags: analytics, google analytics, google analytics plugin, google analytics widget, google analytics dashboard
-Requires at least: 3.8
-Tested up to: 5.5.1
-Stable tag: 2.4.1
+Requires at least: 5.2
+Tested up to: 5.8
+Stable tag: 2.5.2
 
 Use Google Analytics on your Wordpress site without touching any code, and view visitor reports right in your Wordpress admin dashboard!
 
@@ -49,6 +49,20 @@ If you have any questions, please contact us at [support@sharethis.com](mailto:s
 By downloading and installing this plugin, you are agreeing to the [Privacy Policy](http://www.sharethis.com/privacy/) and [Terms of Service](http://www.sharethis.com/publisher-terms-of-use/).
 
 
+**USEFUL GOOGLE ANALYTICS & SEO RESOURCES**
+
+Check out these helpful tutorials and resources for getting the most out of Google Analytics, driving more traffic to your website, and improving your WordPress website’s SEO:
+
+* [Marketer’s Guide to Google Analytics Certification](https://sharethis.com/thought-leadership/2020/02/marketers-guide-to-google-analytics-certification/)
+* [The Ultimate SEO Checklist for Your Website in 2020](https://sharethis.com/best-practices/2020/07/ultimate-seo-checklist/)
+* [WordPress SEO Tips: 12 Tips for Improving Your WordPress Site’s SEO](https://sharethis.com/best-practices/2020/07/wordpress-seo-tips/)
+* [50 SEO Tips & Best Practices to Boost Search Visibility](https://sharethis.com/best-practices/2020/03/seo-tips-and-best-practices/)
+* [6 tips to write blog content that ranks](https://sharethis.com/thought-leadership/2019/01/6-tips-to-write-blog-content-that-ranks/)
+* [10 ways to increase traffic to your website](https://sharethis.com/best-practices/2019/08/10-ways-to-increase-traffic-to-your-website/)
+* [What are Backlinks? A Helpful Guide for Link-Building Beginners](https://sharethis.com/best-practices/2020/04/what-are-backlinks/)
+* [How negative SEO ruin good sites — and how to keep your site lookin’ great](https://sharethis.com/best-practices/2016/11/how-negative-seo-ruin-good-sites/)
+* [How to strategically use share buttons to increase engagement and SEO](https://sharethis.com/best-practices/2017/08/how-to-strategically-use-share-buttons-to-boost-engagement-and-seo/)
+
 == Installation ==
 
 1. Install Google Analytics either via WordPress.org plugin repository or directly by uploading the files to your server
@@ -58,27 +72,38 @@ By downloading and installing this plugin, you are agreeing to the [Privacy Poli
 5. When any of your content takes off you will see the URLs inside the Trending Content section
 
 == Frequently Asked Questions ==
-= Is this plugin compatible with WPML? =
-Yes! We've made adjustments to allow for WPML pages to be tracked properly.
+= Why Do I Need Google Analytics for My WordPress Website? =
+Google Analytics is a powerful tool for monitoring website performance. With Google Analytics, you’ll gain insights such as what geographic areas your visitors are coming from, what channels led them to your website (paid search, social, organic, etc.), what devices they use to browse your site, and what other websites are sending visitors to your site.
+But Google Analytics does much more than simply show you how visitors are finding your website. Once visitors land on your site, Google Analytics can show you what pages they visit, how much time they spend on each page, what links they click, what files they download, what pages are converting visitors to subscribers or buyers, and much more.
+Armed with this data, you can create valuable content perfectly targeted to your visitors’ needs. When you know what topics your visitors search for and spend the most time on when they reach your website, you can create content expanding on or covering related topics to keep them coming back for more.
 
-= Why do I need an SSL certificate to use this plugin? =
-Since the plugin accesses your Google Analytics account your login information is transerfered from our plugin to google.  This needs to be secure so SSL is required to keep your information safe.
+= How Do I Use Google Analytics on WordPress? =
+Using Google Analytics on your WordPress website is a must for monitoring your website’s traffic and gaining valuable visitor insights. There are two ways to use Google Analytics on WordPress:
 
-= Do I need to touch any code to add Google Analytics? =
-Nope, just sign in with google, choose your website, and our plugin will automatically add Google analytics code to all pages.
+* Manually adding the Google Analytics tracking code to your header.php file
+* Installing the Google Analytics Dashboard for WordPress plugin and setting up tracking in a few simple steps
 
-= How do I make sure Google Analytics is properly installed on all pages? =
-If you signed it with google and selected your website (or manually added the property ID) the Google Analytics javascript will be added to all pages. To check what UA code it is adding, just open any page of your website in Chrome, right click to select Inspect, navigate to Network tab, reload the page and search for googleanalytics, you will see the google code with your UA ID. <a href=”https://cl.ly/1q3o2q26261V/[e5b08a5ae1c09684a56ba14c36e6fa5c]_Screen%2520Shot%25202017-02-06%2520at%25201.57.34%2520PM.png” title=”Google Analytics code on the page example”>See example here.</a>
+While some publishers prefer the manual option, installing the Google Analytics Dashboard for WordPress plugin not only makes it easier to configure Google Analytics for your WordPress website by authenticating via Google, but it also provides you with a number of additional convenient features. With the Google Analytics Dashboard for WordPress plugin, you’ll get access to your most important Google Analytics data right within your WordPress dashboard. And that means you can say goodbye to frustrating website analysis that requires constant switching between multiple browser tabs.
 
-= I see broken formatting inside the plugin, for example some buttons are not aligned? =
-This is likely caused by AdBlocker that is blocking anything related to "google analytics". Please disable AdBlocker for your own website or add it to exceptions if you are using Opera.
+= Do I Need to Put Google Analytics Tracking Code on Every Page? =
+Google Analytics tracking code is a block of JavaScript code that executes Google Analytics tracking when a visitor loads a page on your website. The script that triggers these events must be loaded on every page in order for Google Analytics tracking to work.
+That doesn’t mean you need to become an expert in JavaScript code or spend hours manually inserting Google Analytics tracking code on every page of your WordPress website. You can insert the tracking code in your header.php file so that it automatically loads on every page, or you can install the Google Analytics Dashboard for WordPress plugin and follow a few simple steps to get Google Analytics tracking setup in minutes by authenticating with Google.
+Even if you prefer the traditional manual option of adding the UA tracking code to every page, the Google Analytics Dashboard for WordPress plugin makes that process easier, too. Simply click “Manually enter Tracking ID” and paste your Google Tracking code into the box that appears. Then, just click “Save Changes,” and your code will instantly be live on all your pages.  Click here for more details on this process. However, keep in mind that using this option means your dashboards won’t appear, so to get the most from the Google Analytics Dashboard for WordPress plugin, we recommend using the authenticate with Google setup option from our latest update.
 
-= How does that cool "Trending Content" feature work? =
-It learns about your traffic patterns to spot "spikes" of visitors and then sends an alert. If your website doesn't have good amount of visitors you might not see any Trending Content Alerts because the algorithm needs more data to see "trends".
+= How Do I Use Google Analytics for SEO? =
+There are many ways to leverage Google Analytics to improve your WordPress website’s SEO. SEO, or search engine optimization, is the practice of tracking and analyzing website data to improve organic traffic. But tracking traffic and other website metrics alone doesn’t magically improve your SEO. Here are a few ways to leverage all the valuable Google Analytics data to improve your WordPress website’s SEO, start improving your search engine rankings, and growing your website traffic organically:
 
-= I have other questions, where I can get support or provide feedback? =
-If you have any questions please let us know directly at support@sharethis.com or create a new ticket within our WP support portal.
-We are always happy to help.
+* Set up goals and track conversions to monitor performance. If you’re trying to grow your email marketing list, for instance, you can create goals in Google Analytics to monitor how well your opt-in pages or forms are converting visitors. If you’re generating leads for your business, set up goals to track how well your landing pages are performing. If you’re not seeing the conversion rates you’re aiming for, you can revisit your copy or conduct A/B tests to implement targeted improvements.
+* Install the Google Analytics for WordPress plugin to get the most important insights in your WordPress dashboard. With the Google Analytics Dashboard for WordPress plugin, you can monitor important metrics like page views, pages per session, and bounce rate for the past 7 days compared to the previous 7 days. The plugin keeps you up to date on your 10 top-performing web pages or posts based on page views and the top 5 traffic sources that are driving the most visitors to your website, plus it gives you access to age and gender data – all without navigating away from your WordPress dashboard. When you authenticate your Google Analytics account when setting up the plugin, you can exclude all irrelevant traffic (such as administrators and editors) so you get the most accurate insights.
+* Update and promote your top-performing content. With the Google Analytics Dashboard for WordPress plugin, you’ll always be aware of your 10 top-performing pages. While seeing your carefully crafted content getting the attention it deserves is worthy of celebration, don’t pop the cork on that sparkling water or champagne just yet. Leverage that data to promote your best-performing content with social media ads or organic social media posts, or slate those posts for an update to make them even better and draw in even more visitors who stick around to visit more pages on your site. Another way to leverage your top-performing pages data is to create content on topics related to your top-performing posts or content, which can boost repeat visits from the same visitors who helped catapult the original page to top-performer status.
+* Take steps to reduce bounce rate. The Google Analytics Dashboard for WordPress keeps you up-to-date on your website’s bounce rate over a 7-day period compared to the previous 7-day period. If your bounce rate is rising, it’s likely that you have an SEO problem. For instance, if visitors are reaching your site from relevant keywords but aren’t sticking around, you might consider targeting different or longer-tail keywords to better match users’ search intent. Perhaps your content is thin on landing pages and other points of entry, and visitors quickly bounce, thinking that your website isn’t offering the level of information they’re looking for. You can address this issue by creating more effective landing pages and entry pages to capture visitors’ attention in the first few seconds.
+* Try different tactics to improve page views and pages per session. If your bounce rate is creeping up, it’s likely that your page views and pages per session are declining. This issue can be addressed by creating longer-form, data-driven, and highly detailed content to draw visitors in and keep them sticking around. Consider creating pillar content with topic clusters that encourage visitors to explore the deeper levels of your website through strategic linking and use videos and other visuals on your web pages to engage visitors.
+* Keep tabs on top referral sources – and nurture them. The Google Analytics Dashboard for WordPress shows you your website’s top 5 traffic sources that are driving the most visitors to your website. This may seem like it’s just interesting-to-know information, but it’s actually a goldmine. Why? First, you can discover organically earned backlinks that you weren’t previously aware of, and then leverage that information to get more of them. For instance, if an influencer linked to your content, you can reach out to arrange having them guest blog on your website (or vice-versa) to bring in even more traffic or expand your reach to a wider, relevant audience. You can also conduct some research to find other similar influencers or publishers and conduct an outreach campaign to encourage them to link to the same post, arrange guest posting opportunities, or pursue other mutually beneficial partnerships.
+
+= How Do I Stay Compliant with GDPR When Using Google Analytics? =
+When the General Data Protection Regulation (GDPR) was first introduced, website publishers everywhere were fraught with anxiety about what it would mean for their businesses and overwhelmed with the steps they needed to take to ensure compliance. If you’re running third-party tools on your website, such as share buttons and follow buttons or Google Analytics, these tools are likely collecting information about your website visitors – and that means you’re on the hook for GDPR compliance, especially if you get visitors from the EU.
+Fortunately, a number of useful compliance tools emerged to make compliance easier for publishers and businesses of all sizes. Consent Management Platforms (CMPs) are tools designed to inform visitors about the data a website or third-party tool is collecting about them and how that data will be used, provide an opt-in option for users to grant consent to have their data collected (as well as an opt-out option to decline), and communicate the consent status of users and cookies to other vendors operating within the IAB Framework. CMPs also offer transparency to users, providing granular information on the companies their data will be shared with and allowing them to monitor and control who receives their data. Finally, CMPs provide a centralized database for users to review the most up-to-date privacy policies and information related to their data collection.
+If you’re using Google Analytics on your WordPress website or a plugin like the Google Analytics Dashboard for WordPress, you must comply with GDPR. A CMP is the best way to manage the consent process for GDPR compliance. With ShareThis’ GDPR Compliance Tool built right in to the Google Analytics Dashboard for WordPress plugin, you can easily stay on top of getting consent to collect your visitors’ data and provide visitors with clear and valuable information. Our GDPR Compliance Tool is compliant with the IAB’s Transparency & Consent Framework v2.0, meaning it meets the latest standards for transparency in data collection and consent management. Check out our GDPR checklist for publishers & website owners to make sure you’re meeting the requirements or download our GDPR Compliance Guide for detailed information on GDPR compliance with ShareThis’ tools.
 
 == Screenshots ==
 
@@ -88,6 +113,22 @@ We are always happy to help.
 4. Just click to authenticate, then copy the API key and add it to the plugin
 
 == Changelog ==
+
+= 2.5.2
+* Add custom date range selector instead of 7/30-day selector.
+* Add device breakdown under demographics section.
+* Fix security issue for URL in admin.
+* Fix vendors list URL.
+
+= 2.5.1 =
+* Revert array syntax for back compat.
+* Update plugin name for trademark infringement.
+
+= 2.5.0 =
+* Fix enable button on disable all features.
+* Add demographic ad in settings.
+* Add jump link to demographics in dashboard.
+* Add error message for no-demo data.
 
 = 2.4.1 =
 * Fix admin error.

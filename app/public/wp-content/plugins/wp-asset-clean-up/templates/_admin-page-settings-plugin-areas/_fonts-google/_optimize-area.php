@@ -1,5 +1,5 @@
 <?php
-if (! isset($data)) {
+if (! isset($data, $ddOptions)) {
 	exit;
 }
 ?>
@@ -66,8 +66,9 @@ if ($data['google_fonts_remove']) {
 						<li>
 							<code>
 								<?php
+                                $typeAttr = \WpAssetCleanUp\Misc::getScriptTypeAttribute();
 								$asyncWebFontLoaderSnippet = <<<HTML
-&lt;script id='wpacu-google-fonts-async-load' type='text/javascript'&gt;
+&lt;script id='wpacu-google-fonts-async-load' {$typeAttr}&gt;
 WebFontConfig = { google: { families: ['Droid+Sans', 'Inconsolata:bold'] } };
 (function(wpacuD) {
 &nbsp;&nbsp;var wpacuWf = wpacuD.createElement('script'), wpacuS = wpacuD.scripts[0];
@@ -103,7 +104,7 @@ HTML;
 							<code>
 								<?php
 								$asyncPreloadSnippet = <<<HTML
-&lt;link rel="preload" as="style" onload="this.rel='stylesheet'" id="wpacu-combined-google-fonts-css-preload" href="https://fonts.googleapis.com/css?family=Droid+Sans|Inconsolata:bold"&gt;
+&lt;link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" id="wpacu-combined-google-fonts-css-preload" href="https://fonts.googleapis.com/css?family=Droid+Sans|Inconsolata:bold"&gt;
 &lt;noscript&gt;&lt;link rel="stylesheet" id="wpacu-combined-google-fonts-css" href="https://fonts.googleapis.com/css?family=Droid+Sans|Inconsolata:bold"&gt;&lt;/noscript&gt;
 HTML;
 

@@ -87,7 +87,7 @@ if (isset($data['handle_rows_contracted']['styles'][$data['row']['obj']->handle]
 
 		    if (! empty($extraInfo)) {
 		        $spacingAdj = (isset($noSrcLoadedIn) && $noSrcLoadedIn) ? '18px 0 10px' : '2px 0 10px';
-			    echo '<div style="margin: '.$spacingAdj.';">'.implode(' &nbsp;/&nbsp; ', $extraInfo).'</div>';
+			    echo '<div style="margin: '.$spacingAdj.'; display: inline-block;">'.implode(' &nbsp;/&nbsp; ', $extraInfo).'</div>';
 		    }
 	        ?>
 
@@ -122,6 +122,6 @@ if (isset($data['handle_rows_contracted']['styles'][$data['row']['obj']->handle]
 	        include '_asset-style-single-row/_notes.php';
 	        ?>
 	    </div>
-        <img style="display: none;" class="wpacu-ajax-loader" src="<?php echo WPACU_PLUGIN_URL; ?>/assets/icons/icon-ajax-loading-spinner.svg" alt="" />
+        <img style="display: none;" class="wpacu-ajax-loader" src="<?php echo WPACU_PLUGIN_URL; ?>/assets/icons/icon-ajax-loading-spinner.svg" alt="<?php echo __('Loading'); ?>..." />
 	</td>
 </tr>

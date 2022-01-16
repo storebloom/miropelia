@@ -2,15 +2,13 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 import { PaymentMethodIcons } from '@woocommerce/base-components/cart-checkout';
 import Button from '@woocommerce/base-components/button';
 import { CHECKOUT_URL } from '@woocommerce/block-settings';
 import { useCheckoutContext } from '@woocommerce/base-context';
-import {
-	usePaymentMethods,
-	usePositionRelativeToViewport,
-} from '@woocommerce/base-hooks';
+import { usePaymentMethods } from '@woocommerce/base-context/hooks';
+import { usePositionRelativeToViewport } from '@woocommerce/base-hooks';
 
 /**
  * Internal dependencies
@@ -40,6 +38,28 @@ const CheckoutButton = ( { link } ) => {
 	] = usePositionRelativeToViewport();
 	const [ showSpinner, setShowSpinner ] = useState( false );
 	const { paymentMethods } = usePaymentMethods();
+
+	useEffect( () => {
+		// Add a listener to remove the spinner on the checkout button, so the saved page snapshot does not
+		// contain the spinner class. See https://archive.is/lOEW0 for why this is needed for Safari.
+
+		if (
+			typeof global.addEventListener !== 'function' ||
+			typeof global.removeEventListener !== 'function'
+		) {
+			return;
+		}
+
+		const hideSpinner = () => {
+			setShowSpinner( false );
+		};
+
+		global.addEventListener( 'pageshow', hideSpinner );
+
+		return () => {
+			global.removeEventListener( 'pageshow', hideSpinner );
+		};
+	}, [] );
 
 	const submitContainerContents = (
 		<>

@@ -38,10 +38,13 @@ foreach ($allAssets as $obj) {
 	}
 
 	$isLoadExceptionPerPage = isset( $data['load_exceptions']['scripts'] ) && in_array( $row['obj']->handle, $data['load_exceptions']['scripts'] );
+	$isLoadExceptionForCurrentPostType = ( isset( $data['load_exceptions_post_type'] ['scripts'] [$row['obj']->handle] )
+	                                       && $data['load_exceptions_post_type'] ['scripts'] [$row['obj']->handle] );
 
-	$row['is_load_exception_per_page']    = $isLoadExceptionPerPage;
+	$row['is_load_exception_per_page']  = $isLoadExceptionPerPage;
+	$row['is_load_exception_post_type'] = $isLoadExceptionForCurrentPostType;
 
-	$isLoadException = $isLoadExceptionPerPage;
+	$isLoadException = $isLoadExceptionPerPage || $isLoadExceptionForCurrentPostType;
 
 	// No load exception of any kind and a bulk unload rule is applied? Append the CSS class for unloading
 	if ( ! $isLoadException && $row['is_group_unloaded']) {

@@ -37,18 +37,22 @@ class CombineCss
 		global $wp_styles;
 		$wpacuRegisteredStyles = $wp_styles->registered;
 
-		// Speed up processing by getting the already existing final CSS file URI
-		// This will avoid parsing the HTML DOM and determine the combined URI paths for all the CSS files
-		$storageJsonContents = OptimizeCommon::getAssetCachedData(self::$jsonStorageFile, OptimizeCss::getRelPathCssCacheDir(), 'css');
+		$storageJsonContents = array();
+		$skipCache = false; // default
+
+		if (isset($_GET['wpacu_no_cache']) || (defined('WPACU_NO_CACHE') && WPACU_NO_CACHE === true)) {
+			$skipCache = true;
+		}
+
+		// If cache is not skipped, read the information from the cache as it's much faster
+		if (! $skipCache) {
+			// Speed up processing by getting the already existing final CSS file URI
+			// This will avoid parsing the HTML DOM and determine the combined URI paths for all the CSS files
+			$storageJsonContents = OptimizeCommon::getAssetCachedData( self::$jsonStorageFile, OptimizeCss::getRelPathCssCacheDir(), 'css' );
+		}
 
 		// $uriToFinalCssFile will always be relative ONLY within WP_CONTENT_DIR . self::getRelPathCssCacheDir()
 		// which is usually "wp-content/cache/asset-cleanup/css/"
-
-		$skipCache = false; // default
-
-		if (isset($_GET['wpacu_no_cache'])) {
-			$skipCache = true;
-		}
 
 		if ( $skipCache || empty($storageJsonContents) ) {
 			$storageJsonContentsToSave = array();
@@ -84,6 +88,20 @@ class CombineCss
 					if (isset($linkAttributes['rel'], $linkAttributes['href']) && $linkAttributes['href']) {
 						$href = (string) $linkAttributes['href'];
 
+						if (self::skipCombine($linkAttributes['href'])) {
+							continue;
+						}
+
+						// e.g. for 'admin-bar' (keep it as standalone when critical CSS is used)
+						if (isset($linkAttributes['data-wpacu-skip-preload']) && has_filter('wpacu_critical_css')) {
+							continue;
+						}
+
+						// Check if the CSS file has any 'data-wpacu-skip' attribute; if it does, do not alter it
+						if (isset($linkAttributes['data-wpacu-skip']) || isset($scriptAttributes['data-wpacu-apply-media-query'])) {
+							continue;
+						}
+
 						// Separate each combined group by the "media" attribute; e.g. we don't want "all" and "print" mixed
 						$mediaValue = (array_key_exists('media', $linkAttributes) && $linkAttributes['media']) ? $linkAttributes['media'] : 'all';
 
@@ -93,15 +111,6 @@ class CombineCss
 						    $linkAttributes['data-wpacu-style-handle'] &&
 						    ObjectCache::wpacu_cache_get($linkAttributes['data-wpacu-style-handle'], 'wpacu_basic_preload_handles')) {
 							$mediaValue = 'wpacu_preload_basic_' . $mediaValue;
-						}
-
-						// Check if the CSS file has any 'data-wpacu-skip' attribute; if it does, do not alter it
-						if (isset($linkAttributes['data-wpacu-skip'])) {
-							continue;
-						}
-
-						if (self::skipCombine($linkAttributes['href'])) {
-							continue;
 						}
 
 						// Make the right reference for later use
@@ -133,9 +142,20 @@ class CombineCss
 								$styleExtra = $wpacuRegisteredStyles[$linkAttributes['data-wpacu-style-handle']]->extra;
 							}
 
-							$combinedUriPathsGroup[$mediaValue][]      = OptimizeCommon::getSourceRelPath($href);
+							$sourceRelPath = OptimizeCommon::getSourceRelPath($href);
+
+							$alreadyAddedSourceRelPath = isset($combinedUriPathsGroup[$mediaValue]) && in_array($sourceRelPath, $combinedUriPathsGroup[$mediaValue]);
+							if (! $alreadyAddedSourceRelPath) {
+								$combinedUriPathsGroup[$mediaValue][] = $sourceRelPath;
+							}
+
 							$localAssetsPathsGroup[$mediaValue][$href] = $localAssetPath;
-							$linkHrefsGroup[$mediaValue][]             = $href;
+
+							$alreadyAddedHref = isset($linkHrefsGroup[$mediaValue]) && in_array($href, $linkHrefsGroup[$mediaValue]);
+							if (! $alreadyAddedHref) {
+								$linkHrefsGroup[$mediaValue][] = $href;
+							}
+
 							$localAssetsExtraGroup[$mediaValue][$href] = $styleExtra;
 						}
 					}
@@ -156,11 +176,9 @@ class CombineCss
 					$linkHrefs = $linkHrefsGroup[$mediaValue];
 					$localAssetsExtra = array_filter($localAssetsExtraGroup[$mediaValue]);
 
-					$shaOneForCombinedCss = self::generateShaOneForCombinedCss($combinedUriPaths, $localAssetsExtra);
-
 					$maybeDoCssCombine = self::maybeDoCssCombine(
-						$shaOneForCombinedCss,
-						$localAssetsPaths, $linkHrefs,
+						$localAssetsPaths,
+						$linkHrefs,
 						$localAssetsExtra,
 						$docLocationTag
 					);
@@ -368,7 +386,7 @@ HTML;
 	public static function skipCombine($href)
 	{
 		$regExps = array(
-			'#/wp-content/bs-booster-cache/#',
+			'#/wp-content/bs-booster-cache/#'
 		);
 
 		if (Main::instance()->settings['combine_loaded_css_exceptions'] !== '') {
@@ -391,7 +409,9 @@ HTML;
 		}
 
 		foreach ($regExps as $regExp) {
-			if ( preg_match( $regExp, $href ) ) {
+			$regExp = Misc::purifyRegexValue($regExp);
+
+			if ( @preg_match( $regExp, $href ) || ( strpos($href, $regExp) !== false ) ) {
 				// Skip combination
 				return true;
 			}
@@ -401,7 +421,6 @@ HTML;
 	}
 
 	/**
-	 * @param $shaOneForCombinedCss
 	 * @param $localAssetsPaths
 	 * @param $linkHrefs
 	 * @param $localAssetsExtra
@@ -409,30 +428,25 @@ HTML;
 	 *
 	 * @return array
 	 */
-	public static function maybeDoCssCombine($shaOneForCombinedCss, $localAssetsPaths, $linkHrefs, $localAssetsExtra, $docLocationTag)
+	public static function maybeDoCssCombine($localAssetsPaths, $linkHrefs, $localAssetsExtra, $docLocationTag)
 	{
-		$uriToFinalCssFile = $docLocationTag . '-' .$shaOneForCombinedCss . '.css';
-		$localFinalCssFile = WP_CONTENT_DIR . OptimizeCss::getRelPathCssCacheDir() . $uriToFinalCssFile;
-
 		// Only combine if $shaOneCombinedUriPaths.css does not exist
 		// If "?ver" value changes on any of the assets or the asset list changes in any way
 		// then $shaOneCombinedUriPaths will change too and a new CSS file will be generated and loaded
-		$skipIfFileExists = true;
 
-		if ($skipIfFileExists || ! is_file($localFinalCssFile)) {
-			// Change $finalCombinedCssContent as paths to fonts and images that are relative (e.g. ../, ../../) have to be updated + other optimization changes
-			$finalCombinedCssContent = '';
+		// Change $finalCombinedCssContent as paths to fonts and images that are relative (e.g. ../, ../../) have to be updated + other optimization changes
+			$uriToFinalCssFile = $localFinalCssFile = $finalCombinedCssContent = '';
 
 			foreach ($localAssetsPaths as $assetHref => $localAssetsPath) {
 				if ($cssContent = trim(FileSystem::file_get_contents($localAssetsPath, 'combine_css_imports'))) {
 					$pathToAssetDir = OptimizeCommon::getPathToAssetDir($assetHref);
 
 					// Does it have a source map? Strip it
-					if (strpos($cssContent, 'sourceMappingURL') !== false) {
-						$cssContent = OptimizeCommon::stripSourceMap($cssContent);
+					if (strpos($cssContent, '/*# sourceMappingURL=') !== false) {
+						$cssContent = OptimizeCommon::stripSourceMap($cssContent, 'css');
 					}
 
-					$finalCombinedCssContent .= '/*! '.str_replace(ABSPATH, '/', $localAssetsPath)." */\n";
+					$finalCombinedCssContent .= '/*!'.str_replace(ABSPATH, '/', $localAssetsPath)."*/\n";
 					$finalCombinedCssContent .= OptimizeCss::maybeFixCssContent($cssContent, $pathToAssetDir . '/') . "\n";
 
 					$finalCombinedCssContent = self::appendToCombineCss($localAssetsExtra, $assetHref, $pathToAssetDir, $finalCombinedCssContent);
@@ -449,45 +463,22 @@ HTML;
 			$finalCombinedCssContent = apply_filters('wpacu_local_fonts_display_css_output', $finalCombinedCssContent, Main::instance()->settings['local_fonts_display']);
 
 			if ($finalCombinedCssContent) {
-				FileSystem::file_put_contents($localFinalCssFile, $finalCombinedCssContent);
+				$finalCombinedCssContent = trim($finalCombinedCssContent);
+				$shaOneForCombinedCss = sha1($finalCombinedCssContent);
+
+				$uriToFinalCssFile = $docLocationTag . '-' .$shaOneForCombinedCss . '.css';
+				$localFinalCssFile = WP_CONTENT_DIR . OptimizeCss::getRelPathCssCacheDir() . $uriToFinalCssFile;
+
+				if (! is_file($localFinalCssFile)) {
+					FileSystem::file_put_contents($localFinalCssFile, $finalCombinedCssContent);
+				}
 			}
-		}
 
 		return array(
 			'uri_final_css_file'   => $uriToFinalCssFile,
 			'local_final_css_file' => $localFinalCssFile,
 			'link_hrefs'           => $linkHrefs
 		);
-	}
-
-	/**
-	 * @param $combinedUriPaths
-	 * @param $localAssetsExtra
-	 *
-	 * @return string
-	 */
-	public static function generateShaOneForCombinedCss($combinedUriPaths, $localAssetsExtra)
-	{
-		$finalShaOneContent = implode('', $combinedUriPaths);
-
-		// Is '_combine_loaded_css_append_handle_extra' turned ON?
-		if ( OptimizeCommon::appendInlineCodeToCombineAssetType('css') && ! empty($localAssetsExtra) ) {
-			$afterContentForAll = '';
-
-			foreach ($localAssetsExtra as $values) {
-				if (isset($values['after']) && $values['after']) {
-					if (is_array($values['after'])) {
-						$afterContentForAll .= implode('', $values['after']);
-					} else {
-						$afterContentForAll .= $values['after'];
-					}
-				}
-			}
-
-			$finalShaOneContent .= $afterContentForAll;
-		}
-
-		return sha1($finalShaOneContent);
 	}
 
 	/**
@@ -510,7 +501,7 @@ HTML;
 			}
 
 			if (trim($afterCssContent)) {
-				if ( Main::instance()->settings['minify_loaded_css'] && Main::instance()->settings['minify_loaded_css_inline'] ) {
+				if (MinifyCss::isMinifyCssEnabled() && in_array(Main::instance()->settings['minify_loaded_css_for'], array('inline', 'all'))) {
 					$afterCssContent = MinifyCss::applyMinification( $afterCssContent );
 				}
 

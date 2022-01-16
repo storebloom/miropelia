@@ -1,9 +1,9 @@
 /* Here you can add styles for use on the frontend*/
 
 .sirv-flx{
-            display: flex;
-            width: 100%;
-        }
+    display: flex;
+    width: 100%;
+}
 
 .sirv-inln-flx{
     display: inline-flex;
@@ -15,6 +15,7 @@
     align-items: center;
     justify-content: center;
     text-align: center;
+    margin: 0;
 }
 
 .sirv-img-container__link{
@@ -37,7 +38,7 @@ figure.sirv-img-container{
 }
 
 .elementor figure.sirv-img-container{
-    padding: 5px;
+    padding: 5px 0;
 }
 
 .elementor figure.sirv-img-container.aligncenter{

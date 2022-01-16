@@ -32,7 +32,7 @@ class OptimizeCommon
 	/**
 	 * @var float|int
 	 */
-	public static $cachedAssetFileExpiresIn = 28800; // 8 hours in seconds (60 * 60 * 8)
+	public static $cachedAssetFileExpiresIn = 86400; // 1 day in seconds
 
 	/**
 	 * @var array
@@ -95,6 +95,10 @@ class OptimizeCommon
 		});
 
 		// Make sure HTML changes are applied to cached pages from "Cache Enabler" plugin
+		add_filter('cache_enabler_before_store', static function($htmlSource) {
+			return self::alterHtmlSource($htmlSource); // deprecated, include it in case other users have an older version of "Cache Enabler"
+		}, 1, 1);
+
 		add_filter('cache_enabler_page_contents_before_store', static function($htmlSource) {
 			return self::alterHtmlSource($htmlSource);
 		}, 1, 1);
@@ -207,9 +211,9 @@ class OptimizeCommon
 
 		// This is useful to avoid changing the DOM via wp_loaded action hook
 		// In order to check how fast the page loads without the DOM changes (for debugging purposes)
-		$wpacuNoHtmlChanges = array_key_exists( 'wpacu_no_html_changes', $_GET );
+		$wpacuNoHtmlChanges = array_key_exists( 'wpacu_no_html_changes', $_GET ) || ( defined('WPACU_NO_HTML_CHANGES') && WPACU_NO_HTML_CHANGES );
 
-		if ( $wpacuNoHtmlChanges || Plugin::preventAnyChanges() ) {
+		if ( $wpacuNoHtmlChanges || Plugin::preventAnyFrontendOptimization() ) {
 			/* [wpacu_timing] */ Misc::scriptExecTimer( 'alter_html_source', 'end' ); /* [/wpacu_timing] */
 			return $htmlSource;
 		}
@@ -435,7 +439,7 @@ class OptimizeCommon
 	public static function doCombineIsRegularPage()
 	{
 		// In particular situations, do not process this
-		if (strpos($_SERVER['REQUEST_URI'], '/wp-content/plugins/') !== false
+		if (strpos($_SERVER['REQUEST_URI'], '/'.Misc::getPluginsDir().'/') !== false
 		    && strpos($_SERVER['REQUEST_URI'], '/wp-content/themes/') !== false) {
 			return false;
 		}
@@ -990,7 +994,7 @@ class OptimizeCommon
 		$skipFiles       = array('index.php', '.htaccess');
 		$fileExtToRemove = array('.json', '.css', '.js');
 
-		$clearFilesOlderThan = Main::instance()->settings['clear_cached_files_after']; // days
+		$clearFilesOlderThanXDays = Main::instance()->settings['clear_cached_files_after']; // days
 
 		$assetCleanUpCacheDir = WP_CONTENT_DIR . self::getRelPathPluginCacheDir();
 		$storageDir           = $assetCleanUpCacheDir . '_storage';
@@ -1010,6 +1014,8 @@ class OptimizeCommon
 
 		if (is_dir($assetCleanUpCacheDir)) {
 			$storageEmptyDirs = $allClearableAssets = $allAssetsToKeep = array();
+
+			$mostRecentCachedAssets = self::getMostRecentCachedAssets();
 
 			$siteHost = parse_url(site_url(), PHP_URL_HOST);
 			$siteUri = parse_url(site_url(), PHP_URL_PATH);
@@ -1045,8 +1051,23 @@ class OptimizeCommon
 						$isJsonFile = ( $fileExt === '.json' );
 						$isAssetFile = in_array( $fileExt, array( '.css', '.js' ) );
 
-						// Remove all JSONs and .css & .js ONLY if they are older than $clearFilesOlderThan
-						if ( $isJsonFile || ( $isAssetFile && ( strtotime( '-' . $clearFilesOlderThan . ' days' ) > $fileMtime ) ) ) {
+						// Remove all JSONs & .css & .js (depending on other things as well) ONLY if they are older than (self::$cachedAssetFileExpiresIn + $clearFilesOlderThanXDays) days
+						$clearOlderThanInSeconds = self::$cachedAssetFileExpiresIn;
+
+						if ($clearFilesOlderThanXDays > 0) {
+							$clearOlderThanInSeconds += (86400 * $clearFilesOlderThanXDays);
+						}
+
+						// Conditions to delete the cached CSS/JS file:
+						// 1) It's older than $clearOlderThanInSeconds since its content was modified
+						// 2) It's not within the most recent cached files from /_storage/_recent_items/ (the latest cached assets should always be kept)
+
+						// $clearFilesOlderThanXDays is taken from "Settings" -> "Plugin Usage Preferences" -> "Clear previously cached CSS/JS files older than (x) days"
+						$isAssetFileToClear = ( $isAssetFile &&
+						                        ( strtotime( '-' . $clearOlderThanInSeconds . ' seconds' ) > $fileMtime ) &&
+						                        (! in_array($item, $mostRecentCachedAssets)) );
+
+						if ( $isJsonFile || $isAssetFileToClear ) {
 							if ( $isJsonFile ) {
 								// Clear the JSON files as new ones will be generated
 								@unlink($item);
@@ -1055,14 +1076,7 @@ class OptimizeCommon
 								// [/clear output]
 							}
 
-							if ( $isAssetFile ) {
-								// Keep current active CSS/JS files created less than self::$cachedAssetFileExpiresIn ago
-								$isNotOlderThanDefaultTime = $fileMtime > strtotime('-' . self::$cachedAssetFileExpiresIn . ' seconds');
-
-								if ($isNotOlderThanDefaultTime) {
-									continue;
-								}
-
+							if ( $isAssetFileToClear ) {
 								$allClearableAssets[] = $item;
 							}
 						}
@@ -1174,7 +1188,7 @@ SQL;
 
 					$fullPathToFile = $assetsInlineTagsContentDir . $assetFile;
 
-					$isExpired = ( filemtime( $fullPathToFile ) < ( time() - 1 * self::$cachedAssetFileExpiresIn ) );
+					$isExpired = ( ( time() - 1 * self::$cachedAssetFileExpiresIn ) > filemtime( $fullPathToFile ) );
 
 					if ( $isExpired ) {
 						@unlink( $fullPathToFile );
@@ -1220,7 +1234,6 @@ SQL;
 
 		// [START - Clear cache for other plugins if they are enabled]
 		do_action('cache_enabler_clear_complete_cache'); // Cache Enabler
-
 		// [END - Clear cache for other plugins if they are enabled]
 
 		set_transient('wpacu_last_clear_cache', time());
@@ -1251,7 +1264,7 @@ SQL;
 	 */
 	public static function clearOtherPluginsCache()
 	{
-		if (Misc::isPluginActive('autoptimize/autoptimize.php')
+		if ( assetCleanUpClearAutoptimizeCache() && Misc::isPluginActive('autoptimize/autoptimize.php')
 		    && class_exists('\autoptimizeCache')
 		    && method_exists('\autoptimizeCache', 'clearall')) {
 			\autoptimizeCache::clearall();
@@ -1391,12 +1404,32 @@ SQL;
 
 	/**
 	 * @param $assetContent
+	 * @param $forAssetType
 	 *
-	 * @return mixed
+	 * @return string|string[]
 	 */
-	public static function stripSourceMap($assetContent)
+	public static function stripSourceMap($assetContent, $forAssetType)
 	{
-		return str_replace('# sourceMappingURL=', '# Original Source Map: ', $assetContent);
+		if ($forAssetType === 'css') {
+			$sourceMappingURLStr = '/*# sourceMappingURL=';
+			$sourceMappingURLStrReplaceStart = '/*';
+		} else {
+			$sourceMappingURLStr = '//# sourceMappingURL=';
+			$sourceMappingURLStrReplaceStart = '//';
+		}
+
+		$assetContent = trim($assetContent);
+
+		if (strpos($assetContent, "\n") !== false) {
+			$allContentLines = explode("\n", $assetContent);
+			$lastContentLine = end($allContentLines);
+
+			if (strpos($lastContentLine, $sourceMappingURLStr) !== false) {
+				return str_replace( $sourceMappingURLStr, $sourceMappingURLStrReplaceStart.'# Current File Updated by '.WPACU_PLUGIN_TITLE.' - Original Source Map: ', $assetContent );
+			}
+		}
+
+		return $assetContent;
 	}
 
 	/**
@@ -1522,6 +1555,55 @@ SQL;
 				'item'
 			);
 		}
+
+		self::markMostRecentAssetFile($transient, $value);
+	}
+
+	/**
+	 * The transient is re-created, thus, a possible new file name will be attached to the cached handle
+	 * Record it to avoid deleting it later on when the whole caching is cleared
+	 *
+	 * @param $transient
+	 * @param $value
+	 */
+	public static function markMostRecentAssetFile($transient, $value)
+	{
+		if ((strpos($transient, 'wpacu_css_optimize_') !== false) || (strpos($transient, 'wpacu_js_optimize_') !== false)) {
+			$recentItemStorageDir = WP_CONTENT_DIR . self::getRelPathPluginCacheDir() . '_storage/_recent_items/';
+
+			$assetType = (strpos($transient, '_css_') !== false) ? 'css' : 'js';
+
+			$valueDecoded = @json_decode($value, ARRAY_A);
+
+			if ( isset( $valueDecoded['optimize_uri'] ) && $valueDecoded['optimize_uri'] && (strrchr( $valueDecoded['optimize_uri'], '.' ) === '.'.$assetType) ) {
+				$handleDbStr = str_replace( 'wpacu_' . $assetType . '_optimize_', '', $transient );
+				FileSystem::file_put_contents(
+					$recentItemStorageDir . 'file-handle-' . $assetType . '-'. md5( $handleDbStr ) . '.txt',
+					$valueDecoded['optimize_uri']
+				);
+			}
+		}
+	}
+
+	/**
+	 * @return array
+	 */
+	public static function getMostRecentCachedAssets()
+	{
+		$itemRecentAssetsStorageDir = WP_CONTENT_DIR . self::getRelPathPluginCacheDir() . '_storage/_recent_items/';
+
+		$mostRecentCachedAssets = array();
+
+		$patternToUse = $itemRecentAssetsStorageDir.'file-handle-*.txt';
+
+		$mostRecentCachedAssetsInfoList = glob($patternToUse);
+		if ( ! empty($mostRecentCachedAssetsInfoList) ) {
+			foreach ( $mostRecentCachedAssetsInfoList as $fileFullPath ) {
+				$mostRecentCachedAssets[] = trim(FileSystem::file_get_contents($fileFullPath));
+			}
+		}
+
+		return $mostRecentCachedAssets;
 	}
 
 	/**
@@ -1592,6 +1674,14 @@ SQL;
 
 		$dirToFilename = str_replace('//', '/', $dirToFilename);
 
+		$clearOlderThanInSeconds = self::$cachedAssetFileExpiresIn;
+
+		$clearFilesOlderThanXDays = Main::instance()->settings['clear_cached_files_after'];
+
+		if ($clearFilesOlderThanXDays > 0) {
+			$clearOlderThanInSeconds += (86400 * $clearFilesOlderThanXDays);
+		}
+
 		if (is_dir($dirToFilename)) {
 			$filesInDir = scandir($dirToFilename);
 
@@ -1605,15 +1695,9 @@ SQL;
 
 					if (strrchr($wpacuFile, '.') === '.json' && is_file($pathToFile)) {
 						if ($checkTiming) {
-							$cachedAssetsFileExpiresIn = false;
+							$isExpired = ( strtotime( '-' . $clearOlderThanInSeconds . ' seconds' ) > filemtime($pathToFile) );
 
-							if (strpos($wpacuFile, 'css') === 0 || strpos($wpacuFile, 'js') === 0) {
-								$cachedAssetsFileExpiresIn = self::$cachedAssetFileExpiresIn;
-							}
-
-							$isExpired = (filemtime($pathToFile) < (time() - 1 * $cachedAssetsFileExpiresIn));
-
-							if ($cachedAssetsFileExpiresIn && ! $isExpired) {
+							if (! $isExpired) {
 								// Not expired yet, do not remove it by skipping this loop
 								continue;
 							}

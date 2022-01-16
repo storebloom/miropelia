@@ -2,7 +2,7 @@
 /*
  * Plugin Name: Asset CleanUp: Page Speed Booster
  * Plugin URI: https://wordpress.org/plugins/wp-asset-clean-up/
- * Version: 1.3.7.3
+ * Version: 1.3.8.0
  * Description: Unload Chosen Scripts & Styles from Posts/Pages to reduce HTTP Requests, Combine/Minify CSS/JS files
  * Author: Gabe Livan
  * Author URI: http://gabelivan.com/
@@ -27,7 +27,7 @@ if ( (defined('WPACU_PRO_NO_LITE_NEEDED') && WPACU_PRO_NO_LITE_NEEDED !== false 
 
 // Is the Pro version triggered before the Lite one and are both plugins active?
 if (! defined('WPACU_PLUGIN_VERSION')) {
-	define('WPACU_PLUGIN_VERSION', '1.3.7.3');
+	define('WPACU_PLUGIN_VERSION', '1.3.8.0');
 }
 
 // Exit if accessed directly
@@ -116,7 +116,7 @@ if (WPACU_GET_LOADED_ASSETS_ACTION === true || ! is_admin()) {
 	add_action('parse_query', static function() { // very early triggering to set WPACU_ALL_ACTIVE_PLUGINS_LOADED
 		if (defined('WPACU_ALL_ACTIVE_PLUGINS_LOADED')) { return; } // only trigger it once in this action
 		define('WPACU_ALL_ACTIVE_PLUGINS_LOADED', true);
-		\WpAssetCleanUp\Plugin::preventAnyChanges();
+		\WpAssetCleanUp\Plugin::preventAnyFrontendOptimization('parse_query');
 	}, 1);
 
 	require_once WPACU_PLUGIN_DIR . '/vendor/autoload.php';
@@ -144,7 +144,7 @@ add_action('setup_theme', static function() {
 		// /{feed_slug_here}/ or /{feed_slug_here}/atom/
 		if ($cleanCurrentPageUrl === site_url().'/'.$wp_rewrite->feed_base.'/'
 		    || $cleanCurrentPageUrl === site_url().'/'.$wp_rewrite->feed_base.'/atom/') {
-			\WpAssetCleanUp\Plugin::preventAnyChanges();
+			\WpAssetCleanUp\Plugin::preventAnyFrontendOptimization();
 		}
 	}
 });

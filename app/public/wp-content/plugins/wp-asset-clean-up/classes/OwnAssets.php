@@ -40,6 +40,7 @@ class OwnAssets
 	    add_filter('wpacu_object_data', static function($wpacu_object_data) {
 		    $wpacu_object_data['source_load_error_msg'] = __('The source might not be reachable', 'wp-asset-clean-up');
 		    $wpacu_object_data['plugin_id'] = WPACU_PLUGIN_ID;
+		    $wpacu_object_data['plugin_title'] = WPACU_PLUGIN_TITLE;
 		    $wpacu_object_data['ajax_url']  = admin_url('admin-ajax.php');
 		    $wpacu_object_data['is_frontend_view'] = false;
 
@@ -57,12 +58,21 @@ class OwnAssets
 			    $wpacu_object_data['page_url'] = str_replace('http://', 'https://', $wpacu_object_data['page_url']);
 		    }
 
+		    // After the CSS/JS manager's form is submitted (e.g. on an edit post/page)
+            $wpacu_object_data['wpacu_ajax_preload_url_nonce'] = wp_create_nonce('wpacu_ajax_preload_url_nonce');
+
+		    // Check file size AJAX
+		    $wpacu_object_data['wpacu_ajax_check_remote_file_size_nonce'] = wp_create_nonce('wpacu_ajax_check_remote_file_size_nonce');
+
+		    // Check external source status (e.g. 200 OK or not)
+            $wpacu_object_data['wpacu_ajax_check_external_urls_nonce'] = wp_create_nonce('wpacu_ajax_check_external_urls_nonce');
+
             $wpacu_object_data['jquery_unload_alert'] = 'jQuery library is a WordPress library that it is used in WordPress plugins/themes most of the time.'."\n\n".
                                         'There are currently other JavaScript "children" files connected to it, that will stop working, if this library is unloaded'."\n\n".
                                         'If you are positive this page does not require jQuery (very rare cases), then you can continue by pressing "OK"'."\n\n".
                                         'Otherwise, it is strongly recommended to keep this library loaded by pressing "Cancel" to avoid breaking the functionality of the website.';
             // js-cookie
-		    $wpacu_object_data['woo_js_cookie_unload_alert'] = 'Please be careful when unloading "js-cookie" as there are other JS files depending on it that will also be unloaded, including "wc-cart-fragments" which is required for the functionality of the WooCommerce mini cart.'."\n\n".
+		    $wpacu_object_data['woo_js_cookie_unload_alert'] = 'Please be careful when unloading "js-cookie" as there are other JS files that depend on it which will also be unloaded, including "wc-cart-fragments" which is required for the functionality of the WooCommerce mini cart.'."\n\n".
                                                         'Click "OK" to continue or "Cancel" if you have any doubts about unloading this file';
 
 		    // wc-cart-fragments
@@ -121,6 +131,11 @@ class OwnAssets
                     '</strong>'
             );
 
+            /*
+             * Whether to clear Autoptimize Cache or not (if the plugin is enabled)
+             */
+            $wpacu_object_data['clear_autoptimize_cache'] = assetCleanUpClearAutoptimizeCache() ? 'true' : 'false';
+
 		    return $wpacu_object_data;
         });
     }
@@ -132,7 +147,13 @@ class OwnAssets
 	{
 		if (is_admin_bar_showing()) {
 			?>
-            <style type="text/css" data-wpacu-own-inline-style="true">
+            <style <?php echo Misc::getStyleTypeAttribute(); ?> data-wpacu-own-inline-style="true">
+                #wp-admin-bar-assetcleanup-asset-unload-rules-css-default,
+                #wp-admin-bar-assetcleanup-asset-unload-rules-js-default {
+                    overflow-y: auto;
+                    max-height: calc(100vh - 250px);
+                }
+
                 #wp-admin-bar-assetcleanup-parent span.dashicons {
                     width: 15px;
                     height: 15px;
@@ -177,16 +198,23 @@ class OwnAssets
 	public function inlineAdminHeadCode()
 	{
 		?>
-        <style type="text/css" data-wpacu-own-inline-style="true">
+        <style <?php echo Misc::getStyleTypeAttribute(); ?> data-wpacu-own-inline-style="true">
             <?php
-            if ( Misc::isPluginActive('WPShapere/wpshapere.php') ) {
+            // For the main languages, leave the style it was always set as it worked well
+            $applyDefaultStyleForCurrentLang = (strpos(get_locale(), 'en_') !== false)
+                || (strpos(get_locale(), 'es_') !== false)
+                || (strpos(get_locale(), 'fr_') !== false)
+                || (strpos(get_locale(), 'de_') !== false);
+
+            if ( (! $applyDefaultStyleForCurrentLang) || Misc::isPluginActive('WPShapere/wpshapere.php') ) {
+                // This would also work well if the language is Arabic (the text shown right to left)
             ?>
                 /* Compatibility with "Wordpress Admin Theme - WPShapere" plugin - make sure Asset CleanUp's icon is not misaligned */
-                .menu-top.toplevel_page_wpassetcleanup_getting_started .wp-menu-image > img { width: 26px; }
+                .menu-top.toplevel_page_wpassetcleanup_getting_started .wp-menu-image > img { width: 26px; height: auto; }
             <?php
             } else {
             ?>
-                .menu-top.toplevel_page_wpassetcleanup_getting_started .wp-menu-image > img { width: 26px; position: absolute; left: 8px; top: -4px; }
+                .menu-top.toplevel_page_wpassetcleanup_getting_started .wp-menu-image > img { width: 26px; height: auto; position: absolute; left: 8px; top: -4px; }
             <?php
             }
 
@@ -398,7 +426,7 @@ class OwnAssets
 	private function enqueueAdminStyles()
     {
         $styleRelPath = '/assets/style.min.css';
-        wp_enqueue_style( WPACU_PLUGIN_ID . '-style', plugins_url($styleRelPath, WPACU_PLUGIN_FILE), array(), $this->_assetVer($styleRelPath));
+        wp_enqueue_style( WPACU_PLUGIN_ID . '-style', plugins_url($styleRelPath, WPACU_PLUGIN_FILE), array(), self::assetVer($styleRelPath));
     }
 
 	/**
@@ -408,21 +436,34 @@ class OwnAssets
     {
 		global $post, $pagenow;
 
+	    $postId = 0; // default
 		$page = Misc::getVar('get', 'page');
 	    $pageRequestFor = Misc::getVar('get', 'wpacu_for') ?: 'homepage';
 
-	    // Is within the Dashboard (edit post/page mode)?
-		$getPostId = (isset($_GET['post'], $_GET['action']) && $_GET['action'] === 'edit' && $pagenow === 'post.php') ? (int)$_GET['post'] : '';
+	    // The admin is in a page such as /wp-admin/post.php?post=[POST_ID_HERE]&action=edit
+	    $isPostIdFromEditPostPage = (isset($_GET['post'], $_GET['action']) && $_GET['action'] === 'edit' && $pagenow === 'post.php') ? (int)$_GET['post'] : '';
+        $isDashAssetsManagerPage  = ($page === WPACU_PLUGIN_ID . '_assets_manager');
 
-		$postId = isset($post->ID) ? $post->ID : 0;
+        if ($isDashAssetsManagerPage) {
+	        if ( $pageRequestFor === 'homepage' ) {
+		        $postId = 0; // default
 
-		if ($getPostId > 0 && $getPostId !== $postId) {
-			$postId = $getPostId;
-		}
+		        // Homepage tab / Check if the home page is one of the singular pages
+		        $pageOnFront = (int) get_option( 'page_on_front' );
 
-		if (($page === WPACU_PLUGIN_ID . '_assets_manager' && $pageRequestFor === 'homepage') || $postId < 1) {
-			$postId = 0; // for home page
-		}
+		        if ( $pageOnFront && $pageOnFront > 0 ) {
+			        $postId = $pageOnFront;
+		        }
+	        } elseif ( in_array( $pageRequestFor, array( 'posts', 'pages', 'custom-post-types', 'media-attachment' ) ) && isset( $_GET['wpacu_post_id'] ) && $_GET['wpacu_post_id'] ) {
+		        $postId = Misc::getVar( 'get', 'wpacu_post_id' ) ?: 0;
+	        }
+        } else {
+		    $postId = isset($post->ID) ? $post->ID : 0;
+
+		    if ($isPostIdFromEditPostPage > 0 && $isPostIdFromEditPostPage !== $postId) {
+			    $postId = $isPostIdFromEditPostPage;
+		    }
+	    }
 
 	    $scriptRelPath = '/assets/script.min.js';
 
@@ -430,11 +471,15 @@ class OwnAssets
 	        WPACU_PLUGIN_ID . '-script',
             plugins_url($scriptRelPath, WPACU_PLUGIN_FILE),
             array('jquery'),
-            $this->_assetVer($scriptRelPath)
+            self::assetVer($scriptRelPath)
         );
 
-		// It can also be the front page URL
-		$pageUrl = Misc::getPageUrl($postId);
+	    if ($postId > 0)  {
+		    // It can also be the front page URL
+		    $pageUrl = Misc::getPageUrl($postId);
+	    } else {
+		    $pageUrl = Misc::getPageUrl(0);
+	    }
 
 	    $svgReloadIcon = <<<HTML
 <svg aria-hidden="true" role="img" focusable="false" class="dashicon dashicons-cloud" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><path d="M14.9 9c1.8.2 3.1 1.7 3.1 3.5 0 1.9-1.6 3.5-3.5 3.5h-10C2.6 16 1 14.4 1 12.5 1 10.7 2.3 9.3 4.1 9 4 8.9 4 8.7 4 8.5 4 7.1 5.1 6 6.5 6c.3 0 .7.1.9.2C8.1 4.9 9.4 4 11 4c2.2 0 4 1.8 4 4 0 .4-.1.7-.1 1z"></path></svg>
@@ -450,7 +495,7 @@ HTML;
 			'plugin_id'         => WPACU_PLUGIN_ID,
 
 			'reload_icon'       => $svgReloadIcon,
-			'reload_msg'        => sprintf(__('Reloading %s CSS &amp; JS list', 'wp-asset-clean-up'), '<strong style="margin: 0 4px;">' . WPACU_PLUGIN_TITLE . '</strong>'),
+			'reload_msg'        => sprintf(__('Reloading %s area', 'wp-asset-clean-up'), '<strong style="margin: 0 4px;">' . WPACU_PLUGIN_TITLE . '</strong>'),
 			'dom_get_type'      => $wpacuDomGetType,
 			'list_show_status'  => Main::instance()->settings['assets_list_show_status'],
 
@@ -469,7 +514,7 @@ HTML;
 	    // Dashboard pages such as "Homepage" from plugin's "CSS/JavaScript Load Manager" will fetch the list on load
 	    $wpacuObjectData['override_assets_list_load'] = false;
 
-	    if ($page === WPACU_PLUGIN_ID.'_assets_manager' && $pageRequestFor === 'homepage') {
+	    if ($page === WPACU_PLUGIN_ID.'_assets_manager' && in_array($pageRequestFor, array('homepage', 'pages', 'posts', 'custom-post-types', 'media-attachment'))) {
 		    $wpacuObjectData['override_assets_list_load'] = true;
 	    }
 
@@ -587,58 +632,69 @@ JS;
 			// [End] Chosen Script
         }
 
-		if ($page === WPACU_PLUGIN_ID . '_assets_manager' || (Misc::getVar('get', 'post') && Misc::getVar('get', 'action') === 'edit')) {
+	    global $pagenow;
+
+		$isEditPostArea = ($pagenow === 'post.php' && Misc::getVar('get', 'post') && Misc::getVar('get', 'action') === 'edit');
+
+        if ($page === WPACU_PLUGIN_ID . '_assets_manager' || $isEditPostArea) {
 			// [Start] SweetAlert
 			wp_enqueue_style(
 				WPACU_PLUGIN_ID . '-sweetalert2-style',
-				plugins_url('/assets/sweetalert2/dist/sweetalert2.min.css', WPACU_PLUGIN_FILE),
+				plugins_url('/assets/sweetalert2/dist/sweetalert2.css', WPACU_PLUGIN_FILE),
 				array(),
 				1
 			);
 
 			add_action('admin_head', static function() {
 			?>
-				<style type="text/css" data-wpacu-own-inline-style="true">
-                .swal2-popup {
-                    width: 36em;
+				<style <?php echo Misc::getStyleTypeAttribute(); ?> data-wpacu-own-inline-style="true">
+                .wpacu-swal2-popup {
+                    width: 36em !important;
                 }
-				.swal2-overlay {
+
+				.wpacu-swal2-overlay {
 					z-index: 10000000;
 				}
 
-                .swal2-container {
+                .wpacu-swal2-container {
                     z-index: 100000000;
                 }
 
-                .swal2-html-container {
+                .wpacu-swal2-html-container {
                     line-height: 30px;
                 }
 
-				.swal2-text {
+                .wpacu-swal2-title {
+                    margin: 0 0 20px;
+                    font-size: 1.2em;
+                }
+
+				.wpacu-swal2-text {
 					line-height: 24px;
 				}
 
-				.swal2-footer {
+				.wpacu-swal2-footer {
 					text-align: center;
 					padding: 13px 16px 20px;
 				}
 
-				.swal2-button.swal2-button--confirm {
+				.wpacu-swal2-button.wpacu-swal2-button--confirm {
 					background-color: #008f9c;
 				}
 
-				.swal2-button.swal2-button--confirm:hover {
+				.wpacu-swal2-button.wpacu-swal2-button--confirm:hover {
 					background-color: #006e78;
 				}
 				</style>
 			<?php
 			});
 
+			// Changed "Swal" to "wpacuSwal" to avoid conflicts with other plugins using SweetAlert
 			wp_enqueue_script(
 				WPACU_PLUGIN_ID . '-sweetalert2-js',
-				plugins_url('/assets/sweetalert2/dist/sweetalert2.min.js', WPACU_PLUGIN_FILE),
+				plugins_url('/assets/sweetalert2/dist/sweetalert2.js', WPACU_PLUGIN_FILE),
 				array('jquery'),
-				1
+				1.1
 			);
 
 			// [wpacu_lite]
@@ -650,7 +706,7 @@ jQuery(document).ready(function($) {
     /* [Hardcoded Assets] */
     $(document).on('click', '.wpacu-manage-hardcoded-assets-requires-pro-popup', function(e) {
        e.preventDefault();
-       Swal.fire({
+       wpacuSwal.fire({
             text: "Managing hardcoded (non-enqueued) LINK/STYLE/SCRIPT tags is a feature available for Pro users.",
             icon: "info",
             showCancelButton: true,
@@ -667,7 +723,7 @@ jQuery(document).ready(function($) {
     /* [Media Query Load] */
     $(document).on('click', '.wpacu-media-query-load-requires-pro-popup', function(e) {
        e.preventDefault();
-       Swal.fire({
+       wpacuSwal.fire({
             text: "Instructing the browser to load a file based on the screen size of the visitor's device (e.g. desktop or mobile view) is a feature available for Pro users.",
             icon: "info",
             showCancelButton: true,
@@ -719,7 +775,7 @@ JS;
     private function enqueuePublicStyles()
     {
         $styleRelPath = '/assets/style.min.css';
-        wp_enqueue_style(WPACU_PLUGIN_ID . '-style', plugins_url($styleRelPath, WPACU_PLUGIN_FILE), array(), $this->_assetVer($styleRelPath));
+        wp_enqueue_style(WPACU_PLUGIN_ID . '-style', plugins_url($styleRelPath, WPACU_PLUGIN_FILE), array(), self::assetVer($styleRelPath));
     }
 
     /**
@@ -729,7 +785,7 @@ JS;
     {
         $scriptRelPath = '/assets/script.min.js';
 
-	    wp_register_script(WPACU_PLUGIN_ID . '-script', plugins_url($scriptRelPath, WPACU_PLUGIN_FILE), array('jquery'), $this->_assetVer($scriptRelPath), true);
+	    wp_register_script(WPACU_PLUGIN_ID . '-script', plugins_url($scriptRelPath, WPACU_PLUGIN_FILE), array('jquery'), self::assetVer($scriptRelPath), true);
 
 	    // [wpacu_pro]
 	    wp_localize_script(
@@ -753,7 +809,7 @@ JS;
 	 *
 	 * @return false|string
 	 */
-	private function _assetVer($relativePath)
+	public static function assetVer($relativePath)
     {
 		return @filemtime(dirname(WPACU_PLUGIN_FILE) . $relativePath) ?: date('dmYHi');
 	}

@@ -3,12 +3,9 @@
  */
 import { __ } from '@wordpress/i18n';
 import { FormStep } from '@woocommerce/base-components/cart-checkout';
-import { DebouncedValidatedTextInput } from '@woocommerce/base-components/text-input';
+import { ValidatedTextInput } from '@woocommerce/base-components/text-input';
 import { useCheckoutContext } from '@woocommerce/base-context';
-import {
-	CHECKOUT_ALLOWS_GUEST,
-	isExperimentalBuild,
-} from '@woocommerce/block-settings';
+import { getSetting } from '@woocommerce/settings';
 import CheckboxControl from '@woocommerce/base-components/checkbox-control';
 
 /**
@@ -27,11 +24,10 @@ const ContactFieldsStep = ( {
 		setShouldCreateAccount,
 	} = useCheckoutContext();
 
-	// "Create Account" checkbox is gated to dev builds only.
 	const createAccountUI = ! customerId &&
 		allowCreateAccount &&
-		CHECKOUT_ALLOWS_GUEST &&
-		isExperimentalBuild() && (
+		getSetting( 'checkoutAllowsGuest', false ) &&
+		getSetting( 'checkoutAllowsSignup', false ) && (
 			<CheckboxControl
 				className="wc-block-checkout__create-account"
 				label={ __(
@@ -57,7 +53,7 @@ const ContactFieldsStep = ( {
 			) }
 			stepHeadingContent={ () => <LoginPrompt /> }
 		>
-			<DebouncedValidatedTextInput
+			<ValidatedTextInput
 				id="email"
 				type="email"
 				label={ __( 'Email address', 'woocommerce' ) }

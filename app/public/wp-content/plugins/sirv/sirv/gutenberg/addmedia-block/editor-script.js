@@ -89,6 +89,20 @@
     }
 
 
+    function getImageSizes(orig_width, orig_height, width, isResponsive){
+        let size = {'width': orig_width, height: orig_height};
+
+        if(isResponsive) return size;
+
+        if(!!width && !!orig_width && !!orig_height){
+            size.width = width;
+            size.height = Math.floor(+width * (+orig_height/+orig_width));
+        }
+
+        return size;
+    }
+
+
     function renderShortcodeInspectorControls(props){
         let shId = props.attributes.shId;
         let shType  = props.attributes.shType;
@@ -338,7 +352,14 @@
                             className: cssClassesToStr(['sirv-flx', 'sirv-img-container', imgAlign]),
                             style: style,
                         },[renderImgTag(image, width, isResponsive, lazyLoading, isLink),
-                        (image.alt && isAltCaption) && el('figcaption',{className: 'sirv-img-container__cap'}, image.alt)
+                        //(image.alt && isAltCaption) && el('figcaption',{className: 'sirv-img-container__cap'}, wp.element.RawHTML( { children: image.alt } ))
+                        (image.alt && isAltCaption) && el('figcaption',{
+                            className: 'sirv-img-container__cap',
+                            dangerouslySetInnerHTML: {
+                                __html: image.alt
+                            }
+                        }
+                    )
                         ]
                     )
                 );
@@ -371,6 +392,10 @@
             'data-options': dataOptions,
         };
 
+        let size = getImageSizes(image.width, image.height, width, isResponsive);
+        if(!!size.width) props.width = size.width;
+        if(!!size.height) props.height = size.height;
+
         if(src){props.src = src;} else{
             props['data-src'] = dataSrc;
             //props['src'] = placehodler_grey;
@@ -398,6 +423,12 @@
         });
 
         return clsStr;
+    }
+
+
+    function removeNotAllowedHTMLTags(str){
+        let pattern = /<(?!\/?(em|strong|b|i|br|a)(?=>|\s?.*>))\/?.*?>/ig;
+        return str.replace(pattern, '');
     }
 
 
@@ -525,6 +556,18 @@
                         attribute: 'data-thumb',
                         default: '',
                     },
+                    width: {
+                        type: 'string',
+                        source: 'attribute',
+                        attribute: 'width',
+                        default: '',
+                    },
+                    height: {
+                        type: 'string',
+                        source: 'attribute',
+                        attribute: 'height',
+                        default: '',
+                    },
                 },
             },
         },
@@ -562,6 +605,7 @@
                                     window.renderSirvModalWindowWithParams(null, false, true, false, function(){
                                         window.isSirvGutenberg = false;
                                         if(window.sirvShObj && Object.keys(window.sirvShObj).length > 0){
+                                            console.log(window.sirvShObj);
                                             props.setAttributes({shId: (window.sirvShObj.sirvId).toString(),
                                                                 shType: (window.sirvShObj.sirvType).toString(),
                                                                 shCount: (window.sirvShObj.sirvCount).toString(),

@@ -133,10 +133,13 @@ if ( isset( $data['all']['hardcoded'] ) && ! empty( $data['all']['hardcoded'] ) 
 } elseif (isset($hardcodedManageAreaHtml, $data['is_frontend_view']) && $data['is_frontend_view']) {
 	echo $hardcodedManageAreaHtml; // AJAX call from the front-end view
 }
+
 /*
 * --------------------------------------------
 * [END] BY EACH HANDLE STATUS (Parent or Not)
 * --------------------------------------------
 */
+
+include_once __DIR__ . '/_page-options.php';
 
 include '_inline_js.php';

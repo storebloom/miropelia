@@ -47,20 +47,6 @@
 				<small><?php echo esc_html__( 'Password must be at least six characters.','sharethis-share-buttons' ); ?></small>
 			</div>
 
-			<span class="st-terms-checkbox">
-				<input type="checkbox" class="checkbox filled-in" id="gdpr-checkbox" value="on">
-
-				<label for="gdpr-checkbox" style="font-size:.8rem;">
-				<?php echo esc_html__(
-					'This option enables “GDPR compliance tool”. To learn about GDPR,',
-					'sharethis-share-buttons'
-				); ?>
-				<a class="green" href="https://sharethis.com/gdpr-compliance-tool" target="_blank">
-					<?php echo esc_html__('click here to read more.', 'sharethis-share-buttons'); ?>
-				</a>
-				</label>
-			</span>
-
 			<p style="font-size:.8rem;margin: 20px auto;max-width: 85%;">
 				<?php echo esc_html__('By clicking "Register & Configure", you certify that you are agreeing to our', 'sharethis-share-buttons'); ?>
 				<a href="https://sharethis.com/privacy/" target="_blank" rel="nofollow">Privacy Policy</a> and

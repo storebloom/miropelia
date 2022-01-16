@@ -43,19 +43,33 @@ if (! $metaBoxLoadedFine) {
 $tipsClass = new \WpAssetCleanUp\Tips();
 $data['tips'] = $tipsClass->list;
 
-if (\WpAssetCleanUp\Misc::isHomePage()) {
-    ?>
-    <p><strong><span style="color: #0f6cab;" class="dashicons dashicons-admin-home"></span> <?php _e('You are currently viewing the home page.', 'wp-asset-clean-up'); ?></strong></p>
-	<?php
+if (is_admin()) {
+    // Dashboard edit view
+    if (get_option('show_on_front') === 'page') {
+        if (get_option('page_on_front') == $data['post_id']) {
+        ?>
+            <p><span style="color: #0f6cab;" class="dashicons dashicons-admin-home"></span> <?php echo sprintf(__('This page was set as the home page in %s"Settings" &#10141; "Reading"%s.', 'wp-asset-clean-up'), '<a target="_blank" href="'.admin_url('options-reading.php').'">', '</a>'); ?></p>
+	    <?php
+        } elseif (get_option('page_for_posts') == $data['post_id']) {
+        ?>
+            <p><span style="color: #0f6cab;" class="dashicons dashicons-admin-post"></span> <?php echo sprintf(__('This page was set to show the latest posts in %s"Settings" &#10141; "Reading"%s.', 'wp-asset-clean-up'), '<a target="_blank" href="'.admin_url('options-reading.php').'">', '</a>'); ?></p>
+        <?php
+        }
+    }
+} else {
+    // Front-end view
+    if (\WpAssetCleanUp\Misc::isBlogPage()) {
+        ?>
+        <p><span style="color: #0f6cab;" class="dashicons dashicons-admin-post"></span> <?php _e('You are currently viewing the page that shows your latest posts.', 'wp-asset-clean-up'); ?></p>
+        <?php
+    } elseif (\WpAssetCleanUp\Misc::isHomePage()) {
+        ?>
+        <p><span style="color: #0f6cab;" class="dashicons dashicons-admin-home"></span> <?php _e('You are currently viewing the home page.', 'wp-asset-clean-up'); ?></p>
+        <?php
+    }
 }
 
-elseif (\WpAssetCleanUp\Misc::isBlogPage()) {
-    ?>
-    <p><strong><span style="color: #0f6cab;" class="dashicons dashicons-admin-post"></span> <?php _e('You are currently viewing the page that shows your latest posts.', 'wp-asset-clean-up'); ?></strong></p>
-	<?php
-}
-
-elseif ($data['bulk_unloaded_type'] === 'post_type') {
+if ($data['bulk_unloaded_type'] === 'post_type') {
 	$isWooPage = $iconShown = false;
 
 	if (
@@ -89,18 +103,19 @@ elseif ($data['bulk_unloaded_type'] === 'post_type') {
 	<?php if ($isWooPage) { ?>
         <img src="<?php echo $iconShown; ?>" alt="" style="height: 40px !important; margin-top: -6px; margin-right: 5px;" align="middle" /> <strong>WooCommerce</strong>
     <?php } ?>
-        <strong><?php if (! $iconShown) { ?><span style="color: #0f6cab;" class="dashicons dashicons-admin-<?php echo $dashIconPart; ?>"></span> <?php } ?> <u><?php echo $data['post_type']; ?></u> <?php if ($data['post_type'] !== 'post') {  echo 'post'; } ?> type.</strong>
+        <?php if (! $iconShown) { ?><span style="color: #0f6cab;" class="dashicons dashicons-admin-<?php echo $dashIconPart; ?>"></span> <?php } ?> <u><?php echo $data['post_type']; ?></u> <?php if ($data['post_type'] !== 'post') {  echo 'post'; } ?> type.
     </p>
     <?php
 }
 
 if (! is_404()) {
+    if (isset($data['post_type']) && $data['post_type'] && ! (isset($data['is_for_singular']) && $data['is_for_singular'])) {
 	?>
-    <p class="wpacu_verified">
-        <strong>Page URL:</strong> <a target="_blank"
-                                      href="<?php echo $data['fetch_url']; ?>"><span><?php echo $data['fetch_url']; ?></span></a>
-    </p>
+        <div class="wpacu_verified">
+            <strong>Page URL:</strong> <a target="_blank" href="<?php echo $data['fetch_url']; ?>"><span><?php echo $data['fetch_url']; ?></span></a>
+        </div>
 	<?php
+    }
 }
 
 if (isset($data['page_template'])) {
@@ -207,4 +222,5 @@ if ($metaBoxLoadedFine) {
            id="wpacu_unload_assets_area_loaded"
            name="wpacu_unload_assets_area_loaded"
            value="1" />
-<?php } ?>
+    <?php
+}

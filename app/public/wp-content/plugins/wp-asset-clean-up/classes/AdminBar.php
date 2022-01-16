@@ -24,7 +24,7 @@ class AdminBar
 	public function topBar()
 	{
 		if (Menu::userCanManageAssets() && (! Main::instance()->settings['hide_from_admin_bar'])) {
-			add_action( 'admin_bar_menu', array( $this, 'topBarInfo' ), 999 );
+			add_action( 'admin_bar_menu', array( $this, 'topBarInfo' ), 81 );
 		}
 	}
 
@@ -64,9 +64,11 @@ class AdminBar
 		}
 
 		if ($wpacuUnloadedAssetsStatus) {
+			$styleAttrType = Misc::getStyleTypeAttribute();
+
 			$cssStyle = <<<HTML
-<style type="text/css">
-#wpadminbar .wpacu-warning-sign-top-admin-bar {
+<style {$styleAttrType}>
+#wpadminbar .wpacu-alert-sign-top-admin-bar {
     font-size: 20px;
     color: lightyellow;
     vertical-align: top;
@@ -89,7 +91,7 @@ class AdminBar
 }
 </style>
 HTML;
-			$topTitle .= $cssStyle . '&nbsp;<span class="wpacu-warning-sign-top-admin-bar dashicons dashicons-warning"></span>';
+			$topTitle .= $cssStyle . '&nbsp;<span class="wpacu-alert-sign-top-admin-bar dashicons dashicons-filter"></span>';
 		}
 
 		if (Main::instance()->settings['test_mode']) {
@@ -183,14 +185,14 @@ HTML;
 			$totalUnloadedAssets = count($markedCssListForUnload) + count($markedJsListForUnload);
 
 			if ($totalUnloadedAssets > 0) {
-				$titleUnloadText = sprintf( _n( '%d unloaded asset on this frontend page',
-					'%d unloaded assets on this frontend page', $totalUnloadedAssets, 'wp-asset-clean-up' ),
+				$titleUnloadText = sprintf( _n( '%d unload asset rules took effect on this frontend page',
+					'%d unload asset rules took effect on this frontend page', $totalUnloadedAssets, 'wp-asset-clean-up' ),
 					$totalUnloadedAssets );
 
 				$wp_admin_bar->add_menu( array(
 					'parent' => 'assetcleanup-parent',
 					'id'     => 'assetcleanup-asset-unload-rules-notice',
-					'title'  => '<span style="margin: -10px 0 0;" class="wpacu-warning-sign-top-admin-bar dashicons dashicons-warning"></span> &nbsp; '. $titleUnloadText,
+					'title'  => '<span style="margin: -10px 0 0;" class="wpacu-alert-sign-top-admin-bar dashicons dashicons-filter"></span> &nbsp; '. $titleUnloadText,
 					'href'   => '#'
 				) );
 
@@ -230,7 +232,7 @@ HTML;
 							'href'   => admin_url('admin.php?page=wpassetcleanup_overview#wpacu-overview-js-'.$jsHandle)
 						));
 					}
-				}
+					}
 			}
 		}
 		// [END LISTING UNLOADED ASSETS]

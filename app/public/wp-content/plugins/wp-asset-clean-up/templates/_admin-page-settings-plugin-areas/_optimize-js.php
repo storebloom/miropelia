@@ -51,9 +51,13 @@ $availableForProMoveScriptsToBody = '<a class="go-pro-link-no-style" target="_bl
                             ?>
                            name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[minify_loaded_js]"
                            value="1" /> <span class="wpacu_slider wpacu_round"></span></label>
-                &nbsp;&nbsp;<?php _e('This will take the remaining enqueued JavaScript files, minify them and load them from the cache.', 'wp-asset-clean-up'); ?>
 
-				<?php
+                &nbsp;&nbsp;<?php _e('This will take the remaining enqueued JavaScript files, minify them and load them from the cache.', 'wp-asset-clean-up'); ?>
+                  <?php _e('You might want to minify the local files, the inline JS code within SCRIPT tags or both.', 'wp-asset-clean-up'); ?>
+
+                <div style="clear: both; margin-top: 12px;"></div>
+
+                <?php
 				if (! empty($data['is_optimize_js_enabled_by_other_party'])) {
 					?>
                     <div style="border-left: 4px solid green; background: #f2faf2; padding: 10px; margin-top: 10px;">
@@ -68,14 +72,47 @@ $availableForProMoveScriptsToBody = '<a class="go-pro-link-no-style" target="_bl
 				$minifyJsExceptionsAreaStyle = empty($data['is_optimize_js_enabled_by_other_party']) && ($data['minify_loaded_js'] == 1) ? 'opacity: 1;' : 'opacity: 0.4;';
 				?>
                 <div id="wpacu_minify_js_area" style="<?php echo $minifyJsExceptionsAreaStyle; ?>">
-                    <div style="padding: 10px; background: #f2faf2;" class="wpacu-fancy-checkbox">
-                        <input id="minify_loaded_js_inline_checkbox"
-                               name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[minify_loaded_js_inline]"
-							<?php echo (($data['minify_loaded_js_inline'] == 1) ? 'checked="checked"' : ''); ?>
-                               type="checkbox"
-                               value="1" />
-                        <label for="minify_loaded_js_inline_checkbox"> Minify inline JavaScript content within SCRIPT tags</label>
+                    <!-- -->
+
+                    <div style="margin-top: 8px; padding: 12px; background: #f2faf2; border-radius: 10px;">
+                        <ul style="margin: 0;">
+                            <li style="float: left; margin-right: 30px; margin-bottom: 0; line-height: 32px;" class="wpacu-fancy-radio">
+                                <label for="minify_loaded_js_for_script_src_radio">
+                                    <input id="minify_loaded_js_for_script_src_radio"
+                                           style="margin: -1px 0 0;"
+						                <?php echo (in_array($data['minify_loaded_js_for'], array('src', '')) ? 'checked="checked"' : ''); ?>
+                                           type="radio"
+                                           name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[minify_loaded_js_for]"
+                                           value="src" />
+                                    &nbsp;<?php _e('SCRIPT tags with "src" attribute', 'wp-asset-clean-up'); ?> (<?php echo __('default', 'wp-asset-clean-up'); ?>)
+                                </label>
+                            </li>
+                            <li style="float: left; margin-right: 30px; margin-bottom: 0; line-height: 32px;" class="wpacu-fancy-radio">
+                                <label for="minify_loaded_js_for_script_inline_radio">
+                                    <input id="minify_loaded_js_for_script_inline_radio"
+                                           style="margin: -1px 0 0;"
+						                <?php echo (($data['minify_loaded_js_for'] === 'inline') ? 'checked="checked"' : ''); ?>
+                                           type="radio"
+                                           name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[minify_loaded_js_for]"
+                                           value="inline" />
+                                    &nbsp;<?php _e('SCRIPT tags with inline JS code ', 'wp-asset-clean-up'); ?>
+                                </label>
+                            </li>
+                            <li style="float: left; margin-bottom: 0; line-height: 32px;" class="wpacu-fancy-radio">
+                                <label for="minify_loaded_js_for_script_all_radio">
+                                    <input id="minify_loaded_js_for_script_all_radio"
+                                           style="margin: -1px 0 0;"
+				                        <?php echo (($data['minify_loaded_js_for'] === 'all') ? 'checked="checked"' : ''); ?>
+                                           type="radio"
+                                           name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[minify_loaded_js_for]"
+                                           value="all" />
+                                    &nbsp;<?php _e('All SCRIPT tags', 'wp-asset-clean-up'); ?> * <small>both options</small>
+                                </label>
+                            </li>
+                        </ul>
+                        <div style="clear: both;"></div>
                     </div>
+
                     <div id="wpacu_minify_js_exceptions_area">
                         <div style="margin: 8px 0 6px;"><?php _e('Do not minify the JavaScript files matching the patterns below (one per line)', 'wp-asset-clean-up'); ?>:</div>
                         <label for="wpacu_minify_js_exceptions">
@@ -300,7 +337,7 @@ $availableForProMoveScriptsToBody = '<a class="go-pro-link-no-style" target="_bl
 
                     <div id="wpacu_inline_js_files_list_area">
                         <div style="margin: 12px 0 6px;"><?php _e('Alternatively or in addition to automatic inlining, you can place the relative path(s) or part of them to the files you wish to inline below:', 'wp-asset-clean-up'); ?> (<strong><?php _e('one per line', 'wp-asset-clean-up'); ?></strong>):</div>
-                        <p style="margin-top: 8px;"><span class="dashicons dashicons-warning" style="color: #ffc107;"></span> <strong>Note:</strong> Please input the sources to the original JavaScript files (one per line) like in the examples below, not to the cached/optimized ones (which are usually located in <em><?php echo str_replace(site_url(), '', WP_CONTENT_URL) . OptimizeCommon::getRelPathPluginCacheDir(); ?></em>)</p>
+                        <p style="margin-top: 8px;"><span class="dashicons dashicons-warning" style="color: #ffc107;"></span> <strong>Note:</strong> Please input the sources to the original JavaScript files (one per line) like in the examples below, not to the cached/optimized ones (which are usually located in <em><?php echo str_replace(site_url(), '', WP_CONTENT_URL) . OptimizeCommon::getRelPathPluginCacheDir(); ?></em>). RegExes are accepted. Note that the hash (#) is automatically used as delimiter so you don't need to add it below.</p>
                         <label for="wpacu_inline_js_files_list">
                                     <textarea style="width: 100%;"
                                               rows="4"
@@ -388,7 +425,7 @@ $availableForProMoveScriptsToBody = '<a class="go-pro-link-no-style" target="_bl
         <tr valign="top">
             <th scope="row" class="setting_title">
                 <label for="wpacu_cache_dynamic_loaded_js_enable"><?php _e('Cache Dynamic Loaded JavaScript', 'wp-asset-clean-up'); ?></label>
-                <p class="wpacu_subtitle"><small><em><?php _e('This option is enabled by default on new installs or after a settings reset', 'wp-asset-clean-up'); ?>.</em></small></p>
+                <p class="wpacu_subtitle"><small><span class="dashicons dashicons-warning"></span> <em><?php _e('Please do not enable this option unless you have non-static (dynamic) loaded JavaScript', 'wp-asset-clean-up'); ?>.</em></small></p>
             </th>
             <td>
                 <label class="wpacu_switch">

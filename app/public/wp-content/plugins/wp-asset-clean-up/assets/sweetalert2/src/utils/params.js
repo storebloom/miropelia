@@ -12,14 +12,14 @@ export const defaultParams = {
   toast: false,
   animation: true,
   showClass: {
-    popup: 'swal2-show',
-    backdrop: 'swal2-backdrop-show',
-    icon: 'swal2-icon-show',
+    popup: 'wpacu-swal2-show',
+    backdrop: 'wpacu-swal2-backdrop-show',
+    icon: 'wpacu-swal2-icon-show',
   },
   hideClass: {
-    popup: 'swal2-hide',
-    backdrop: 'swal2-backdrop-hide',
-    icon: 'swal2-icon-hide',
+    popup: 'wpacu-swal2-hide',
+    backdrop: 'wpacu-swal2-backdrop-hide',
+    icon: 'wpacu-swal2-icon-hide',
   },
   customClass: undefined,
   target: 'body',
@@ -166,7 +166,7 @@ export const isValidParameter = (paramName) => {
 }
 
 /**
- * Is valid parameter for Swal.update() method
+ * Is valid parameter for wpacuSwal.update() method
  * @param {String} paramName
  */
 export const isUpdatableParameter = (paramName) => {

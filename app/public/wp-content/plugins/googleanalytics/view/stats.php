@@ -14,35 +14,48 @@ foreach ( $account_data as $properties ) {
 
 $demo_enabled = get_option('googleanalytics_demographic');
 $demo_enabled = !empty($demo_enabled) && $demo_enabled ? true: false;
-$sevenorthirty = isset($_GET['th']) ? '30' : '7';
-$selected7 = '7' === $sevenorthirty ? 'selected' : '';
-$selected30 = '30' === $sevenorthirty ? 'selected' : '';
 $selectedpage = isset($_GET['ts']) ? '' : 'selected';
 $selectedsource = isset($_GET['ts']) ? 'selected' : '';
 $report_url = 'https://analytics.google.com/analytics/web/#/report/content-pages/a' . $selected_data[0] . 'w' . $internal_prop  . 'p' . $selected_data[2];
 $source_page_url =  isset($_GET['ts']) ? str_replace('content-pages', 'trafficsources-all-traffic', $report_url) : $report_url;
 $demographic_page_url = str_replace('content-pages', 'visitors-demographics-overview', $report_url);
 $type_label = isset($_GET['ts']) ? 'Traffic Sources' : 'Pages/Posts';
-$thirty_url = isset($_GET['ts']) ? 'admin.php?page=googleanalytics&th&ts' : 'admin.php?page=googleanalytics&th';
-$seven_url = isset($_GET['ts']) ? 'admin.php?page=googleanalytics&ts' : 'admin.php?page=googleanalytics';
-$source_url = isset($_GET['th']) ? 'admin.php?page=googleanalytics&ts&th' : 'admin.php?page=googleanalytics&ts';
-$page_view_url = isset($_GET['th']) ? 'admin.php?page=googleanalytics&th' : 'admin.php?page=googleanalytics';
+$source_url = 'admin.php?page=googleanalytics&ts';
 $send_data = get_option('googleanalytics_send_data');
+$need_account_demo_enable = [] === $gender_chart && [] === $age_chart;
+
+// Filter GA Action.
+$ga_action = filter_input( INPUT_GET, 'ga_action', FILTER_SANITIZE_STRING );
+
+$date_range = Ga_Helper::getDateRangeFromRequest();
+
+$days_in_english = Ga_Helper::getPeriodInDaysWords($date_range['from'], $date_range['to']);
 ?>
-<div class="wrap ga-wrap" id="ga-stats-container">
+<?php if (!$demo_enabled) {
+	echo Ga_Helper::ga_wp_notice(
+		__( 'Visualize gender and age data with our new demographic feature.' ),
+		'warning',
+		false,
+		[
+			'url'   => Ga_Helper::create_url( Ga_Helper::get_current_url(), array( Ga_Controller_Core::ACTION_PARAM_NAME => 'demo-ad' ) ),
+			'label' => __( 'Access Now', 'googleanalytics' ),
+		]
+	);
+} ?>
+<div class="wrap ga-wrap" id="ga-stats-container" data-scroll="<?php echo esc_attr($ga_action); ?>">
 	<?php if ( ! empty( $chart ) ) : ?>
 	<div class="filter-choices">
-		<a href="<?php echo get_admin_url('', $seven_url ); ?>" class="<?php echo esc_attr( $selected7 ); ?>">
-			7 days
-		</a>
-		<a href="<?php echo get_admin_url('', $thirty_url ); ?>" class="<?php echo esc_attr( $selected30 ); ?>">
-			30 days
-		</a>
+        <div>
+	        <?php Ga_Template::load( 'templates/date_custom_range_filter', [
+		        'date_from' => $date_range['from'],
+		        'date_to'   => $date_range['to']
+	        ] ); ?>
+        </div>
 	</div>
 	<div class="ga-panel ga-panel-default">
 		<div class="ga-panel-heading">
 			<strong>
-				<?php echo 'Pageviews - Last ' . esc_html( $sevenorthirty ) . ' days'; ?>
+				<?php echo 'Pageviews - ' . $days_in_english; ?>
 			</strong>
 		</div>
 		<div class="ga-panel-body ga-chart">
@@ -56,7 +69,7 @@ $send_data = get_option('googleanalytics_send_data');
 
 	<?php if ( ! empty( $boxes ) ) : ?>
 	<div class="ga-panel ga-panel-default">
-		<div class="ga-panel-heading"><strong><?php echo 'Comparison - Last ' . esc_html( $sevenorthirty ) . ' days vs previous ' . esc_html( $sevenorthirty ) . ' days'; ?></strong>
+		<div class="ga-panel-heading"><strong><?php echo 'Comparison - ' . $days_in_english; ?></strong>
 		</div>
 		<div class="ga-panel-body">
 			<div class="ga-row">
@@ -83,10 +96,10 @@ $send_data = get_option('googleanalytics_send_data');
 
 	if ( ! empty( $sources ) ) : ?>
 		<div class="filter-choices">
-			<a href="<?php echo get_admin_url('', $page_view_url); ?>" class="<?php echo esc_attr( $selectedpage ); ?>">
+			<a href="<?php echo get_admin_url('', 'admin.php?page=googleanalytics'); ?>" class="<?php echo esc_attr( $selectedpage ); ?>">
 				Page View
 			</a>
-			<a href="<?php echo get_admin_url('', $source_url); ?>" class="<?php echo esc_attr( $selectedsource ); ?>">
+			<a href="<?php echo get_admin_url('', 'admin.php?page=googleanalytics&ts'); ?>" class="<?php echo esc_attr( $selectedsource ); ?>">
 				Traffic Source
 			</a>
 		</div>
@@ -165,9 +178,6 @@ $send_data = get_option('googleanalytics_send_data');
 	<?php endif; ?>
 
 	<?php if ( ! empty( $chart ) ) :
-
-		$label_count = isset($_GET['th']) ? $labels['thisMonth'] : $labels['thisWeek'];
-
 		?>
 		<script type="text/javascript">
 
@@ -177,8 +187,8 @@ $send_data = get_option('googleanalytics_send_data');
 					var demoGenderData = new google.visualization.DataTable();
 					var demoAgeData = new google.visualization.DataTable();
 
-					data.addColumn('string', 'Day');
-					data.addColumn('number', '<?php echo $label_count ?>');
+					data.addColumn('string', '<?php echo esc_js( __( 'Day', 'googleanalytics' ) ); ?>');
+					data.addColumn('number', '<?php echo esc_js( __( 'Pageviews', 'googleanalytics' ) ); ?>');
 					data.addColumn({type: 'string', role: 'tooltip', 'p': {'html': true}});
 
 					<?php foreach ( $chart as $row ) : ?>
@@ -209,6 +219,23 @@ $send_data = get_option('googleanalytics_send_data');
 						$x++;
 					} ?>
 					ga_charts.drawDemoAgeChart(<?php echo json_encode($demoAgeData); ?>);
+
+					// Device chart.
+                    <?php
+                        $demoDeviceData = array();
+                        $demoDeviceData[0] = array(
+                            __( 'Device', 'googleanalytics' ),
+                            __( 'Device Breakdown', 'googleanalytics' ),
+                        );
+
+                        $x = 1;
+                        foreach( $device_chart as $type => $amount ) {
+                            $demoDeviceData[$x] = array($type, intval($amount));
+                            $x++;
+                        }
+                    ?>
+                    ga_charts.drawDemoDeviceChart(<?php echo json_encode($demoDeviceData); ?>);
+
 					ga_loader.hide();
 
 					<?php if (Ga_Helper::are_features_enabled() && !empty($send_data) && "true" === $send_data) : ?>
@@ -221,22 +248,8 @@ $send_data = get_option('googleanalytics_send_data');
 				}
 			);
 		</script>
-	<?php endif; ?>
-	<div class="demo-enable-popup">
-		<p>
-			We are deploying additional data from your Google Analytics account to your WordPress dashboard
-			as a free service to assist you in operating your WordPress site.
-			This will result in Google Analytics having access to data collected from Your site(s)
-			and subject to Google’s privacy policies as described in the <a
-				href="http://www.sharethis.com/publisher-terms-of-use/" target="_blank">ShareThis Publisher TOU</a>.
-			We will also use the aggregate demographic data related to your site for analytic purposes.
-			We will not sell or transfer any of the demographic data relating to your site to any other party.
-			For more information, please visit the <a
-				href="http://www.sharethis.com/news/2016/12/sharethis-adds-analytics-plugin-to-suite-of-tools/"
-				target="_blank">ShareThis Privacy Policy</a> and <a
-				href="http://www.sharethis.com/publisher-terms-of-use/" target="_blank">Publisher TOU</a>.
-		</p>
-		<button id="enable-demographic">I accept</button>
-		<button class="close-demo-modal">Decline</button>
-	</div>
+	<?php endif;
+	include 'templates/demo-popup.php';
+	?>
+
 </div>

@@ -26,14 +26,28 @@ if (! isset($data)) {
         </div>
 	    <?php
     }
+
+    $data['post_id'] = (isset($_GET['wpacu_post_id']) && $_GET['wpacu_post_id']) ? $_GET['wpacu_post_id'] : false;
     ?>
-    <p>Post Type: 'page' (e.g. pages such as About, Contact etc.) &#10230; <a target="_blank" href="https://wordpress.org/support/article/pages-screen/"><?php _e('read more', 'wp-asset-clean-up'); ?></a></p>
+        <p>Post Type: 'page' (e.g. pages such as About, Contact etc.) &#10230; <a target="_blank" href="https://wordpress.org/support/article/pages-screen/"><?php _e('read more', 'wp-asset-clean-up'); ?></a></p>
+    <?php
+    $data['dashboard_edit_not_allowed'] = false;
 
-    <strong>How to retrieve the loaded styles &amp; scripts?</strong>
+    require_once __DIR__.'/common/_is-dashboard-edit-allowed.php';
 
-    <p style="margin-bottom: 0;"><span class="dashicons dashicons-yes"></span> If "Manage in the Dashboard?" (<em>from "Settings" -&gt; "Plugin Usage Preferences"</em>) is enabled:</p>
-    <p style="margin-top: 0;">Go to "Pages" -&gt; "All Pages" -&gt; [Choose the page you want to manage the assets for] -&gt; Scroll to "Asset CleanUp" meta box where you will see the loaded CSS &amp; JavaScript files</p>
-    <hr />
-    <p style="margin-bottom: 0;"><span class="dashicons dashicons-yes"></span> If "Manage in the Front-end?" (<em>from "Settings" -&gt; "Plugin Usage Preferences"</em>) is enabled and you're logged in:</p>
-    <p style="margin-top: 0;">Go to the product page where you want to manage the files and scroll to the bottom of the page where you will see the list.</p>
+    if ($data['dashboard_edit_not_allowed']) {
+	    return; // stop here as the message about the restricted access has been printed
+    }
+
+    if ($data['post_id']) {
+	    // There's a POST ID requested in the URL / Show the assets
+	    $data['post_type'] = get_post_type($data['post_id']);
+	    do_action('wpacu_admin_notices');
+	    require_once __DIR__.'/_singular-page.php';
+    } else {
+        // There's no POST ID requested
+        $data['post_type'] = 'page';
+        require_once '_singular-page-search-form.php';
+    }
+    ?>
 </div>

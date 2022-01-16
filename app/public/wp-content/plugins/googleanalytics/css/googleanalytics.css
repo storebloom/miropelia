@@ -44,9 +44,11 @@
     margin: 10px 5px 10px 0;
 }
 
-.ga_container .filter-choices a {
+.ga_container .filter-choices a,
+.ga_container .filter-choices button
+{
     background: #f9f9f9;
-    width: 100px;
+    width: 105px;
     display: inline-block;
     padding: 10px 20px;
     border-radius: 5px;
@@ -58,9 +60,14 @@
     color: #888888;
 }
 
-.ga_container .filter-choices a.selected {
+.ga_container .filter-choices a.selected,
+.ga_container .filter-choices button {
     background: #c6dafc;
     color: #353535;
+}
+
+.ga_container .filter-choices button {
+    padding: 5px 20px;
 }
 
 #exTab1, #exTab2 {

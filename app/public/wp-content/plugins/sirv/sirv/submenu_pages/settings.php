@@ -126,7 +126,7 @@
       </tr>
       <tr>
         <th>
-          <label>Featured image profile</label>
+          <label>Image profile</label>
         </th>
         <td>
           <!-- <span class="sirv-traffic-loading-ico sirv-shortcodes-profiles"></span> -->
@@ -138,7 +138,7 @@
         <td>
           <div class="sirv-tooltip">
             <i class="dashicons dashicons-editor-help sirv-tooltip-icon"></i>
-            <span class="sirv-tooltip-text sirv-no-select-text">Apply one of <a target="_blank" href="https://my.sirv.com/#/profiles/">your profiles</a> for watermarks, text and other image customizations. Learn <a target="_blank" href="https://sirv.com/help/articles/dynamic-imaging/profiles/">about profiles</a>.</span>
+            <span class="sirv-tooltip-text sirv-no-select-text">Style your images with watermarks, text and other customizations using one of <a target="_blank" href="https://my.sirv.com/#/profiles/">your profiles</a>. Learn <a target="_blank" href="https://sirv.com/help/articles/dynamic-imaging/profiles/">about profiles</a></span>
           </div>
         </td>
       </tr>
@@ -223,8 +223,8 @@
           <label>Include Sirv JS</label>
         </th>
         <td>
-          <label><input type="radio" name="SIRV_JS" value="1" <?php checked(1, get_option('SIRV_JS'), true); ?>><b>All pages</b> - always add script (select this if images are not loading).</label>
           <label><input type="radio" name="SIRV_JS" value="2" <?php checked(2, get_option('SIRV_JS'), true); ?>><b>Detect</b> - add script only to pages that require it.</label>
+          <label><input type="radio" name="SIRV_JS" value="1" <?php checked(1, get_option('SIRV_JS'), true); ?>><b>All pages</b> - always add script (select this if images are not loading).</label>
           <label><input type="radio" name="SIRV_JS" value="3" <?php checked(3, get_option('SIRV_JS'), true); ?>><b>No pages</b> - don't add script (may break shortcodes & responsive images).</label>
         </td>
       </tr>
@@ -234,29 +234,14 @@
         </th>
         <td>
           <label>
-            <input type="radio" name="SIRV_JS_FILE" value="1" <?php checked(1, get_option('SIRV_JS_FILE'), true); ?>>Original
+            <input type="radio" name="SIRV_JS_FILE" value="3" <?php checked(3, get_option('SIRV_JS_FILE'), true); ?>>Sirv JS v3 (uses <a href="https://sirv.com/help/resources/sirv-media-viewer/" target="_blank">Sirv Media Viewer</a>) <span style="color: orange;">Recommended<span>
           </label>
           <label>
-            <input type="radio" name="SIRV_JS_FILE" value="2" <?php checked(2, get_option('SIRV_JS_FILE'), true); ?>>Original light (excludes <a href="https://sirv.com/features/360-product-viewer/" target="_blank">Sirv Spin</a>)
+            <input type="radio" name="SIRV_JS_FILE" value="2" <?php checked(2, get_option('SIRV_JS_FILE'), true); ?>>Sirv JS v2 light (excludes <a href="https://sirv.com/features/360-product-viewer/" target="_blank">Sirv Spin</a>)
           </label>
           <label>
-            <input type="radio" name="SIRV_JS_FILE" value="3" <?php checked(3, get_option('SIRV_JS_FILE'), true); ?>>Latest (uses <a href="https://sirv.com/help/resources/sirv-media-viewer/" target="_blank">Sirv Media Viewer</a>)
+            <input type="radio" name="SIRV_JS_FILE" value="1" <?php checked(1, get_option('SIRV_JS_FILE'), true); ?>>Sirv JS v2
           </label>
-          <div class="sirv-js-extended <?php if (get_option('SIRV_JS_FILE') != '3') echo 'sirv-hide'; ?>">
-            <label>
-              <input type="checkbox" name="sirv_js_extend" id="image" <?php echo sirv_js_extend_checked('image') ?>>Image scaling & lazy loading
-            </label>
-            <label>
-              <input type="checkbox" name="sirv_js_extend" id="zoom" <?php echo sirv_js_extend_checked('zoom') ?>>Image zoom
-            </label>
-            <label>
-              <input type="checkbox" name="sirv_js_extend" id="spin" <?php echo sirv_js_extend_checked('spin') ?>>360 spin
-            </label>
-            <label>
-              <input type="checkbox" name="sirv_js_extend" id="video" <?php echo sirv_js_extend_checked('video') ?>>Video
-            </label>
-            <input type="hidden" id="sirv-js-file-extend" name="SIRV_JS_FILE_EXTEND" value="<?php echo htmlspecialchars(get_option('SIRV_JS_FILE_EXTEND')); ?>">
-          </div>
         </td>
       </tr>
       <tr>
@@ -264,7 +249,7 @@
           <label>Custom CSS</label>
         </th>
         <td>
-          <textarea name="SIRV_CUSTOM_CSS" placeholder="Example:
+          <textarea class="sirv-font-monospace" name="SIRV_CUSTOM_CSS" placeholder="Example:
 .here-is-a-style img {
   width: auto !important;
 }" value="<?php echo get_option('SIRV_CUSTOM_CSS'); ?>" rows="4"><?php echo get_option('SIRV_CUSTOM_CSS'); ?></textarea>

@@ -25,15 +25,15 @@ const paths = {
 		src: ['.*php', './**/*.php'],
 	},
 	scripts: {
-		src: ['assets/js/*.js'],
+		src: ['assets/src/js/*.js'],
 		dest: 'assets/dist/js',
 	},
 	scriptVendors: {
-		src: ['assets/js/vendor/*.js'],
+		src: ['assets/src/js/vendor/*.js'],
 		dest: 'assets/dist/vendor/js',
 	},
 	styles: {
-		src: ['assets/sass/*.scss', 'assets/sass/**/*.scss'],
+		src: ['assets/src/sass/*.scss', 'assets/src/sass/**/*.scss'],
 		dest: 'assets/dist/css',
 	}
 };

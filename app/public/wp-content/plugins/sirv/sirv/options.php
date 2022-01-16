@@ -2,13 +2,13 @@
 
 defined('ABSPATH') or die('No script kiddies please!');
 
-require_once(dirname(__FILE__) . '/woo.options.class.php');
+require_once(dirname(__FILE__) . '/classes/options/options.helper.class.php');
 
 $error = '';
 
-//'SIRV_NETWORK_TYPE'
-$base_options = ['SIRV_FOLDER', 'SIRV_CDN_URL', 'SIRV_ENABLE_CDN', 'SIRV_SHORTCODES_PROFILES', 'SIRV_CDN_PROFILES', 'SIRV_USE_SIRV_RESPONSIVE', 'SIRV_CROP_SIZES', 'SIRV_JS', 'SIRV_JS_FILE', 'SIRV_JS_FILE_EXTEND', 'SIRV_CUSTOM_CSS', 'SIRV_RESPONSIVE_PLACEHOLDER, SIRV_PARSE_STATIC_IMAGES'];
-$options_names = array_merge($base_options, Woo_options::get_option_names_list());
+$base_options = ['SIRV_FOLDER', 'SIRV_CDN_URL', 'SIRV_ENABLE_CDN', 'SIRV_SHORTCODES_PROFILES', 'SIRV_CDN_PROFILES', 'SIRV_USE_SIRV_RESPONSIVE', 'SIRV_CROP_SIZES', 'SIRV_JS', 'SIRV_JS_FILE', 'SIRV_CUSTOM_CSS', 'SIRV_RESPONSIVE_PLACEHOLDER, SIRV_PARSE_STATIC_IMAGES', 'SIRV_CSS_BACKGROUND_IMAGES', 'SIRV_EXCLUDE_FILES', 'SIRV_EXCLUDE_PAGES'];
+OptionsHelper::prepareOptionsData();
+$options_names = array_merge($base_options, OptionsHelper::get_options_names_list());
 
 function isWoocommerce()
 {
@@ -23,17 +23,6 @@ function sirv_getStatus()
   $class = $status == '1' ? 'sirv-status--enabled' : 'sirv-status--disabled';
 
   return $class;
-}
-
-
-function sirv_js_extend_checked($id)
-{
-  $data = json_decode(get_option('SIRV_JS_FILE_EXTEND'), true);
-  if ($data) {
-    if ($data[$id]) return 'checked';
-  }
-
-  return '';
 }
 
 
@@ -132,32 +121,32 @@ if ($sirvStatus) {
   </div>
 
   <?php
-    if($isMuted){
+    if ($isMuted) {
   ?>
-  <div class="sirv-optiontable-holder">
-    <div class="sirv-error"><?php if ($error) echo '<div id="sirv-settings-messages" class="sirv-message error-message">' . $error . '</div>'; ?></div>
-  </div>
+    <div class="sirv-optiontable-holder">
+      <div class="sirv-error"><?php if ($error) echo '<div id="sirv-settings-messages" class="sirv-message error-message">' . $error . '</div>'; ?></div>
+    </div>
 
   <?php } ?>
 
   <?php if ($sirvStatus) { ?>
-  <div class="sirv-tab-content sirv-tab-content-active" id="sirv-settings">
-    <?php include(dirname(__FILE__) . '/submenu_pages/settings.php'); ?>
-  </div>
+    <div class="sirv-tab-content sirv-tab-content-active" id="sirv-settings">
+      <?php include(dirname(__FILE__) . '/submenu_pages/settings.php'); ?>
+    </div>
 
-  <?php if ($isWoocommerce) { ?>
-    <div class="sirv-tab-content" id="sirv-woo">
-      <?php include(dirname(__FILE__) . '/submenu_pages/woocommerce.php'); ?>
+    <?php if ($isWoocommerce) { ?>
+      <div class="sirv-tab-content" id="sirv-woo">
+        <?php include(dirname(__FILE__) . '/submenu_pages/woocommerce.php'); ?>
+      </div>
+    <?php } ?>
+
+    <div class="sirv-tab-content" id="sirv-cache">
+      <?php include(dirname(__FILE__) . '/submenu_pages/sync.php'); ?>
     </div>
   <?php } ?>
 
-  <div class="sirv-tab-content" id="sirv-cache">
-    <?php include(dirname(__FILE__) . '/submenu_pages/sync.php'); ?>
-  </div>
-<?php } ?>
-
-<input type="hidden" name="active_tab" id="active_tab" value="#sirv-account" />
-<input type="hidden" name="action" value="update" />
-<input type="hidden" name="page_options" value="<?php echo implode(', ', $options_names); ?>" />
+  <input type="hidden" name="active_tab" id="active_tab" value="#settings" />
+  <input type="hidden" name="action" value="update" />
+  <input type="hidden" name="page_options" value="<?php echo implode(', ', $options_names); ?>" />
 
 </form>

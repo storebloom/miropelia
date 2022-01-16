@@ -55,10 +55,12 @@ class ImportExport
 		// Last important check
 		\check_admin_referer('wpacu_do_export', 'wpacu_do_export_nonce');
 
-		$exportComment = 'Exported via '.WPACU_PLUGIN_TITLE.' LITE (v'.WPACU_PLUGIN_VERSION.') - Timestamp: '.time();
+		$exportComment = 'Exported [exported_text] via '.WPACU_PLUGIN_TITLE.' (v'.WPACU_PRO_PLUGIN_VERSION.') - Timestamp: '.time();
 
 		// "Settings" values (could be just default ones if none are found in the database)
 		if ($wpacuExportFor === 'settings') {
+			$exportComment = str_replace('[exported_text]', 'Settings', $exportComment);
+
 			$settingsJson = $this->jsonSettings();
 
 			$valuesArray = array(
@@ -68,6 +70,8 @@ class ImportExport
 
 			$valuesJson = json_encode($valuesArray);
 		} elseif ($wpacuExportFor === 'everything') {
+			$exportComment = str_replace('[exported_text]', 'Everything', $exportComment);
+
 			// "Settings"
 			$settingsJson = $this->jsonSettings();
 
@@ -89,9 +93,9 @@ class ImportExport
 			$globalDataListJson = get_option(WPACU_PLUGIN_ID . '_global_data');
 			$globalDataArray    = json_decode($globalDataListJson, ARRAY_A);
 
-			// Pages, Posts, Custom Post Types: All Metas
 			global $wpdb;
 
+			// Pages, Posts, Custom Post Types: All Metas
 			$wpacuPostMetaKeys = array(
 				'_' . WPACU_PLUGIN_ID . '_no_load', // All Unload Rules (CSS/JS Manager Meta Box)
 				'_' . WPACU_PLUGIN_ID . '_page_options', // All Options (Side Meta Box)
@@ -130,8 +134,10 @@ SQL;
 		$date = date('j-M-Y-H.i');
 		$host = parse_url(site_url(), PHP_URL_HOST);
 
+		$wpacuExportForPartOfFileName = str_replace('_', '-', $wpacuExportFor);
+
 		header('Content-Type: application/json');
-		header('Content-Disposition: attachment; filename="asset-cleanup-lite-exported-'.$wpacuExportFor.'-from-'.$host.'-'.$date.'.json"');
+		header('Content-Disposition: attachment; filename="asset-cleanup-lite-exported-'.$wpacuExportForPartOfFileName.'-from-'.$host.'-'.$date.'.json"');
 
 		echo $valuesJson;
 		exit();

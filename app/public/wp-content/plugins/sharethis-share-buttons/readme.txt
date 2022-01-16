@@ -1,13 +1,13 @@
 === ShareThis Share Buttons ===
 Plugin Name: ShareThis Share Buttons
-Contributors: sharethis, scottstorebloom,
+Contributors: sharethis, scottstorebloom, scottmweaver
 Tags: social buttons, sharethis, share this, social sharing, share buttons, social media buttons, sharing tools
 Author URI: https://sharethis.com/
 Author: ShareThis
 Requires at least: 4.5
-Tested up to: 5.4.2
-Stable tag: 1.4.1
-Version: 1.4.1
+Tested up to: 5.7.2
+Stable tag: 1.5.2
+Version: 1.5.2
 License: GPLv2 or later
 
 Grow your website traffic with share buttons for 40+ social channels including Facebook, LinkedIn, Twitter, WhatsApp, and more.
@@ -64,6 +64,16 @@ We cache your ShareThis platform button configurations (social networks, button 
 
 == Changelog ==
 
+= 1.5.2 =
+* Add Snapchat, BLM and Live Journal network options.
+
+= 1.5.1 =
+* Fix position config update save.
+
+= 1.5.0 =
+* Fix missing update in stick config.
+* Fix fix language selector.
+
 = 1.4.1 =
 * Fix GDPR compliance on/off.
 
@@ -77,7 +87,7 @@ We cache your ShareThis platform button configurations (social networks, button 
 * Add notice for ad blockers.
 
 = 1.2.10 =
-* Fix endpoint udpate.
+* Fix endpoint update.
 
 = 1.2.9 =
 * Add German to language list.

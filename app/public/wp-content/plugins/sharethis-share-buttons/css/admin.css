@@ -702,6 +702,7 @@ a.st-rc-back:active {
 	height: 20px;
 	margin-bottom: 8px;
 	margin-right: 8px;
+	overflow: hidden;
 	padding: 10px;
 	position: relative;
 	text-align: center;
@@ -1567,6 +1568,29 @@ div.st-design-message {
   width: 14%;
 }
 
+
+.gdpr-platform .vendor-table-body {
+  border: solid 1px #cdcdcd;
+  padding: 10px;
+  max-height: 600px;
+  overflow: scroll;
+}
+
+.gdpr-platform .vendor-table-cell {
+  padding: 20px 0;
+  border-bottom: solid 1px #cdcdcd;
+}
+
+.gdpr-platform .vendor-table-cell input[type="checkbox"]
+{
+  display: none;
+}
+
+.gdpr-platform .exclusion-item {
+  padding: 20px 0;
+  border-bottom: solid 1px #cdcdcd;
+}
+
 .gdpr-platform input[type=checkbox] {
   box-sizing: border-box;
   padding: 0;
@@ -1698,4 +1722,46 @@ a.st-rc-link {
   flex-direction: column;
   display: flex;
   align-items: center;
+}
+
+.accor-wrap {
+  margin: 1rem 0 0;
+  display: inline-block;
+  width: 100%;
+}
+
+.accor-wrap .accor-tab {
+  background: #308cc1;
+  padding: .5rem;
+  border-radius: 5px;
+  color: #ffffff;
+}
+
+.accor-wrap .well {
+  display: inline-block;
+  width: 100%;
+}
+
+.accor-wrap .well h3 {
+  margin: 1rem 0;
+}
+
+.accor-wrap .well .col-md-12:first-of-type h3 {
+  margin-top: 0;
+}
+
+.accor-wrap .accor-content {
+  display: none;
+}
+
+.accor-wrap .accor-arrow {
+  border: 1px solid #ffffff;
+  padding: .2rem .4rem;
+  border-radius: 5px;
+  margin: 0 .3rem 0 .3rem;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: arial, sans-serif;
+  position: absolute;
+  left: 43px;
 }

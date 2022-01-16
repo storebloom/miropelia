@@ -303,6 +303,10 @@ class Minute_Control
 	private function get_hide_status( $type, $value ) {
 		global $post;
 
+		if (!isset($post->ID)) {
+			return false;
+		}
+
 		// The non post id dependant types.
 		$alternate_types = array( 'sharethis_sticky_home', 'sharethis_sticky_category', 'sharethis_sticky_tags', 'sharethis_sticky_author', 'sharethis_sticky_custom_posts' );
 		$alternate_pages = (
@@ -322,9 +326,14 @@ class Minute_Control
 		$page_option_on = get_option( $type . '_on' );
 		$page_option_off = get_option( $type . '_off' );
 
-		if ( ! is_array( $page_option_off ) && ! is_array( $page_option_on ) && 'false' === $value && $alternate_pages && in_array( $post->post_type, explode( '_', $type ), true ) ) {
+		if (!is_array($page_option_off) &&
+		     !is_array($page_option_on) &&
+		     'false' === $value &&
+		     $alternate_pages &&
+		     in_array($post->post_type, explode( '_', $type ), true)
+		) {
 			$hide = true;
-		} else {
+		} elseif (isset($post->ID)) {
 			$hide = (
 				is_array( $page_option_on )
 				&&
@@ -409,7 +418,7 @@ class Minute_Control
 	public function set_inline_excerpt( $excerpt ) {
 		global $post;
 
-		if ( is_admin() ) {
+		if ( is_admin() && !wp_doing_ajax() ) {
 			return;
 		}
 

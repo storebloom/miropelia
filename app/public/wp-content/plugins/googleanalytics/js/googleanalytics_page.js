@@ -218,7 +218,7 @@ const GA_AUTHENTICATION_CODE_ERROR = 'That looks like your Google Analytics Trac
           publisherPurposes = [],
           display = $( '#sharethis-user-type option:selected' ).val(),
           name = $( '#sharethis-publisher-name' ).val(),
-          scope = $( '#sharethis-consent-type option:selected' ).val(),
+          scope = 'publisher',
           color = $( '#sharethis-form-color .color.selected' ).attr('data-value'),
           publisherRestrictions = {},
           language = $( '#st-language' ).val();
@@ -464,7 +464,7 @@ const GA_AUTHENTICATION_CODE_ERROR = 'That looks like your Google Analytics Trac
           url: ajaxurl,
           data: dataObj,
           success: function (response) {
-            window.location.reload();
+            window.location.href = siteAdminUrl + 'admin.php?page=googleanalytics&ga_action=demo-ad';
           }
         });
       }
@@ -506,15 +506,26 @@ const GA_AUTHENTICATION_CODE_ERROR = 'That looks like your Google Analytics Trac
     };
 
     $(document).ready(function () {
-        ga_events.initModalEvents();
-        ga_events.enableGdpr();
-        ga_events.setGDPRConfig($('body').hasClass('google-analytics_page_googleanalytics-gdpr'));
+      const scrollData = $( '#ga-stats-container' ).attr( 'data-scroll' );
+      const scrollEl = '' !== scrollData ? $('.' + scrollData) : '';
+      const theBody = $('body');
+
+      ga_events.initModalEvents();
+      ga_events.enableGdpr();
+      ga_events.setGDPRConfig(theBody.hasClass('google-analytics_page_googleanalytics-gdpr'));
+
+      if ( '' !== scrollData && theBody.hasClass( 'toplevel_page_googleanalytics' ) ) {
+        $([document.documentElement, document.body]).animate({
+          scrollTop: scrollEl.offset().top + 450
+        }, 500);
+      }
     });
 
     const offset = 50;
     const minWidth = 350;
     const wrapperSelector = '#ga-stats-container';
     const chartContainer = 'chart_div';
+    const demoChartDeviceContainer = 'demo_chart_device_div';
     const demoChartGenderContainer = 'demo_chart_gender_div';
     const demoChartAgeContainer = 'demo_chart_age_div';
 
@@ -583,29 +594,40 @@ const GA_AUTHENTICATION_CODE_ERROR = 'That looks like your Google Analytics Trac
             chart.draw(data, options);
         },
       drawDemoGenderChart: function (data, chartWidth) {
-
         if (typeof chartWidth == 'undefined') {
           chartWidth = ga_tools.recomputeChartWidth(minWidth, offset, wrapperSelector);
         }
 
-        var data = google.visualization.arrayToDataTable(data);
+        data = google.visualization.arrayToDataTable(data);
 
+        var chart = new google.visualization.PieChart(document.getElementById(demoChartGenderContainer));
         var options = {
           title: 'Gender'
         };
 
-        var chart = new google.visualization.PieChart(document.getElementById(demoChartGenderContainer));
+        chart.draw(data, options);
+      },
+      drawDemoDeviceChart: function (data, chartWidth) {
+        if (typeof chartWidth == 'undefined') {
+          chartWidth = ga_tools.recomputeChartWidth(minWidth, offset, wrapperSelector);
+        }
+
+        data = google.visualization.arrayToDataTable(data);
+
+        var chart = new google.visualization.PieChart(document.getElementById(demoChartDeviceContainer));
+        var options = {
+          title: 'Device Breakdown'
+        };
 
         chart.draw(data, options);
       },
 
       drawDemoAgeChart: function (data, chartWidth) {
-
         if (typeof chartWidth == 'undefined') {
           chartWidth = ga_tools.recomputeChartWidth(minWidth, offset, wrapperSelector);
         }
 
-        var data = google.visualization.arrayToDataTable(data);
+        data = google.visualization.arrayToDataTable(data);
 
         var options = {
           title: 'Age',

@@ -318,4 +318,6 @@ $pluginsAreaStatus = $data['plugin_settings']['assets_list_layout_plugin_area_st
 * -----------------------
 */
 
+include_once __DIR__ . '/_page-options.php';
+
 include '_inline_js.php';

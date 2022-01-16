@@ -85,7 +85,7 @@ class Plugin extends Plugin_Base {
 		wp_register_script( "{$this->assets_prefix}-review", "{$this->dir_url}js/review.js", array(
 			'jquery',
 			'wp-util',
-		), '1.0.4', true );
+		), time(), true );
 		wp_register_style( "{$this->assets_prefix}-review", "{$this->dir_url}css/sharethisreviews.css", false, '1.0.5' );
 	}
 }

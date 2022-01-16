@@ -381,7 +381,7 @@ class PluginTracking
 	public function notice_styles()
 	{
 		?>
-        <style type="text/css">
+        <style <?php echo Misc::getStyleTypeAttribute(); ?>>
             .wpacu-tracking-notice {
                 border-left-color: #008f9c;
             }

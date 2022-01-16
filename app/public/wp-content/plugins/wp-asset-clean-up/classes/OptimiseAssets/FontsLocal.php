@@ -15,6 +15,10 @@ class FontsLocal
 	 */
 	public function init()
 	{
+		if (self::preventAnyChange()) {
+			return;
+		}
+
 		add_action('wp_head', array($this, 'preloadFontFiles'), 1);
 	}
 
@@ -24,7 +28,7 @@ class FontsLocal
 	public function preloadFontFiles()
 	{
 		// AMP page or Test Mode? Do not print anything
-		if (Plugin::preventAnyChanges() || Main::isTestModeActive()) {
+		if ( Plugin::preventAnyFrontendOptimization() || Main::isTestModeActive() ) {
 			return;
 		}
 
@@ -58,5 +62,17 @@ class FontsLocal
 		}
 
 		echo apply_filters('wpacu_preload_local_font_files_output', $preloadFontFilesOutput);
+	}
+
+	/**
+	 * @return bool
+	 */
+	public static function preventAnyChange()
+	{
+		if (defined('WPACU_ALLOW_ONLY_UNLOAD_RULES') && WPACU_ALLOW_ONLY_UNLOAD_RULES) {
+			return true;
+		}
+
+		return false;
 	}
 }

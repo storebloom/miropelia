@@ -5,6 +5,7 @@ use WpAssetCleanUp\CleanUp;
 use WpAssetCleanUp\Main;
 use WpAssetCleanUp\Menu;
 use WpAssetCleanUp\MetaBoxes;
+use WpAssetCleanUp\Misc;
 
 /**
  * Class MinifyJs
@@ -95,6 +96,8 @@ class MinifyJs
 
 			);
 
+		$regExps = Misc::replaceRelPluginPath($regExps);
+
 		if (Main::instance()->settings['minify_loaded_js_exceptions'] !== '') {
 			$loadedJsExceptionsPatterns = trim(Main::instance()->settings['minify_loaded_js_exceptions']);
 
@@ -110,7 +113,7 @@ class MinifyJs
 		}
 
 		foreach ($regExps as $regExp) {
-			if ( preg_match( $regExp, $src ) ) {
+			if ( preg_match( $regExp, $src ) || ( strpos($src, $regExp) !== false ) ) {
 				return true;
 			}
 		}
@@ -260,7 +263,7 @@ class MinifyJs
 		// It will preview the page with JS minified
 		// Only if the admin is logged-in as it uses more resources (CPU / Memory)
 		if (array_key_exists('wpacu_js_minify', $_GET) && Menu::userCanManageAssets()) {
-			self::isMinifyJsEnabledChecked(true);
+			self::isMinifyJsEnabledChecked('true');
 			return true;
 		}
 
@@ -268,22 +271,28 @@ class MinifyJs
 		     is_admin() || // not for Dashboard view
 		     (! Main::instance()->settings['minify_loaded_js']) || // Minify JS has to be Enabled
 		     (Main::instance()->settings['test_mode'] && ! Menu::userCanManageAssets()) ) { // Does not trigger if "Test Mode" is Enabled
-			self::isMinifyJsEnabledChecked(false);
+			self::isMinifyJsEnabledChecked('false');
 			return false;
 		}
 
-		if (defined('WPACU_CURRENT_PAGE_ID') && WPACU_CURRENT_PAGE_ID > 0 && is_singular()) {
+		$isSingularPage = defined('WPACU_CURRENT_PAGE_ID') && WPACU_CURRENT_PAGE_ID > 0 && is_singular();
+
+		if ($isSingularPage || Misc::isHomePage()) {
 			// If "Do not minify JS on this page" is checked in "Asset CleanUp: Options" side meta box
-			$pageOptions = MetaBoxes::getPageOptions( WPACU_CURRENT_PAGE_ID );
+			if ($isSingularPage) {
+				$pageOptions = MetaBoxes::getPageOptions( WPACU_CURRENT_PAGE_ID ); // Singular page
+			} else {
+				$pageOptions = MetaBoxes::getPageOptions(0, 'front_page'); // Home page
+			}
 
 			if ( isset( $pageOptions['no_js_minify'] ) && $pageOptions['no_js_minify'] ) {
-				self::isMinifyJsEnabledChecked(false);
+				self::isMinifyJsEnabledChecked('false');
 				return false;
 			}
 		}
 
 		if (OptimizeJs::isOptimizeJsEnabledByOtherParty('if_enabled')) {
-			self::isMinifyJsEnabledChecked(false);
+			self::isMinifyJsEnabledChecked('false');
 			return false;
 		}
 
@@ -296,7 +305,11 @@ class MinifyJs
 	public static function isMinifyJsEnabledChecked($value)
 	{
 		if (! defined('WPACU_IS_MINIFY_JS_ENABLED')) {
-			define('WPACU_IS_MINIFY_JS_ENABLED', $value);
+			if ($value === 'true') {
+				define( 'WPACU_IS_MINIFY_JS_ENABLED', true );
+			} elseif ($value === 'false') {
+				define( 'WPACU_IS_MINIFY_JS_ENABLED', false );
+			}
 		}
 	}
 }

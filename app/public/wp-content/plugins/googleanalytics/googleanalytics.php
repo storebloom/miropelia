@@ -1,10 +1,9 @@
 <?php
-
 /*
- * Plugin Name: Google Analytics
+ * Plugin Name: ShareThis Dashboard for Google Analytics
  * Plugin URI: http://wordpress.org/extend/plugins/googleanalytics/
  * Description: Use Google Analytics on your WordPress site without touching any code, and view visitor reports right in your WordPress admin dashboard!
- * Version: 2.4.1
+ * Version: 2.5.2
  * Author: ShareThis
  * Author URI: http://sharethis.com
  */
@@ -47,7 +46,7 @@ if ( !preg_match( '/(\/|\\\)' . GA_NAME . '(\/|\\\)/', realpath( __FILE__ ), $te
 	die();
 }
 
-define( 'GOOGLEANALYTICS_VERSION', '2.4.0' );
+define( 'GOOGLEANALYTICS_VERSION', '2.5.2' );
 include_once GA_PLUGIN_DIR . '/overwrite/ga_overwrite.php';
 include_once GA_PLUGIN_DIR . '/class/Ga_Autoloader.php';
 include_once GA_PLUGIN_DIR . '/tools/class-support-logging.php';

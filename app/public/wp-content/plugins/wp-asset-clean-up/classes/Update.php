@@ -64,6 +64,9 @@ HTML;
         // This triggers ONLY in the Dashboard after "Update" button is clicked (on Edit mode)
         add_action('save_post', array($this, 'savePost'));
 
+        // This is to update the permalink for the post in "Page Options" if the following option was ever used for the post: "Do not load Asset CleanUp Pro on this page (this will disable any functionality of the plugin)"
+	    add_action('post_updated', array($this, 'afterPostUpdate'), 10, 3);
+
         // Clear cache (via AJAX) only if the user is logged-in (with the right privileges)
 	    add_action('wp_ajax_' . WPACU_PLUGIN_ID . '_clear_cache', array($this, 'ajaxClearCache'), PHP_INT_MAX);
 
@@ -204,7 +207,8 @@ HTML;
 	    $paramsToAdd = array(
 		    'wpacu_time'    => time(),
 		    'nocache'       => 'true',
-            'wpacu_updated' => 'true'
+            'wpacu_updated' => 'true',
+            'wpacu_ignore_no_load_option' => 1
 	    );
 
 	    $extraParamsSign = '?';
@@ -252,10 +256,11 @@ HTML;
 		    return;
 	    }
 
-	    // Any page options set? From the Side Meta Box "Asset CleanUp Options"
+	    // Any page options set? From the Side Meta Box "Asset CleanUp: Options"
+	    // Could be just these fields available in the form (e.g. unavailable CSS/JS manager due to the page set to not load the plugin at all)
 	    $this->updatePageOptions($post->ID);
 
-    	// This is triggered only if the "Asset CleanUp" meta box was loaded with the list of assets
+    	// This is triggered only if the "Asset CleanUp" meta box was loaded with the list of assets (either in edit post/page or in "CSS & JS Manager" -> "Manage CSS/JS")
 	    // Otherwise, $_POST[WPACU_PLUGIN_ID] will be taken as empty which might be not if there are values in the database
     	if (! Misc::getVar('post', 'wpacu_unload_assets_area_loaded')) {
     	    return;
@@ -304,13 +309,14 @@ HTML;
 
         // If globally disabled, make an exception to load for submitted assets
         $this->saveLoadExceptions('post', $postId);
+        $this->saveLoadExceptionsPostType();
 
 	    // Add / Remove Site-wide Unloads
 	    $this->updateEverywhereUnloads();
 
         // Any bulk unloads or removed? (e.g. all pages of a certain post type)
-        $this->saveToBulkUnloads();
-        $this->removeBulkUnloads($post->post_type);
+	    $this->saveToBulkUnloads($post);
+	    $this->removeBulkUnloads($post->post_type);
 
 	    // "Contracted" or "Expanded" when managing the assets (for admin use only)
 	    self::updateHandleRowStatus();
@@ -327,6 +333,8 @@ HTML;
 	    // Any ignore deps
 	    self::updateIgnoreChild();
 
+	    add_action('wpacu_admin_notices', array($this, 'pageUpdated'));
+
 	    self::clearTransients();
 
 	    // In case Combine CSS/JS was enabled and there are traces of JSON files in the caching directory
@@ -337,12 +345,43 @@ HTML;
 	    // To avoid the usage of too much memory (good for shared environments) and avoid any memory related errors showing up to the user which could be confusing
     }
 
+	/**
+     * This takes action when the CSS/JS manager from edit post/page is used
+     *
+	 * @param $postId
+	 * @param $after
+	 */
+	public function afterPostUpdate($postId, $afterPostObj, $beforePostObj)
+    {
+        global $wpdb;
+
+        // The post might have the following page option: "Do not load Asset CleanUp Pro on this page (this will disable any functionality of the plugin)"
+        // If the admin changed the slug, we need to update the page URI as well that is used very early in the triggering of the plugin
+        // when get_permalink() is not available (e.g. outside any action hook or in the MU plugin)
+	    $pageOptionJson = $wpdb->get_var( 'SELECT meta_value FROM `' . $wpdb->prefix . 'postmeta` WHERE post_id=\''.$postId.'\' && meta_key=\'_'.WPACU_PLUGIN_ID.'_page_options\' && meta_value LIKE \'%no_wpacu_load%\'' );
+
+	    $postPageOptions = @json_decode($pageOptionJson, ARRAY_A);
+
+	    if ( ! isset($postPageOptions['no_wpacu_load']) ) {
+	        return;
+        }
+
+	    if ($afterPostObj->post_name !== $beforePostObj->post_name) {
+		    $postPageOptions['_page_uri'] = Misc::getPageUri($postId);
+		    update_post_meta($postId, '_' . WPACU_PLUGIN_ID . '_page_options', json_encode(Misc::filterList($postPageOptions)));
+        }
+    }
+
     /**
      * @param $wpacuNoLoadAssets
      */
     public function updateFrontPage($wpacuNoLoadAssets)
     {
-    	// Needed in case the user clicks "Update" on a page without assets retrieved
+	    // Any page options set? From the Side Meta Box "Asset CleanUp: Options"
+	    // Could be just these fields available in the form (e.g. unavailable CSS/JS manager due to the page set to not load the plugin at all)
+	    $this->updatePageOptions(0, 'front_page');
+
+	    // Needed in case the user clicks "Update" on a page without assets retrieved
 	    // Avoid resetting the existing values
 	    if (! Misc::getVar('post', 'wpacu_unload_assets_area_loaded')) {
 		    return;
@@ -355,9 +394,8 @@ HTML;
 	    // Was the Assets List Layout changed?
 	    self::updateAssetListLayoutSettings();
 
-        $jsonNoAssetsLoadList = json_encode($wpacuNoLoadAssets);
-
-	    Misc::addUpdateOption(WPACU_PLUGIN_ID . '_front_page_no_load', $jsonNoAssetsLoadList);
+        $jsonNoAssetsLoadList = json_encode( $wpacuNoLoadAssets );
+        Misc::addUpdateOption( WPACU_PLUGIN_ID . '_front_page_no_load', $jsonNoAssetsLoadList );
 
         // If globally disabled, make an exception to load for submitted assets
         $this->saveLoadExceptions('front_page');
@@ -403,7 +441,19 @@ HTML;
     }
 
 	/**
-	 * Lite: For Singular Page (Post, Page, Custom Post Type) and Front Page (Home Page)
+	 *
+	 */
+	public function pageUpdated()
+	{
+		?>
+        <div class="updated notice wpacu-notice is-dismissible">
+            <p><?php echo $this->updateDoneMsg['page']; ?></p>
+        </div>
+		<?php
+	}
+
+	/**
+	 * Lite: For Singular Page (Post, Page, Custom Post Type), Front Page (Home Page), On All Pages of a specific post type (post, page or custom)
 	 * Pro: 'for_pro' would trigger the actions from the premium extension (if available)
      * UPDATE: Since v1.2.9.5, no fallback for both the lite and pro version activated at the same time would work anymore
      * Users need to only keep the PRO version since it's standalone since v1.0.3
@@ -417,32 +467,23 @@ HTML;
 	 */
 	public function saveLoadExceptions($type = 'post', $postId = '')
     {
-        if ($type === 'post' && !$postId) {
+        if ( $type === 'post' && ! $postId ) {
             // $postId needs to have a value if $type is a 'post' type
             return;
         }
 
-        // Any load exceptions?
-        $isPostOptionStyles = (isset($_POST['wpacu_styles_load_it']) && ! empty($_POST['wpacu_styles_load_it']));
-        $isPostOptionScripts = (isset($_POST['wpacu_scripts_load_it']) && ! empty($_POST['wpacu_scripts_load_it']));
-
         $loadExceptionsStyles = $loadExceptionsScripts = array();
 
-        // Clear existing list first
+        // [Start] Clear existing list first
         if ($type === 'post') {
             delete_post_meta($postId, '_' . WPACU_PLUGIN_ID . '_load_exceptions');
-        }
-
-        if ($type === 'front_page') {
+        } elseif ($type === 'front_page') {
             delete_option( WPACU_PLUGIN_ID . '_front_page_load_exceptions');
         }
-
-        if (! $isPostOptionStyles && ! $isPostOptionScripts) {
-            return;
-        }
+	    // [End] Clear existing list first
 
         // Load Exception
-        // Case: On this page
+        // On this page or page type such as 404, search, etc.
         if (isset($_POST['wpacu_styles_load_it']) && ! empty($_POST['wpacu_styles_load_it'])) {
             foreach ($_POST['wpacu_styles_load_it'] as $wpacuHandle) {
                 // Do not append it if the global unload is removed
@@ -492,16 +533,92 @@ HTML;
 
             $jsonLoadExceptions = json_encode(Misc::filterList($list));
 
-            if ($type === 'post') {
-                if (! add_post_meta($postId, '_' . WPACU_PLUGIN_ID . '_load_exceptions', $jsonLoadExceptions, true)) {
-                    update_post_meta($postId, '_' . WPACU_PLUGIN_ID . '_load_exceptions', $jsonLoadExceptions);
-                }
-            }
-
-            if ($type === 'front_page') {
-	            Misc::addUpdateOption( WPACU_PLUGIN_ID . '_front_page_load_exceptions', $jsonLoadExceptions);
+            if ( $type === 'post' && (! add_post_meta($postId, '_' . WPACU_PLUGIN_ID . '_load_exceptions', $jsonLoadExceptions, true)) ) {
+                update_post_meta( $postId, '_' . WPACU_PLUGIN_ID . '_load_exceptions', $jsonLoadExceptions );
+            } elseif ($type === 'front_page') {
+	            Misc::addUpdateOption( WPACU_PLUGIN_ID . '_front_page_load_exceptions', $jsonLoadExceptions );
             }
         }
+    }
+
+	/**
+	 *
+	 */
+	public function saveLoadExceptionsPostType()
+    {
+	    // On all pages belonging to a (custom) post type (e.g. WooCommerce product page)
+	    if (isset($_POST['wpacu_styles_load_it_post_type']) && ! empty($_POST['wpacu_styles_load_it_post_type'])) {
+		    $wpacuPostType = key($_POST['wpacu_styles_load_it_post_type']);
+		    $loadExceptionsStyles = $_POST['wpacu_styles_load_it_post_type'][$wpacuPostType];
+		    }
+
+	    if (isset($_POST['wpacu_scripts_load_it_post_type']) && ! empty($_POST['wpacu_scripts_load_it_post_type'])) {
+		    $wpacuPostType = key($_POST['wpacu_scripts_load_it_post_type']);
+		    $loadExceptionsScripts = $_POST['wpacu_scripts_load_it_post_type'][$wpacuPostType];
+	    }
+
+	    if ((! empty($loadExceptionsStyles) || ! empty($loadExceptionsScripts)) && (isset($wpacuPostType) && $wpacuPostType)) {
+		    // Default
+		    $listToSave = array( 'styles' => array(), 'scripts' => array() );
+
+		    // Build list
+		    if (! empty($loadExceptionsStyles)) {
+		        $listToSave['styles'] = $loadExceptionsStyles;
+		    }
+
+		    if (! empty($loadExceptionsScripts)) {
+		        $listToSave['scripts'] = $loadExceptionsScripts;
+		    }
+
+		    $jsonLoadExceptionsToAdd = json_encode(array($wpacuPostType => $listToSave));
+
+		    $optionToUpdate = WPACU_PLUGIN_ID . '_post_type_load_exceptions';
+
+		    $existingListEmpty = array( $wpacuPostType => array( 'styles' => array(), 'scripts' => array() ) );
+		    $existingListJson = get_option($optionToUpdate);
+
+		    $existingListData = Main::instance()->existingList($existingListJson, $existingListEmpty);
+		    $existingList = $existingListData['list'];
+
+		    if ( $existingListJson && is_array($existingList) && ! empty($existingList) ) {
+                if (isset($existingList[$wpacuPostType])) {
+                    foreach ($listToSave as $assetType => $assetValues) {
+                        foreach ($assetValues as $assetHandle => $assetValue) {
+                            $existingList[ $wpacuPostType ][ $assetType ][ $assetHandle ] = $assetValue;
+                        }
+                    }
+                } else {
+                    $existingList[$wpacuPostType] = $listToSave;
+                }
+
+                // Clear empty (redundant) values
+			    foreach ($existingList as $wpacuPostType => $assetTypes) {
+				    foreach ($assetTypes as $assetType => $assetValues) {
+				        if (empty($assetValues)) {
+				            unset($existingList[$wpacuPostType][$assetType]);
+				        }
+
+				        foreach ($assetValues as $assetHandle => $assetValue) {
+					        if ( $assetValue === '' ) {
+						        unset( $existingList[ $wpacuPostType ][ $assetType ][ $assetHandle ] );
+					        }
+
+					        if (empty($existingList[ $wpacuPostType ][ $assetType ])) {
+						        unset( $existingList[$wpacuPostType][$assetType] );
+					        }
+
+					        if (empty($existingList[$wpacuPostType])) {
+						        unset($existingList[$wpacuPostType]);
+					        }
+				        }
+				    }
+			    }
+
+			    Misc::addUpdateOption( $optionToUpdate, json_encode($existingList) );
+		    } else {
+			    Misc::addUpdateOption( $optionToUpdate, $jsonLoadExceptionsToAdd );
+		    }
+	    }
     }
 
 	/**
@@ -554,37 +671,54 @@ HTML;
 	    Misc::addUpdateOption($optionToUpdate, json_encode(Misc::filterList($existingList)));
     }
 
-	/*
-	 * This method should ONLY be triggered when the "Asset CleanUp Options" area is visible
+	/**
+     * This method should ONLY be triggered when the "Asset CleanUp: Options" area is visible
+     *
+	 * @param $postId
+	 * @param string $type
 	 */
-	public function updatePageOptions($postId)
+	public function updatePageOptions($postId, $type = 'post')
 	{
 		// Is the "Asset CleanUp: Page Options" meta box not loaded?
 		// Then do not perform any update below
-		if (! Misc::getVar('post', 'wpacu_meta_box_page_options_loaded', false)) {
+		if ( ! Misc::getVar( 'post', 'wpacu_page_options_area_loaded', false ) ) {
 			return;
 		}
 
-		$pageOptions = Misc::getVar('post', WPACU_PLUGIN_ID.'_page_options', array());
+		$pageOptions = Misc::getVar( 'post', WPACU_PLUGIN_ID . '_page_options', array() );
 
-		// In order for the "Apply the selected options" to work
-		// At least one of the checkboxes above have to be enabled
-		if (isset($pageOptions['apply_options_for']) && $pageOptions['apply_options_for'] && count($pageOptions) === 1) {
-			$pageOptions = array();
-		}
+	    if ($type === 'post' || $postId > 0) {
+		    /*
+			 * For posts, pages, custom post types
+			 */
+		    // No page options? Delete any entry from the database to free up space
+		    // instead of updating it as an empty entry
+		    if ( empty( $pageOptions ) ) {
+			    delete_post_meta( $postId, '_' . WPACU_PLUGIN_ID . '_page_options' );
 
-		// No page options? Delete any entry from the database to free up space
-		// instead of updating it as an empty entry
-		if (empty($pageOptions)) {
-			delete_post_meta($postId, '_' . WPACU_PLUGIN_ID . '_page_options');
-			return;
-		}
+			    return;
+		    }
 
-		$pageOptionsJson = json_encode($pageOptions);
+		    // Save the page URI as it's needed instead of get_permalink() that can't be called too early (e.g. outside an action hook or in a MU plugin)
+		    $pageOptions['_page_uri'] = Misc::getPageUri($postId);
 
-		if (! add_post_meta($postId, '_' . WPACU_PLUGIN_ID . '_page_options', $pageOptionsJson, true)) {
-			update_post_meta($postId, '_' . WPACU_PLUGIN_ID . '_page_options', $pageOptionsJson);
-		}
+		    $pageOptionsJson = json_encode( Misc::filterList($pageOptions) );
+
+		    if ( ! add_post_meta( $postId, '_' . WPACU_PLUGIN_ID . '_page_options', $pageOptionsJson, true ) ) {
+			    update_post_meta( $postId, '_' . WPACU_PLUGIN_ID . '_page_options', $pageOptionsJson );
+		    }
+	    } elseif ($type === 'front_page') {
+            /*
+             * For the homepage (e.g. latest posts), but not a page set as homepage
+             */
+		    $existingListJson = get_option(WPACU_PLUGIN_ID . '_global_data');
+		    $existingListData = Main::instance()->existingList($existingListJson, array());
+		    $existingList = $existingListData['list'];
+
+		    $existingList['page_options']['homepage'] = $pageOptions;
+
+		    Misc::addUpdateOption( WPACU_PLUGIN_ID . '_global_data', json_encode(Misc::filterList($existingList)));
+	    }
 	}
 
 	/**
@@ -719,11 +853,13 @@ HTML;
     }
 
 	/**
-	 *
+	 * @param string $post
 	 */
-	public function saveToBulkUnloads()
+	public function saveToBulkUnloads($post = '')
     {
-	    global $post;
+        if ($post === '') {
+	        global $post;
+        }
 
 	    $postType = isset( $post->post_type ) ? $post->post_type : false;
 
@@ -1114,7 +1250,7 @@ HTML;
 
 		OptimizeCommon::clearCache();
 
-		exit();
+	    exit();
 	}
 
 	/**
@@ -1122,20 +1258,32 @@ HTML;
 	 */
 	public function ajaxPreloadGuest()
     {
-	    if (! Menu::userCanManageAssets()) {
-		    echo 'Error: Not enough privileges to perform this action.';
+        // Check nonce
+	    if ( ! isset( $_POST['wpacu_ajax_preload_url_nonce'] ) || ! wp_verify_nonce( $_POST['wpacu_ajax_preload_url_nonce'], 'wpacu_ajax_preload_url_nonce' ) ) {
+		    echo 'Error: The security nonce is not valid.';
 		    exit();
 	    }
 
         $pageUrl = isset($_POST['page_url']) ? $_POST['page_url'] : false;
+	    $pageUrlDomain = parse_url($pageUrl, PHP_URL_HOST);
+	    $pageUrlPreload = add_query_arg( array( 'wpacu_preload' => 1 ), $pageUrl );
 
-	    $pageUrlPreload = add_query_arg( array(
-		    'wpacu_preload' => 1
-	    ), $pageUrl );
-
+	    // Check if the URL is valid
 	    if (! filter_var($pageUrlPreload, FILTER_VALIDATE_URL)) {
-	        echo 'The URL `'.$pageUrlPreload.'` is not valid.';
+		    echo 'The URL `'.$pageUrlPreload.'` is not valid.';
+		    exit();
+	    }
+
+	    // Check the domain from "page_url" parameter
+	    if (strpos(site_url(), $pageUrlDomain) === false) {
+	        echo 'Error: Possible hacking attempt! The host name of the requested URL is not the same as the one of "Site Address (URL)" from "Settings" - "General".';
 	        exit();
+	    }
+
+	    // Check privileges
+	    if (! Menu::userCanManageAssets()) {
+		    echo 'Error: Not enough privileges to perform this action.';
+		    exit();
 	    }
 
 	    $response = wp_remote_get($pageUrlPreload);

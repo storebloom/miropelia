@@ -3,8 +3,8 @@ Contributors: gabelivan
 Tags: minify css, minify javascript, defer css javascript, page speed, dequeue, performance
 Donate link: https://www.gabelivan.com/items/wp-asset-cleanup-pro/?utm_source=wp_org_lite&utm_medium=donate
 Requires at least: 4.5
-Tested up to: 5.6
-Stable tag: 1.3.7.3
+Tested up to: 5.7.2
+Stable tag: 1.3.8.0
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl.html
 
@@ -190,6 +190,70 @@ With the recently released "Test Mode" feature, you can safely unload assets on 
 4. Homepage CSS & JS Management (List sorted by location)
 
 == Changelog ==
+= 1.3.8.0 =
+* The meta box "Asset CleanUp Pro: Page Options" has had its contents moved to the "Page Options" area from the CSS/JS manager in any location the assets are managed
+* Added "Page Options" for the homepage as well (e.g. latest posts) besides posts, pages, and any public custom post types (e.g. WooCommerce product pages)
+* Prevent the plugin from triggering when WooCommerce API calls are made
+* Make sure the following option works well when non-Latin characters are in the URI: "Do not load the plugin on certain page"
+* Fix: When hovering over the post's title in the Dashboard's posts list (either post, page, or custom post type), make sure "Manage CSS & JS" is only shown to the right admins to avoid any confusion
+* Fix: When assets' list is fetched, WP Rocket was disabled which made some plugins/themes that are directly calling WP Rocket functions to generate fatal errors
+* Fix: Make sure the handles with the following option always get unloaded: 'Ignore dependency rule and keep the "children" loaded'
+* Fix: Fatal error: Cannot redeclare assetCleanUpClearAutoptimizeCache() - if both plugins (Lite & Pro) are activated
+
+= 1.3.7.9 =
+* Option to skip Autoptimize cache clearing via using the "WPACU_DO_NOT_ALSO_CLEAR_AUTOPTIMIZE_CACHE" constant (e.g. set to 'true' in wp-config.php)
+* Fix: Make sure that applying to unload on all pages of a certain post type works from "CSS & JS MANAGER" (which is the new place for managing CSS/JS files within the Dashboard, outside the edit post/page area)
+* Fix: Manage assets didn't work on "CSS & JS MANAGER" -> "Homepage" tab if the actual page was a static one set in "Settings" -> "Reading"
+
+= 1.3.7.8 =
+* New Option: Manage assets loading for posts, pages, and custom post types within "CSS & JS MANAGER" -> "MANAGE CSS/JS" without the need to go to edit post/page area which is often bulky and could have too many fields from the theme & other plugins leading to a higher number than the one set in php.ini for "max_input_vars"
+* Higher accuracy in preventing the plugin from triggering when there are REST requests
+* Improvement: Make sure "&display=" is added (if enabled) to Google Fonts links if their URL is changed to fit in JSON formats or JavaScript variables
+* Divi builder edit mode: Allow Asset CleanUp Pro to trigger plugin & CSS/JS unload rules when the page editor is on to make the editor load faster via define('WPACU_LOAD_ON_DIVI_BUILDER_EDIT', true); that can be set in wp-config.php / read more: https://www.assetcleanup.com/docs/?p=1260
+* Cache Enabler (compatibility with older versions): Make sure the deprecated "cache_enabler_before_store" hook is in use
+* Unload "photoswipe" fix: If WooCommerce's PhotoSwipe was unloaded, empty dots were printed at the bottom of the page from unused/unneeded HTML (hide it by marking the DIV with the "pswp" class as hidden)
+* Improvement: Only use 'type="text/css"' when it's needed (e.g. an older theme is used that doesn't support HTML5)
+* Improvement: Make SweetAlert2 independent (styling, functionality) from other SweetAlert scripts that might be loaded from other plugins/themes (e.g. "WooCommerce Quickbooks Connector" export in an edit product page was not working)
+* Minify CSS/JS improvement: From now on, the minification can be either applied to files, inline JS code, or both (before, the files minification had to be enabled to files first and then to inline JS code; sometimes, users just wanted to minify inline code and leave the files untouched)
+* Fix: Clearing load exceptions from "Overview" didn't work for all pages of a certain post type
+* Fix: Make sure the plugin works well (e.g. without any PHP errors) if the plugins' directory is changed (e.g. from "plugins" to "plugins-custom-name")
+* Fix: Better detection for the homepage (e.g. the latest posts page was mistaken with the homepage in the front-end view of the CSS/JS manager)
+* Fix: Better detection for the singular page; Make sure the latest posts page such as the "Blog" one is also checked)
+* Fix: On some WordPress installations, the plugin's menu icon from the Dashboard's sidebar was not showing properly (the height was too large)
+* Fix: If there are too many assets/plugins unloaded, when showing up in the top admin bar menu, the list was not scrollable (e.g. only 20 out of 40 assets were shown because the height of the browser's window wasn't large enough which can not be expanded on smaller devices)
+* Fix: If the current theme supports HTML5, the 'type="text/javascript"' attribute is not added any more to altered SCRIPT tags by Asset CleanUp, thus avoiding any errors from W3C validators
+
+= 1.3.7.7 =
+* The layout of a CSS/JS area is changed on the make exception area & a new option was added to make an exception from any unload rule on pages belonging to a specific post type (e.g. unload site-wide, but keep the asset loaded on all WooCommerce 'product' pages)
+* Oxygen plugin edit mode: Allow Asset CleanUp Pro to trigger plugin & CSS/JS unload rules when the page editor is on to make the editor load faster via define('WPACU_LOAD_ON_OXYGEN_BUILDER_EDIT', true); that can be set in wp-config.php / read more: https://www.assetcleanup.com/docs/?p=1200
+* In specific DIVI powered websites, the "PageSpeed" parameter is appended to the URL from the client-side, thus make sure to only check for "et_fb" when detecting if the DIVI builder is on to avoid loading Asset CleanUp Pro there
+* Fix: Make sure that for languages such as Arabic where the Dashboard's menu is shown on the right side, the plugin's icon is not misaligned
+* Fix: When "Update" button is clicked on edit post/page (Gutenberg mode), while there's no CSS/JS list fetched ("Fetch the assets on a button click" is on), make sure the list is not fetched after the page is saved (it's only refreshed if it was loaded in the first place)
+
+= 1.3.7.6 =
+* Fix: Make sure WP Rocket is fully triggered when the assets are fetched via Asset CleanUp, as the "Uncode" theme is calling get_rocket_option() without checking if the function exists
+* Fix: Added nonce checks to AJAX calls made by Asset CleanUp for extra security
+
+= 1.3.7.5 =
+* Higher accuracy in detecting the source map for CSS & JS files in order to update it if the caching file is created; Make sure no caching file is created if there's no change already made to the JS content (e.g. minify), otherwise, it doesn't make sense to only change the source map
+* Delete an option related to the plugin (from {wp_}options) instead of updating it with an empty value
+* Do not trigger the plugin when Zion Page Builder from Kallyas theme is used to avoid using extra resources or print any assets below the page when "Manage in the front-end" is enabled, thus, cluttering the page
+* Fix: Sometimes, due to multiple query strings the optimized asset URLs weren't replacing the original asset URLs correctly (e.g. /?version=value&ver=1.2)
+* Fix (CSS Minify): Do not update "0px" to "0" from a global declared variable (e.g. ":root { --some-var: 0px; }" should not have "px" removed)
+* Fix: Avoid preg_match() errors coming from any RegEx from the following option: "Do not combine the (CSS|JavaScript) files matching the patterns below (one per line)"
+* Fix: If WordPress version is below 5, an error is generated when print_translations() is triggered because the method does not exists within wp_scripts()
+* Fix: Prevent combined CSS files from generating from just one file (useless) when the array is filled twice by mistake with the same file path
+
+= 1.3.7.4 =
+* Improved the caching mechanism: The most recently created files are never deleted in case HTML pages that weren't cleared for weeks or more would still load them successfully; Once "ver" is updated, then the now old file will be cleared in a couple of days (e.g. at least one day + the number of days set in "Settings" -> "Plugin Usage Preferences" -> "Clear previously cached CSS/JS files older than (x) days")
+* Combine JS Update: Make sure the inline "translations" associated with a JS file is appended to the combined JS files, as this would also avoid possible errors such as "Uncaught ReferenceError: wp is not defined"
+* Set a higher priority of the order in which the plugin's menu shows up in the top admin bar to make room for the notice related to the unloaded assets; Changed the notification icon from the menu (from exclamation to filter sign)
+* Improved the way the file paths from "Inline CSS" area are matched to make sure regular expressions can also be used for a match, not just the relative path to the file
+* Make sure preg_qoute() is used in CleanUp.php when clearing LINK/SCRIPT tags to avoid any errors such as unknown modifier
+* The super admin will always be able to access the plugin's settings for security reasons
+* Do not trigger the plugin when Zion Page Builder from Kallyas theme is used to avoid using extra resources or print any assets below the page when "Manage in the front-end" is enabled, cluttering the page
+* Fix: Sometimes, due to the fact there were no line breaks on specific code shown in the hardcoded list, the left-side meta box had its width increased so much that it was hiding or partially showing the right-side meta boxes area that was only visible by using "View" -> "Zoom Out" in Google Chrome
+
 = 1.3.7.3 =
 * Added notice about the unloaded rules to the plugin's top admin bar menu (with an exclamation sign) for easier noticing the unload rules that are applied on the current visited page (/?wpacu_debug is another way of viewing the list when the top admin bar / plugin's menu is unavailable for the logged-in admin)
 * If an unload exception is chosen (after an existing unload rule has already been chosen), mark it with green font to easily notice it when managing the CSS/JS

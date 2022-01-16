@@ -37,16 +37,19 @@ var Review = ( function( $, wp ) {
 		/**
 		 * Initiate listeners.
 		 */
-		listen: function () {
+		listen: function () { console.log('log');
 			var self = this,
 				timer = '';
 
-			this.$container.on( 'click', '#submit-user-review', function() {
+			this.$container.one( 'click', '#submit-user-review', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
 				var review = $( this ).siblings( 'textarea' ).val(),
 					title = $( this ).siblings( '#title' ).val(),
 					name = 0 !== $( '#name' ).length ? $( this ).siblings( '#name' ).val() : '',
 					rating = 0 !== $( 'input[name="st-review-rating"]' ).length ? $( 'input[name="st-review-rating"]:checked' ).val() : '';
-
+console.log('hey');
 				self.addReview( review, title, rating, name );
 			} );
 

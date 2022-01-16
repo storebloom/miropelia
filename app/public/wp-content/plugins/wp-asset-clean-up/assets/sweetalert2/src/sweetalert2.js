@@ -1,6 +1,6 @@
 import SweetAlert from './SweetAlert.js'
 
-const Swal = SweetAlert
-Swal.default = Swal
+const wpacuSwal = SweetAlert
+wpacuSwal.default = wpacuSwal
 
-export default Swal
+export default wpacuSwal

@@ -56,6 +56,17 @@ class Maintenance
 	 */
 	public function scheduleTrigger()
 	{
+		// Debugging purposes: trigger directly the code meant to be scheduled
+		if (current_user_can('administrator')) {
+			if (isset($_GET['wpacu_toggle_inline_code_to_combined_assets'])) {
+				self::updateAppendOrNotInlineCodeToCombinedAssets(true);
+			}
+
+			if (isset($_GET['wpacu_clear_cache_conditionally'])) {
+				self::updateAppendOrNotInlineCodeToCombinedAssets(true);
+			}
+		}
+
 		if (Misc::doingCron()) {
 			add_action('wpacu_daily_scheduled_events', array($this, 'triggerDailyScheduleEvents'));
 		}
@@ -66,6 +77,16 @@ class Maintenance
 	 */
 	public static function triggerDailyScheduleEvents()
 	{
+		self::updateAppendOrNotInlineCodeToCombinedAssets();
+		self::clearCacheConditionally();
+
+		}
+
+	/**
+	 * @param false $isDebug
+	 */
+	public static function updateAppendOrNotInlineCodeToCombinedAssets($isDebug = false)
+	{
 		// WordPress Version below 5.5? Skip appending CSS/JS code to the combine CSS/JS list
 		if ( ! Misc::isWpVersionAtLeast('5.5') ) {
 			$settingsClass = new Settings();
@@ -74,21 +95,40 @@ class Maintenance
 				'_combine_loaded_js_append_handle_extra'  => ''
 			);
 			$settingsClass->updateOption(array_keys($optionsToUpdate), array_values($optionsToUpdate));
+
+			if ($isDebug) {
+				echo 'The WordPress version is below 5.5, thus there is no appending of the inline CSS/JS code to the combine CSS/JS list';
+			}
 		} else {
 			// Check if there are too many .css /.js combined files in the caching directory and change settings
 			// to prevent the appending of the inline CSS/JS code that is likely the culprit of so many files
 			$settingsClass = new Settings();
 			$settings      = $settingsClass->getAll( true );
-			$settingsClass::toggleAppendInlineAssocCodeHiddenSettings( $settings, true );
+			$settingsClass::toggleAppendInlineAssocCodeHiddenSettings( $settings, true, $isDebug );
 		}
 
+		if ($isDebug) {
+			exit();
+		}
+	}
+
+	/**
+	 * @param false $isDebug
+	 */
+	public static function clearCacheConditionally($isDebug = false)
+	{
 		// Clear caching if it wasn't cleared in the past 24 hours (e.g. the admin hasn't used the plugin for a while)
 		$wpacuLastClearCache = get_transient('wpacu_last_clear_cache');
-		if ($wpacuLastClearCache && (strtotime( '-1 days' ) > $wpacuLastClearCache)) {
-			OptimizeCommon::clearCache();
+
+		if ($isDebug) {
+			echo 'Cache cleared last time: '.$wpacuLastClearCache.'<br />';
 		}
 
+		if ($wpacuLastClearCache && (strtotime( '-1 days' ) > $wpacuLastClearCache)) {
+			OptimizeCommon::clearCache();
+			echo 'The cache was just cleared as it was not cleared in the past 24 hours.<br />';
 		}
+	}
 
 	/**
 	 *
@@ -201,6 +241,30 @@ class Maintenance
 					json_encode(Misc::filterList($wpacuFrontPageLoadExceptionsArray))
 				);
 			}
+		}
+
+		/*
+		 * Any for all pages of a certain post type? (e.g. in all WooCommerce "product" pages)
+		 */
+		$wpacuPostTypeLoadExceptions = get_option(WPACU_PLUGIN_ID . '_post_type_load_exceptions');
+
+		if ($wpacuPostTypeLoadExceptions) {
+			$wpacuPostTypeLoadExceptionsArray = @json_decode( $wpacuPostTypeLoadExceptions, ARRAY_A );
+
+			if (! empty($wpacuPostTypeLoadExceptionsArray)) {
+				foreach ($wpacuPostTypeLoadExceptionsArray as $dbPostType => $dbList) {
+					foreach ($dbList as $dbAssetType => $dbValues) {
+						if ($assetType === $dbAssetType && array_key_exists( $assetHandle, $dbValues ) ) {
+							unset($wpacuPostTypeLoadExceptionsArray[$dbPostType][$dbAssetType][$assetHandle]);
+						}
+					}
+				}
+			}
+
+			Misc::addUpdateOption(
+				WPACU_PLUGIN_ID . '_post_type_load_exceptions',
+				json_encode(Misc::filterList($wpacuPostTypeLoadExceptionsArray))
+			);
 		}
 
 		global $wpdb;

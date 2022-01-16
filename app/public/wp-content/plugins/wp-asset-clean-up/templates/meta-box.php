@@ -74,20 +74,25 @@ if ($data['is_list_fetchable']) {
                 ?>
             </p>
         <?php
-    }  elseif ($data['status'] === 5) {
-        ?>
-        <p class="wpacu_verified">
-            <strong>Page URL:</strong> <a target="_blank" href="<?php echo $data['fetch_url']; ?>"><span><?php echo $data['fetch_url']; ?></span></a>
-        </p>
-        <?php
-	    $msg =__('This page\'s URL is matched by one of the RegEx rules you have in <strong>"Settings"</strong> -&gt; <strong>"Plugin Usage Preferences"</strong> -&gt; <strong>"Do not load the plugin on certain pages"</strong>, thus Asset CleanUp is not loaded on that page and no CSS/JS are to be managed. If you wish to view the CSS/JS manager, please remove the matching RegEx rule and reload this page.', 'wp-asset-clean-up');
-        ?>
-	    <p class="wpacu-warning"
-           style="margin: 15px 0 0; padding: 10px; font-size: inherit; width: 99%;">
-            <span style="color: red;"
-                  class="dashicons dashicons-info"></span> <?php echo $msg; ?>
-        </p>
-    <?php
+    }
+
+    if (in_array($data['status'], array(5, 6))) {
+        $data['show_page_options'] = true;
+
+	    $post = get_post($data['post_id']);
+
+	    // Current Post Type
+	    $data['post_type'] = $post->post_type;
+
+	    $data['bulk_unloaded_type'] = 'post_type';
+	    $data['is_bulk_unloadable'] = true;
+
+	    $data = $this->setPageTemplate($data);
+
+        $data['page_options'] = \WpAssetCleanUp\MetaBoxes::getPageOptions($data['post_id']);
+        $data['page_options_with_assets_manager_no_load'] = true;
+
+        include __DIR__.'/meta-box-restricted-page-load.php';
     }
     ?>
 </div>

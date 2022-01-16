@@ -5,6 +5,7 @@ use WpAssetCleanUp\CleanUp;
 use WpAssetCleanUp\Main;
 use WpAssetCleanUp\Menu;
 use WpAssetCleanUp\MetaBoxes;
+use WpAssetCleanUp\Misc;
 
 /**
  * Class MinifyCss
@@ -31,6 +32,21 @@ class MinifyCss
 					return $cssContent;
 				}
 
+				// [CUSTOM BUG FIX]
+				// Encode the special matched content to avoid any wrong minification from the minifier
+				$hasVarWithZeroUnit = false;
+
+				preg_match_all('#--([a-zA-Z0-9_-]+):(\s+)0(em|ex|%|px|cm|mm|in|pt|pc|ch|rem|vh|vw|vmin|vmax|vm)#', $cssContent, $cssVariablesMatches);
+
+				if (isset($cssVariablesMatches[0]) && ! empty($cssVariablesMatches[0])) {
+					$hasVarWithZeroUnit = true;
+
+					foreach ($cssVariablesMatches[0] as $zeroUnitMatch) {
+						$cssContent = str_replace( $zeroUnitMatch, '[wpacu]' . base64_encode( $zeroUnitMatch ) . '[/wpacu]', $cssContent );
+					}
+				}
+				// [/CUSTOM BUG FIX]
+
 				$minifier = new \MatthiasMullie\Minify\CSS( $cssContent );
 
 				if ( $forInlineStyle ) {
@@ -40,6 +56,16 @@ class MinifyCss
 				}
 
 				$minifiedContent = trim( $minifier->minify() );
+
+				// [CUSTOM BUG FIX]
+				// Restore the original content
+				if ($hasVarWithZeroUnit) {
+					foreach ( $cssVariablesMatches[0] as $zeroUnitMatch ) {
+						$zeroUnitMatchAlt = str_replace(': 0', ':0', $zeroUnitMatch); // remove the space
+						$minifiedContent = str_replace( '[wpacu]' . base64_encode( $zeroUnitMatch ) . '[/wpacu]', $zeroUnitMatchAlt, $minifiedContent );
+					}
+				}
+				// [/CUSTOM BUG FIX]
 
 				if ($checkForAlreadyMinifiedShaOne && $minifiedContent === $cssContent) {
 					// If the resulting content is the same, mark it as minified to avoid the minify process next time
@@ -54,12 +80,12 @@ class MinifyCss
 		}
 
 	/**
-	 * @param $src
+	 * @param $href
 	 * @param string $handle
 	 *
 	 * @return bool
 	 */
-	public static function skipMinify($src, $handle = '')
+	public static function skipMinify($href, $handle = '')
 	{
 		// Things like WP Fastest Cache Toolbar CSS shouldn't be minified and take up space on the server
 		if ($handle !== '' && in_array($handle, Main::instance()->skipAssets['styles'])) {
@@ -97,6 +123,8 @@ class MinifyCss
 
 			);
 
+		$regExps = Misc::replaceRelPluginPath($regExps);
+
 		if (Main::instance()->settings['minify_loaded_css_exceptions'] !== '') {
 			$loadedCssExceptionsPatterns = trim(Main::instance()->settings['minify_loaded_css_exceptions']);
 
@@ -112,7 +140,7 @@ class MinifyCss
 		}
 
 		foreach ($regExps as $regExp) {
-			if ( preg_match( $regExp, $src ) ) {
+			if ( preg_match( $regExp, $href ) || ( strpos($href, $regExp) !== false ) ) {
 				return true;
 			}
 		}
@@ -271,7 +299,7 @@ class MinifyCss
 		// It will preview the page with CSS minified
 		// Only if the admin is logged-in as it uses more resources (CPU / Memory)
 		if (array_key_exists('wpacu_css_minify', $_GET) && Menu::userCanManageAssets()) {
-			self::isMinifyCssEnabledChecked(true);
+			self::isMinifyCssEnabledChecked('true');
 			return true;
 		}
 
@@ -279,22 +307,28 @@ class MinifyCss
 		     is_admin() || // not for Dashboard view
 		     (! Main::instance()->settings['minify_loaded_css']) || // Minify CSS has to be Enabled
 		     (Main::instance()->settings['test_mode'] && ! Menu::userCanManageAssets()) ) { // Does not trigger if "Test Mode" is Enabled
-			self::isMinifyCssEnabledChecked(false);
+			self::isMinifyCssEnabledChecked('false');
 			return false;
 		}
 
-		if (defined('WPACU_CURRENT_PAGE_ID') && WPACU_CURRENT_PAGE_ID > 0 && is_singular()) {
+		$isSingularPage = defined('WPACU_CURRENT_PAGE_ID') && WPACU_CURRENT_PAGE_ID > 0 && is_singular();
+
+		if ($isSingularPage || Misc::isHomePage()) {
 			// If "Do not minify CSS on this page" is checked in "Asset CleanUp: Options" side meta box
-			$pageOptions = MetaBoxes::getPageOptions( WPACU_CURRENT_PAGE_ID );
+			if ($isSingularPage) {
+				$pageOptions = MetaBoxes::getPageOptions( WPACU_CURRENT_PAGE_ID ); // Singular page
+			} else {
+				$pageOptions = MetaBoxes::getPageOptions(0, 'front_page'); // Home page
+			}
 
 			if ( isset( $pageOptions['no_css_minify'] ) && $pageOptions['no_css_minify'] ) {
-				self::isMinifyCssEnabledChecked(false);
+				self::isMinifyCssEnabledChecked('false');
 				return false;
 			}
 		}
 
 		if (OptimizeCss::isOptimizeCssEnabledByOtherParty('if_enabled')) {
-			self::isMinifyCssEnabledChecked(false);
+			self::isMinifyCssEnabledChecked('false');
 			return false;
 		}
 
@@ -307,7 +341,11 @@ class MinifyCss
 	public static function isMinifyCssEnabledChecked($value)
 	{
 		if (! defined('WPACU_IS_MINIFY_CSS_ENABLED')) {
-			define('WPACU_IS_MINIFY_CSS_ENABLED', $value);
+			if ($value === 'true') {
+				define( 'WPACU_IS_MINIFY_CSS_ENABLED', true );
+			} elseif ($value === 'false') {
+				define( 'WPACU_IS_MINIFY_CSS_ENABLED', false );
+			}
 		}
 	}
 }

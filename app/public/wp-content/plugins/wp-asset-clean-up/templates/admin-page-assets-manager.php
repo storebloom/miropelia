@@ -50,7 +50,7 @@ $data['locked_for_pro'] = '<span class="dashicons dashicons-info"></span> Managi
     } elseif ($data['for'] === 'date') {
 	    include_once '_admin-pages-assets-manager/_date.php';
     } elseif ($data['for'] === '404-not-found') {
-	    include_once '_admin-pages-assets-manager/_404-not-found.php';
+	    include_once '_admin-pages-assets-manager/_not-found.php';
     }
     ?>
 </div>

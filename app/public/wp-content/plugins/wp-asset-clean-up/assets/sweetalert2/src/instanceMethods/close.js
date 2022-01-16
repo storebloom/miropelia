@@ -72,12 +72,12 @@ export function close (resolveValue) {
 
   handlePopupAnimation(this, popup, innerParams)
 
-  // Resolve Swal promise
+  // Resolve wpacuSwal promise
   swalPromiseResolve(resolveValue)
 }
 
 const prepareResolveValue = (resolveValue) => {
-  // When user calls Swal.close()
+  // When user calls wpacuSwal.close()
   if (typeof resolveValue === 'undefined') {
     return {
       isConfirmed: false,

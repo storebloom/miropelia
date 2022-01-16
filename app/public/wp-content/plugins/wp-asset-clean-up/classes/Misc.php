@@ -136,9 +136,9 @@ class Misc
         }
 
 	    // It's singular page: post, page, custom post type (e.g. 'product' from WooCommerce)
-        if ($postId > 0) {
-            return self::_filterPageUrl(get_permalink($postId));
-        }
+	    if ($postId > 0) {
+		    return self::_filterPageUrl(get_permalink($postId));
+	    }
 
 	    // If it's not a singular page, nor the home page, continue...
 	    // It could be: Archive page (e.g. author, category, tag, date, custom taxonomy), Search page, 404 page etc.
@@ -180,6 +180,70 @@ class Misc
 
         return $postUrl;
     }
+
+	/**
+	 * @param $postId
+	 *
+	 * @return array|false|string|string[]|\WP_Error
+	 */
+	public static function getPageUri($postId)
+    {
+	    $parseUrl = parse_url(get_site_url());
+	    $rootUrl = $parseUrl['scheme'].'://'.$parseUrl['host'];
+
+	    $dbPageUrl = get_permalink($postId);
+
+	    return str_replace( $rootUrl, '', $dbPageUrl );
+    }
+
+	/**
+	 * Note: If plugins are disabled via "Plugins Manager" -> "IN THE DASHBOARD /wp-admin/"
+	 * where the target pages require this function, the list could be incomplete if those plugins registered custom post types
+	 *
+	 * @param $postTypes
+	 *
+	 * @return mixed
+	 */
+	public static function filterCustomPostTypesList($postTypes)
+	{
+		foreach (array_keys($postTypes) as $postTypeKey) {
+			if (in_array($postTypeKey, array('post', 'page', 'attachment'))) {
+				unset($postTypes[$postTypeKey]); // no default post types
+			}
+
+			// Polish existing values
+			if ($postTypeKey === 'product' && self::isPluginActive('woocommerce/woocommerce.php')) {
+				$postTypes[$postTypeKey] = 'product &#10230; WooCommerce';
+			}
+
+			if ($postTypeKey === 'download' && self::isPluginActive('easy-digital-downloads/easy-digital-downloads.php')) {
+				$postTypes[$postTypeKey] = 'download &#10230; Easy Digital Downloads';
+			}
+		}
+
+		return $postTypes;
+	}
+
+	/**
+	 * @param $postTypes
+	 *
+	 * @return mixed
+	 */
+	public static function filterCustomTaxonomyList($taxonomyList)
+	{
+		foreach (array_keys($taxonomyList) as $taxonomy) {
+			if (in_array($taxonomy, array('category', 'post_tag', 'post_format'))) {
+				unset($taxonomyList[$taxonomy]); // no default post types
+			}
+
+			// Polish existing values
+			if ($taxonomy === 'product_cat' && Misc::isPluginActive('woocommerce/woocommerce.php')) {
+				$taxonomyList[$taxonomy] = 'product_cat &#10230; Product\'s Category in WooCommerce';
+			}
+		}
+
+		return $taxonomyList;
+	}
 
 	/**
 	 * @return bool
@@ -258,7 +322,8 @@ class Misc
 	    // Otherwise, it will default to "Your latest posts", the other choice from "Your homepage displays"
 
 	    if (self::getShowOnFront() === 'page') {
-			$pageOnFront = get_option('page_on_front');
+			$pageOnFront  = get_option('page_on_front');
+			$pageForPosts = get_option('page_for_posts');
 
 		    // "Homepage:" has a value
 			if ($pageOnFront > 0 && is_front_page()) {
@@ -271,6 +336,11 @@ class Misc
 				// Blog page
 				return true;
 			}
+
+			// Both have values
+		    if ($pageOnFront && $pageForPosts && ($pageOnFront !== $pageForPosts) && self::isBlogPage()) {
+		    	return false; // Blog posts page (but not home page)
+		    }
 
 		    // Another scenario is when both 'Homepage:' and 'Posts page:' have values
 		    // If we are on the blog page (which is "Posts page:" value), then it will return false
@@ -333,7 +403,7 @@ class Misc
 
 	    // Loaded from WordPress directories (Core)
 	    return in_array( $parentDir, array( 'wp-includes', 'wp-admin' ) ) || strpos( $handleData->src,
-			    '/plugins/jquery-updater/js/jquery-' ) !== false;
+			    '/'.self::getPluginsDir('dir_name').'/jquery-updater/js/jquery-' ) !== false;
     }
 
 	/**
@@ -646,6 +716,12 @@ HTML;
 		    return;
 	    }
 
+    	// Empty array encoded into JSON; No point in keeping the option in the database
+    	if ($optionValue === '[]') {
+    		delete_option($optionName);
+    		return;
+	    }
+
     	// Value is in the database already | Update it
     	update_option($optionName, $optionValue, $autoload);
     }
@@ -760,7 +836,7 @@ SQL;
 				} elseif (in_array($bulkUnloadedType, array('post_type', 'taxonomy'))) {
 					foreach (array('styles', 'scripts') as $assetType) {
 						if ( isset( $bulkUnloadArray[$assetType][ $bulkUnloadedType ] ) && ! empty( $bulkUnloadArray[$assetType][ $bulkUnloadedType ] ) ) {
-							foreach ( $bulkUnloadArray[$assetType][ $bulkUnloadedType ] as $objectType => $objectValues ) {
+							foreach ( $bulkUnloadArray[$assetType][ $bulkUnloadedType ] as $objectValues ) {
 								$unloadedTotalAssets += count( $objectValues );
 							}
 						}
@@ -796,7 +872,7 @@ SQL;
 
 		// Is it a Google Font request that was stripped site-wide?
 		if ($assetTypeKey === 'styles') {
-			$isGoogleFontLink = stripos($data['row']['obj']->srcHref, '//fonts.googleapis.com/') !== false;
+			$isGoogleFontLink = isset($data['row']['obj']->srcHref) && stripos($data['row']['obj']->srcHref, '//fonts.googleapis.com/') !== false;
 
 			if ($isGoogleFontLink && $data['plugin_settings']['google_fonts_remove']) {
 				return true;
@@ -813,6 +889,45 @@ SQL;
 	}
 
 	/**
+	 * @param string $get
+	 *
+	 * @return false|string
+	 */
+	public static function getPluginsDir($get = 'rel_path')
+	{
+		$return = '';
+		$relPath = trim( str_replace( ABSPATH, '', WP_PLUGIN_DIR ), '/' );
+
+		if ($get === 'rel_path') {
+			$return = $relPath;
+		} elseif ($get === 'dir_name') {
+			$return = substr(strrchr($relPath, '/'), 1);
+		}
+
+		return $return;
+	}
+
+	/**
+	 * Needed when the plugins' directory is different than the default one: /wp-content/plugins/
+	 *
+	 * @param $values
+	 *
+	 * @return array
+	 */
+	public static function replaceRelPluginPath($values)
+	{
+		$relPluginPath = self::getPluginsDir();
+
+		if ($relPluginPath !== 'wp-content/plugins') {
+			return array_filter( $values, function( $value ) use ( $relPluginPath ) {
+				return str_replace( '/wp-content/plugins/', '/' . $relPluginPath . '/', $value );
+			} );
+		}
+
+		return $values;
+	}
+
+	/**
 	 * @param $src
 	 *
 	 * @return bool|mixed
@@ -820,7 +935,8 @@ SQL;
 	public static function maybeIsInactiveAsset($src)
 	{
 		// Quickest way
-		preg_match_all('#/wp-content/plugins/(.*?)/#', $src, $matches, PREG_PATTERN_ORDER);
+		$pluginsDirRel = self::getPluginsDir();
+		preg_match_all('#/'.$pluginsDirRel.'/(.*?)/#', $src, $matches, PREG_PATTERN_ORDER);
 
 		if (isset($matches[1][0]) && $matches[1][0]) {
 			$pluginDirName = $matches[1][0];
@@ -847,8 +963,8 @@ SQL;
 
 		$relSrc = str_replace( site_url(), '', $srcAlt );
 
-		if (strpos($relSrc, '/wp-content/plugins') !== false) {
-			list (,$relSrc) = explode('/wp-content/plugins', $relSrc);
+		if (strpos($relSrc, '/'.$pluginsDirRel) !== false) {
+			list (,$relSrc) = explode('/'.$pluginsDirRel, $relSrc);
 		}
 
 		if (strpos($relSrc, $relPluginsUrl) !== false) {
@@ -1037,6 +1153,38 @@ SQL;
 	    }
 
 	    return '';
+    }
+
+	/**
+	 * @return string
+	 */
+	public static function getStyleTypeAttribute()
+	{
+		$typeAttr = '';
+
+		if ( function_exists( 'is_admin' ) && ! is_admin() &&
+		     function_exists( 'current_theme_supports' ) && ! current_theme_supports( 'html5', 'style' )
+		) {
+			$typeAttr = " type='text/css'";
+		}
+
+		return $typeAttr;
+	}
+
+	/**
+	 * @return string
+	 */
+	public static function getScriptTypeAttribute()
+    {
+	    $typeAttr = '';
+
+	    if ( function_exists( 'is_admin' ) && ! is_admin() &&
+	         function_exists( 'current_theme_supports' ) && ! current_theme_supports( 'html5', 'script' )
+	    ) {
+		    $typeAttr = " type='text/javascript'";
+	    }
+
+	    return $typeAttr;
     }
 
 	/**
@@ -1280,6 +1428,40 @@ SQL;
 	}
 
 	/**
+	 * Single value (no multiple RegExes)
+	 *
+	 * @param $regexValue
+	 *
+	 * @return mixed|string
+	 */
+	public static function purifyRegexValue($regexValue)
+	{
+		try {
+			if ( class_exists( '\CleanRegex\Pattern' )
+			     && class_exists( '\SafeRegex\preg' )
+			     && method_exists( '\CleanRegex\Pattern', 'delimitered' )
+			     && method_exists( '\SafeRegex\preg', 'match' ) ) {
+					$cleanRegexPattern = new \CleanRegex\Pattern( $regexValue );
+					$delimiteredValue  = $cleanRegexPattern->delimitered(); // auto-correct it if there's no delimiter
+
+					if ( $delimiteredValue ) {
+						// Tip: https://stackoverflow.com/questions/4440626/how-can-i-validate-regex
+						// Validate it and if it doesn't match, do not add it to the list
+						@preg_match( $delimiteredValue, null );
+
+						if ( preg_last_error() !== PREG_NO_ERROR ) {
+							return $regexValue;
+						}
+
+						}
+				$regexValue = trim($regexValue);
+			}
+		} catch( \Exception $e) {} // if T-Regx library didn't load as it should, the textarea value will be kept as it is
+
+		return $regexValue;
+	}
+
+	/**
 	 * @param $name
 	 * @param $action
 	 *
@@ -1346,7 +1528,7 @@ SQL;
 		$wpacuTimingFormatMs = $timingValues['ms'];
 		$wpacuTimingFormatS  = $timingValues['s'];
 
-		$htmlSource = str_replace(
+		return str_replace(
 			array(
 				'{' . $wpacuCacheKey . '}',
 				'{' . $wpacuCacheKey . '_sec}'
@@ -1356,7 +1538,5 @@ SQL;
 				$wpacuTimingFormatS . 's',
 			), // clean it up
 			$htmlSource );
-
-		return $htmlSource;
 	}
 }

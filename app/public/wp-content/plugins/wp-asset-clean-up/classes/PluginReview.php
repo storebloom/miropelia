@@ -94,7 +94,7 @@ class PluginReview
 	public function noticeStyles()
     {
         ?>
-        <style type="text/css">
+        <style <?php echo Misc::getStyleTypeAttribute(); ?>>
             .wpacu-review-plugin-notice {
                 border-left: 4px solid #008f9c;
             }

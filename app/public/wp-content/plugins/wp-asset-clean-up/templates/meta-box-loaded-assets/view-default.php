@@ -146,6 +146,8 @@ if ( isset( $data['all']['hardcoded'] ) && ! empty( $data['all']['hardcoded'] ) 
 	echo $hardcodedManageAreaHtml; // AJAX call from the front-end view
 }
 
+include_once __DIR__ . '/_page-options.php';
+
 include '_inline_js.php';
 /*
  * -------------------

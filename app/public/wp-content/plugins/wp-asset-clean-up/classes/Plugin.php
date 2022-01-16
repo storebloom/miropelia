@@ -179,9 +179,11 @@ SELECT option_name FROM `{$wpdb->prefix}options` WHERE {$transientLikesSql}
 SQL;
 	    $transientsToClear = $wpdb->get_col($sqlQuery);
 
-	    foreach ($transientsToClear as $transientToClear) {
-		    $transientNameToClear = str_replace('_transient_', '', $transientToClear);
-		    delete_transient($transientNameToClear);
+	    if (! empty($transientsToClear)) {
+		    foreach ( $transientsToClear as $transientToClear ) {
+			    $transientNameToClear = str_replace( '_transient_', '', $transientToClear );
+			    delete_transient( $transientNameToClear );
+		    }
 	    }
     }
 
@@ -295,10 +297,18 @@ HTACCESS;
 		    }
 	    }
 
+	    // Storage directory for JSON/TEXT files (information purpose)
 		$storageDir = WP_CONTENT_DIR . OptimiseAssets\OptimizeCommon::getRelPathPluginCacheDir() . '_storage/';
 
 		if ( ! is_dir($storageDir . OptimizeCommon::$optimizedSingleFilesDir) ) {
 			@mkdir( $storageDir . OptimizeCommon::$optimizedSingleFilesDir, 0755, true );
+		}
+
+		// Storage directory for the most recent items (these ones are never deleted from the cache)
+		$storageDirRecentItems = WP_CONTENT_DIR . OptimiseAssets\OptimizeCommon::getRelPathPluginCacheDir() . '_storage/_recent_items/';
+
+		if ( ! is_dir($storageDirRecentItems) ) {
+			@mkdir( $storageDirRecentItems, 0755, true );
 		}
 
 		$siteStorageCache = $storageDir.'/'.str_replace(array('https://', 'http://', '//'), '', site_url());
@@ -371,52 +381,52 @@ HTACCESS;
      * It needs to be triggered through a very early 'init' / 'setup_theme' action hook after all plugins are loaded, thus it can't be used in /early-triggers.php
      * e.g. in situations when the page is an AMP one, prevent any changes to the HTML source by Asset CleanUp (Pro)
      *
+	 * @param string $tagActionName
+	 *
 	 * @return bool
 	 */
-	public static function preventAnyChanges()
-    {
-        // Only relevant if all the plugins are already loaded
-	    // and in the front-end view
-        if (! defined('WPACU_ALL_ACTIVE_PLUGINS_LOADED') || is_admin()) {
-            return false;
-        }
+	public static function preventAnyFrontendOptimization($tagActionName = '')
+	{
+		// Only relevant if all the plugins are already loaded
+		// and in the front-end view
+		if (! defined('WPACU_ALL_ACTIVE_PLUGINS_LOADED') || is_admin()) {
+			return false;
+		}
 
-        // Perhaps the editor from "Pro" (theme.co) is on
-	    if (apply_filters('wpacu_prevent_any_changes', false)) {
-		    define('WPACU_PREVENT_ANY_CHANGES', true);
-		    return true;
-	    }
+		// Perhaps the editor from "Pro" (theme.co) is on
+		if (apply_filters('wpacu_prevent_any_frontend_optimization', false)) {
+			return true;
+		}
 
-        if (defined('WPACU_PREVENT_ANY_CHANGES')) {
-	        return WPACU_PREVENT_ANY_CHANGES;
-        }
+		// e.g. /amp/ - /amp? - /amp/? - /?amp or ending in /amp
+		$isAmpInRequestUri = ((isset($_SERVER['REQUEST_URI']) && (preg_match('/(\/amp$|\/amp\?)|(\/amp\/|\/amp\/\?)/', $_SERVER['REQUEST_URI']))) || (array_key_exists('amp', $_GET)));
 
-	    // e.g. /amp/ - /amp? - /amp/? - /?amp or ending in /amp
-	    $isAmpInRequestUri = ((isset($_SERVER['REQUEST_URI']) && (preg_match('/(\/amp$|\/amp\?)|(\/amp\/|\/amp\/\?)/', $_SERVER['REQUEST_URI']))) || (array_key_exists('amp', $_GET)));
+		// Is it an AMP endpoint?
+		if ( ($isAmpInRequestUri && Misc::isPluginActive('accelerated-mobile-pages/accelerated-mobile-pages.php')) // "AMP for WP – Accelerated Mobile Pages"
+		     || ($isAmpInRequestUri && Misc::isPluginActive('amp/amp.php')) // "AMP – WordPress plugin"
+		     || (function_exists('is_wp_amp') && Misc::isPluginActive('wp-amp/wp-amp.php') && is_wp_amp()) // "WP AMP — Accelerated Mobile Pages for WordPress and WooCommerce" (Premium plugin)
+		) {
+			return true; // do not print anything on an AMP page
+		}
 
-	    // Is it an AMP endpoint?
-	    if ( ($isAmpInRequestUri && Misc::isPluginActive('accelerated-mobile-pages/accelerated-mobile-pages.php')) // "AMP for WP – Accelerated Mobile Pages"
-	         || ($isAmpInRequestUri && Misc::isPluginActive('amp/amp.php')) // "AMP – WordPress plugin"
-	         || (function_exists('is_wp_amp') && Misc::isPluginActive('wp-amp/wp-amp.php') && is_wp_amp()) // "WP AMP — Accelerated Mobile Pages for WordPress and WooCommerce" (Premium plugin)
-	    ) {
-		    define('WPACU_PREVENT_ANY_CHANGES', true);
-		    return true; // do not print anything on an AMP page
-	    }
+		// Some pages are AMP but their URI does not end in /amp
+		if ( Misc::isPluginActive('accelerated-mobile-pages/accelerated-mobile-pages.php')
+		     || Misc::isPluginActive('amp/amp.php')
+		     || Misc::isPluginActive('wp-amp/wp-amp.php')
+		) {
+			define('WPACU_DO_EXTRA_CHECKS_FOR_AMP', true);
+		}
 
-	    // Some pages are AMP but their URI does not end in /amp
-	    if ( Misc::isPluginActive('accelerated-mobile-pages/accelerated-mobile-pages.php')
-            || Misc::isPluginActive('amp/amp.php')
-            || Misc::isPluginActive('wp-amp/wp-amp.php')
-        ) {
-		    define('WPACU_DO_EXTRA_CHECKS_FOR_AMP', true);
-	    }
+		if (array_key_exists('wpacu_clean_load', $_GET)) {
+			return true;
+		}
 
-	    if (array_key_exists('wpacu_clean_load', $_GET)) {
-		    define('WPACU_PREVENT_ANY_CHANGES', true);
-	        return true;
-        }
+		// $tagActionName needs to be different than 'parse_query' because is_singular() would trigger too soon and cause notice errors
+		// Has the following page option set: "Do not apply any front-end optimization on this page (this includes any changes related to CSS/JS files)"
+		if ($tagActionName !== 'parse_query' && MetaBoxes::hasNoFrontendOptimizationPageOption()) {
+			return true;
+		}
 
-	    define('WPACU_PREVENT_ANY_CHANGES', false);
-	    return false;
-    }
+		return false;
+	}
 }

@@ -55,7 +55,7 @@
                                                             <span>Search</span>
                                                         </div> -->
                                     <input id="sirv-search-field" class="sirv-search-narrow" type="text" class="strech"
-                                        placeholder="🔍 Search" value="" />
+                                        placeholder="🔍 Search" value="" autocomplete="off" />
                                     <button class="sirv-search-cancel">
                                         <span class="dashicons dashicons-no-alt"></span>
                                     </button>
@@ -137,4 +137,8 @@
             </div>
         </div>
         <div class="sirv-dropdown"></div>
+        <div class="sirv-active-menu sirv-search-dropdown">
+            <span style="font-size: 11px;margin-left: 10px; color: #81878b;">Press enter to search or use additional actions</span>
+            <a class="sirv-dropdown-item sirv-search-in-dir">Search in current folder</a>
+        </div>
     </div>

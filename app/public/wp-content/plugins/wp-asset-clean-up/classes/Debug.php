@@ -78,8 +78,10 @@ class Debug
 			'wpacu_no_admin_bar'     => 'Do not show the admin bar',
 			'wpacu_no_html_changes'  => 'Do not alter the HTML DOM (this will also load all assets non-minified and non-combined)',
 		);
+
+		$styleAttrType = Misc::getStyleTypeAttribute();
 		?>
-		<style type="text/css">
+		<style <?php echo $styleAttrType; ?>>
 			#wpacu-debug-options {
                 background: white;
                 width: 90%;

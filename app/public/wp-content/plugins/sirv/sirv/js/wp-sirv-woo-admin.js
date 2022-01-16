@@ -30,8 +30,11 @@ jQuery( function($){
         '</ul >\n';
 
       $.each(data.items, function (index, item) {
-        let liItem = '<li class="sirv-woo-gallery-item" data-order="' + item.order + '" data-type="' + item.type + '"data-provider="'+ item.provider +'" data-url-orig="' + item.url + '" data-view-id="'+ id +'">\n' +
-          '<img class="sirv-woo-gallery-item-img" src="' + item.url + imgPattern + '">\n' +
+        let liItem = '<li class="sirv-woo-gallery-item" data-order="' + item.order + '" data-type="' + item.type + '"data-provider="'+ item.provider +'" data-url-orig="' + item.url + '" data-view-id="'+ id +'" data-caption="'+ (item.caption || '') +'">\n' +
+          '<div class="sirv-woo-gallery-item-img-wrap">\n' +
+            '<img class="sirv-woo-gallery-item-img" src="' + item.url + imgPattern + '">\n' +
+          '</div>\n' +
+          '<input type="text" class="sirv-woo-gallery-item-caption" placeholder="Caption" value="'+ (item.caption || '') +'">'+
           action_tpl +
           '</li>\n';
 
@@ -124,6 +127,7 @@ jQuery( function($){
           provider: $(this).attr('data-provider'),
           order: index,
           viewId: id,
+          caption: encodeURI($(this).attr('data-caption'))
         }
         if(item.type == "online-video"){
           item.videoID = $(this).attr('data-video-id');
@@ -313,6 +317,15 @@ jQuery( function($){
       $($el).closest('.woocommerce_variation').addClass('variation-needs-update');
       $('button.cancel-variation-changes, button.save-variation-changes').removeAttr('disabled');
       $('#variable_product_options').trigger('woocommerce_variations_input_changed');
+    }
+
+
+    $('body').on('input', '.sirv-woo-gallery-item-caption', inputCaption);
+    function inputCaption(){
+      $(this).closest('.sirv-woo-gallery-item').attr('data-caption', $(this).val());
+        let id = $(this).closest('.sirv-woo-gallery-item').attr('data-view-id');
+        reCalcGalleryData(id);
+        imageSortable(id);
     }
 
     //---------------initialization---------------------

@@ -62,4 +62,4 @@ if (! isset($data)) {
         <?php _e('Use the "Preview" button if you wish to see how the options above, as well as the load/unload rules will apply before updating anything. It works like the "Test Mode" feature for this page only.', 'wp-asset-clean-up'); ?>
     </p>
 </div>
-<input type="hidden" name="wpacu_meta_box_page_options_loaded" value="1" />
+<input type="hidden" name="wpacu_page_options_area_loaded" value="1" />

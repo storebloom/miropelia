@@ -44,18 +44,6 @@ $user_types = array(
 	'always' => esc_html__('All visitors globally', 'sharethis-custom'),
 );
 
-// Consent type options.
-$consent_types = array(
-	'global'    => esc_html__(
-		'Global: Publisher consent = 1st party cookie; Vendors consent = 3rd party cookie',
-		'sharethis-custom'
-	),
-	'publisher' => esc_html__(
-		'Service: publisher consent = 1st party cookie; Vendors consent = 1st party cookie',
-		'sharethis-custom'
-	),
-);
-
 $languages = array(
 	'English'    => 'en',
 	'German'     => 'de',
@@ -106,21 +94,7 @@ $enabled = !empty($gdpr_config['enabled']) ? $gdpr_config['enabled'] : false;
 				<?php endforeach; ?>
 			</select>
 		</div>
-		<label class="control-label">
-			<?php echo esc_html__('CONSENT SCOPE', 'sharethis-share-buttons'); ?>
-		</label>
-		<div class="input-div">
-			<select id="sharethis-consent-type">
-				<?php foreach ($consent_types as $consent_value => $c_name) : ?>
-					<option
-						value="<?php echo esc_attr($consent_value); ?>"
-						<?php echo isset($gdpr_config['scope']) ? selected($consent_value, $gdpr_config['scope']) : ''; ?>
-					>
-						<?php echo esc_html($c_name); ?>
-					</option>
-				<?php endforeach; ?>
-			</select>
-		</div>
+
 		<label class="control-label">
 			<?php echo esc_html__('SELECT LANGUAGE', 'sharethis-share-buttons'); ?>
 		</label>

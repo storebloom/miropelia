@@ -52,10 +52,7 @@ class MetaBoxes
 			add_action( 'add_meta_boxes', array( $this, 'keepAssetManagerMetaBoxOnTheLeftSide' ), 1 );
 		}
 
-		if ($type === 'manage_page_options') {
-			add_action( 'add_meta_boxes', array( $this, 'addPageOptionsMetaBox' ), 12 );
 		}
-	}
 
 	/**
 	 * @param $postType
@@ -67,7 +64,7 @@ class MetaBoxes
 		if (isset($obj->public) && $obj->public > 0) {
 			add_meta_box(
 				WPACU_PLUGIN_ID . '_asset_list',
-				 WPACU_PLUGIN_TITLE.': '.__('CSS &amp; JavaScript Manager', 'wp-asset-clean-up'),
+				WPACU_PLUGIN_TITLE.': '.__('CSS &amp; JavaScript Manager / Page Options', 'wp-asset-clean-up'),
 				array($this, 'renderAssetManagerMetaBoxContent'),
 				$postType,
 				apply_filters('wpacu_asset_list_meta_box_context',  'normal'),
@@ -126,7 +123,9 @@ class MetaBoxes
 	 */
 	public function addPageOptionsMetaBox($postType)
 	{
-		if ($this->isMediaWithPermalinkDeactivated()) {
+		global $post;
+
+		if (self::isMediaWithPermalinkDeactivated($post)) {
 			return;
 		}
 
@@ -169,7 +168,7 @@ class MetaBoxes
 			$isListFetchable = false;
 		}
 
-		if ($this->isMediaWithPermalinkDeactivated()) {
+		if (self::isMediaWithPermalinkDeactivated($post)) {
 			$isListFetchable = false;
 			$data['status'] = 4; // "Redirect attachment URLs to the attachment itself?" is enabled in "Yoast SEO" -> "Media"
 		}
@@ -178,10 +177,12 @@ class MetaBoxes
 			$data['fetch_url'] = Misc::getPageUrl($postId);
 
 			// Check if Asset CleanUp Pro is meant to be loaded in the targeted URL
-			// The rules from "Settings" -> "Plugin Usage Preferences" -> "Do not load the plugin on certain pages" will be checked
-			if (assetCleanUpHasNoLoadMatches($data['fetch_url'])) {
+			if (assetCleanUpHasNoLoadMatches($data['fetch_url']) === 'is_set_in_settings') {
 				$isListFetchable = false;
-				$data['status'] = 5; // Asset CleanUp Pro is deactivated from loading any of its rules on this page
+				$data['status'] = 5; // The rules from "Settings" -> "Plugin Usage Preferences" -> "Do not load the plugin on certain pages" will be checked
+			} elseif (assetCleanUpHasNoLoadMatches($data['fetch_url']) === 'is_set_in_page') {
+				$isListFetchable = false;
+				$data['status'] = 6; // The following option from "Page Options" (within the CSS/JS manager of the targeted page) is set: "Do not load Asset CleanUp Pro on this page (this will disable any functionality of the plugin)"
 			}
 		}
 
@@ -196,11 +197,14 @@ class MetaBoxes
 			$data['dom_get_type'] = Main::instance()->settings['dom_get_type'];
 		}
 
+		$data['post_id'] = $postId;
+
 		Main::instance()->parseTemplate('meta-box', $data, true);
 	}
 
 	/**
 	 * This is triggered only in the Edit Mode Dashboard View
+	 * Valid for posts, pages (a page can also be set as the homepage), custom post types
 	 */
 	public function renderPageOptionsMetaBoxContent()
 	{
@@ -211,23 +215,56 @@ class MetaBoxes
 
 	/**
 	 * @param int $postId
-	 *
+	 * @param string $type
 	 * @return array|mixed|object
 	 */
-	public static function getPageOptions($postId = 0)
+	public static function getPageOptions($postId = 0, $type = 'post')
 	{
-		if ($postId < 1) {
-			global $post;
-			$postId = (int)$post->ID;
-		}
+		if ($type === 'post' || $postId > 0) {
+			if ( $postId < 1 ) {
+				global $post;
+				$postId = (int) $post->ID;
+			}
 
-		if ($postId > 1) {
-			$metaPageOptionsJson = get_post_meta($postId, '_'.WPACU_PLUGIN_ID.'_page_options', true);
+			if ( $postId > 1 ) {
+				$metaPageOptionsJson = get_post_meta( $postId, '_' . WPACU_PLUGIN_ID . '_page_options', true );
+				return @json_decode( $metaPageOptionsJson, ARRAY_A );
+			}
+		} elseif ($type === 'front_page') { // e.g. latest posts, not a chosen page ID (that's when $type as 'post' is used)
+			$globalPageOptions = get_option(WPACU_PLUGIN_ID . '_global_data');
 
-			return @json_decode( $metaPageOptionsJson, ARRAY_A );
+			if ($globalPageOptions) {
+				$globalPageOptionsList = @json_decode( $globalPageOptions, true );
+
+				if ( isset( $globalPageOptionsList['page_options']['homepage'] ) && ! empty( $globalPageOptionsList['page_options']['homepage'] ) ) {
+					return $globalPageOptionsList['page_options']['homepage'];
+				}
+			}
 		}
 
 		return array();
+	}
+
+	/**
+	 * @return bool
+	 */
+	public static function hasNoFrontendOptimizationPageOption()
+	{
+		$isSingularPage = defined('WPACU_CURRENT_PAGE_ID') && WPACU_CURRENT_PAGE_ID > 0 && is_singular();
+
+		if ($isSingularPage || Misc::isHomePage()) {
+			if ($isSingularPage) {
+				$pageOptions = self::getPageOptions( WPACU_CURRENT_PAGE_ID ); // Singular page
+			} else {
+				$pageOptions = self::getPageOptions(0, 'front_page'); // Home page
+			}
+
+			if (isset($pageOptions['no_assets_settings']) && $pageOptions['no_assets_settings']) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -278,14 +315,19 @@ class MetaBoxes
 	}
 
 	/**
+	 * @param string $post
+	 *
 	 * @return bool
 	 */
-	public function isMediaWithPermalinkDeactivated()
+	public static function isMediaWithPermalinkDeactivated($post = '')
 	{
-		global $post;
+		if ($post === '') {
+			$postTypeToCheck = 'attachment';
+		} else {
+			$postTypeToCheck = get_post_type($post->ID);
+		}
 
-		if (method_exists('WPSEO_Options', 'get')
-		    && 'attachment' === get_post_type($post->ID)) {
+		if ('attachment' === $postTypeToCheck && method_exists('WPSEO_Options', 'get')) {
 			try {
 				if (\WPSEO_Options::get( 'disable-attachment' ) === true) {
 					return true;

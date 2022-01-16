@@ -58,6 +58,23 @@ var ShareButtons = ( function( $, wp ) {
       var self = this,
         timer = '';
 
+      // Scroll to anchor in vendor list.
+      // Send user input to category search AFTER they stop typing.
+      $('body').on( 'keyup', '.vendor-search input', function( e ) {
+        clearTimeout( timer );
+
+        timer = setTimeout( function() {
+          self.scrollToAnchor($(this).val());
+        }.bind( this ), 500 );
+      } );
+
+      // Toggle button menus when arrows are clicked.
+      $( 'body' ).on( 'click', '.accor-wrap .accor-tab', function() {
+        var type = $( this ).find( 'span.accor-arrow' );
+
+        self.updateAccors( type.html(), type );
+      } );
+
       // New color select.
       this.$container.on('click', "#sharethis-form-color .color", function() {
         $('#sharethis-form-color .color').removeClass('selected');
@@ -279,7 +296,7 @@ var ShareButtons = ( function( $, wp ) {
       } );
 
       // Submit configurations.
-      $( '.sharethis-wrap form' ).submit( function() {
+      $( '.sharethis-wrap form' ).submit( function(e) {
         self.loadPreview( 'submit', 'inline' );
         self.loadPreview( 'submit', 'sticky' );
         self.loadPreview( 'submit', 'gdpr' );
@@ -617,11 +634,14 @@ var ShareButtons = ( function( $, wp ) {
      */
     createReset: function() {
       var button = '<input type="button" id="reset" class="button button-primary" value="Reset">',
-        newButtons = $( '.sharethis-wrap form .submit' ).append( button ).clone();
+        newButtons = $( '.sharethis-wrap form .submit' ).append( button ).clone(),
+        newButtons2 = $( '.sharethis-wrap form .submit' ).clone();
 
       // Add new cloned reset button to inline menu list.
       $( '.sharethis-wrap form .form-table:first-of-type' ).after( newButtons );
       $( newButtons ).find( '#submit:first-of-type' ).addClass( 'st-submit-2' );
+      $( '.sharethis-wrap form .form-table:nth-of-type(2)' ).after( newButtons2 );
+      $( newButtons2 ).find( '#submit:nth-of-type(2)' ).addClass( 'st-submit-3' );
     },
 
     /**
@@ -748,9 +768,9 @@ var ShareButtons = ( function( $, wp ) {
         publisherPurposes = [],
         display = $('#sharethis-user-type option:selected').val(),
         name = $('#sharethis-publisher-name').val(),
-        scope = $( '#sharethis-consent-type option:selected' ).val(),
+        scope = 'publisher',
         color = $( '#sharethis-form-color .color.selected' ).attr('data-value'),
-        language = $( '#st-language' ).val(),
+        languageGDPR = $( '#st-language' ).val(),
         networks,
         size,
         padding,
@@ -876,7 +896,8 @@ var ShareButtons = ( function( $, wp ) {
       }
 
       if ('gdpr-compliance-tool-v2' === button) {
-        var publisherPurposes = [];
+        var publisherPurposes = [],
+            publisherRestrictions = {};
 
         $('#publisher-purpose input:checked').each( function( index, value ) {
           var theId = $(value).attr('data-id'),
@@ -885,12 +906,17 @@ var ShareButtons = ( function( $, wp ) {
           publisherPurposes.push({ 'id': theId, 'legitimate_interest' : legit });
         });
 
+        $('.vendor-table-cell-wrapper label input:checked').each( function( index, value ) {
+          publisherRestrictions[$(value).attr('data-id')] = true;
+        });
+
         config = {
           enabled: enabled,
           display: display,
           publisher_name: name,
           publisher_purposes: publisherPurposes,
-          language: language,
+          publisher_restrictions: publisherRestrictions,
+          language: languageGDPR,
           color: color,
           scope: scope,
         };
@@ -1004,7 +1030,7 @@ var ShareButtons = ( function( $, wp ) {
               }
 
               theData = JSON.stringify( theData );
-console.log(config);
+
               // Send new button status value.
               $.ajax( {
                 url: 'https://platform-api.sharethis.com/v1.0/property/product',
@@ -1179,6 +1205,7 @@ console.log(config);
       $(`#st-language option[value="${config['language']}"]`).attr('selected', true);
 
       $( "#publisher-purpose .purpose-item input" ).prop('checked', false);
+      $( ".vendor-table-cell-wrapper input" ).prop('checked', false);
 
       if (undefined !== config['publisher_purposes']) {
         config['publisher_purposes'].map( ( purpVal ) => {
@@ -1190,9 +1217,51 @@ console.log(config);
         } );
       }
 
+      if (undefined !== config['publisher_restrictions']) {
+        $.map(config['publisher_restrictions'], function (id, venVal ) {
+          if(id) {
+            $( `input[type="checkbox"][data-id="${venVal}"]` ).prop( 'checked', true );
+          }
+        } );
+      }
+
       if ( 'platform' === type ) {
         this.loadPreview( 'initial-platform', 'gdpr' );
       }
-    }
+    },
+    /**
+     * Toggle the accordions.
+     *
+     * @param type
+     * @param arrow
+     */
+    updateAccors: function( type, arrow ) {
+      var closestButton = $( arrow ).parent( '.accor-tab' ).parent( '.accor-wrap' );
+
+      if ( '►' === type ) {
+
+        // Show the button configs.
+        closestButton.find( '.accor-content' ).slideDown();
+
+        // Change the icon next to title.
+        closestButton.find( '.accor-arrow' ).html( '&#9660;' );
+      } else {
+
+        // Show the button configs.
+        closestButton.find( '.accor-content' ).slideUp();
+
+        // Change the icon next to title.
+        closestButton.find( '.accor-arrow' ).html( '&#9658;' );
+      }
+    },
+    scrollToAnchor: function(aid) {
+      var aTag = $("a[name='"+ aid.toLowerCase() +"']");
+
+      $('.vendor-table-body').animate({
+        scrollTop: 0
+      }, 0).animate({
+        scrollTop: aTag.offset().top - 3000
+      }, 0);
+    },
   };
 } )( window.jQuery, window.wp );

@@ -16,24 +16,7 @@ function check_empty_options(){
 }
 
 function get_profiles(){
-    /*require_once 'sirv_api.php';
-
-    $host = 'http://' . get_option('SIRV_AWS_HOST');
-    $bucket = get_option('SIRV_AWS_BUCKET');
-    $key = get_option('SIRV_AWS_KEY');
-    $secret_key = get_option('SIRV_AWS_SECRET_KEY');
-
-    $s3client = get_s3client($host, $key, $secret_key);
-    $obj = get_object_list($bucket, 'Profiles/', $s3client);
-
-    foreach ($obj->get("Contents") as $key => $value) {
-        $tmp = str_replace('Profiles/', '', $value['Key']);
-        if (!empty($tmp)){
-            $tmp = basename($tmp, '.profile');
-            echo "<option value='{$tmp}'>{$tmp}</option>";
-        }
-    }*/
-    require_once 'aws-s3-helper.php';
+    require_once 'classes/aws.api.class.php';
 
     $s3object = new MagicToolbox_AmazonS3_Helper(sirv_get_params_array());
 

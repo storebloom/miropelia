@@ -10,11 +10,12 @@ jQuery(function($){
         let maxFilesCount;
         let sirvFileSizeLimit;
         let profileTimer;
-        let imgGallery = false;
         let emptyFolder = false;
         let noResults = false;
         let searchFrom = 0;
         let scrollSegmentLen = 100;
+        let isInDirSearch = false;
+        //let imgGallery = false;
         window.shGalleryFlag = true;
         window.sirvViewerPath = '/';
         /*-------------global variables END---------------*/
@@ -96,20 +97,22 @@ jQuery(function($){
                 if(!$toolbar.hasClass('sub-toolbar--fixed')){
                     $toolbar.addClass('sub-toolbar--fixed');
                     $itemContainer.addClass('items-container-toolbar--fixed');
+                    reCalcSearchMenuPosition();
                 }
             } else {
                 $toolbar.removeClass('sub-toolbar--fixed');
                 $itemContainer.removeClass('items-container-toolbar--fixed');
+                reCalcSearchMenuPosition();
             }
 
         }
 
 
-        //$('.sirv-search').on('scroll', searchLoadOnScroll);
 
         function searchLoadOnScroll(){
             if ((this.scrollHeight - $(this).scrollTop() - $(this).offset().top - $(this).height()) <= 0) {
-                globalSearch(searchFrom, true);
+                dir = isInDirSearch ? getCurrentDir() : '';
+                globalSearch(searchFrom, true, dir);
                 $('.sirv-items-container').off('scroll', searchLoadOnScroll);
             }
         }
@@ -450,6 +453,8 @@ jQuery(function($){
             let title_path = receiveContentType == 's_content' ? 'title="'+ data.filename +'" ' : '';
             let dir = data.dirname == '/' ? data.dirname : data.dirname + '/';
             let itemMeta = getItemMeta(data);
+            let imgWidth = !!itemMeta.width ? ' data-width="' + itemMeta.width +'" ' : '';
+            let imgHeight = !!itemMeta.height ? ' data-height="' + itemMeta.height +'" ' : '';
 
             let sirvItem = $(
                 '<div class="sirv-item">' +
@@ -458,7 +463,7 @@ jQuery(function($){
                         '<div class="sirv-item-icon" style="'+ bcImg +'" data-original="'+ data.fullImageUrl +'"></div>' +
                         '<div class="sirv-item-desc">' +
                             '<div class="sirv-item-name-container sirv-overflow-ellipsis sirv-no-select-text" title="'+ data.basename +'">'+ data.basename + '</div>'+
-                            '<div class="sirv-item-meta-container sirv-overflow-ellipsis sirv-no-select-text" title="'+ itemMeta.title +'">' + itemMeta.main +'</div>' +
+                            '<div class="sirv-item-meta-container sirv-overflow-ellipsis sirv-no-select-text" title="'+ itemMeta.title +'"'+ imgWidth + imgHeight +'>' + itemMeta.main +'</div>' +
                         '</div>' +
                     '</div>' +
                 '</div>'
@@ -487,6 +492,8 @@ jQuery(function($){
                 case 'image':
                     if (!!data.meta.width && data.meta.height){
                         meta.main = data.meta.width + ' x ' + data.meta.height;
+                        meta.width = data.meta.width;
+                        meta.height = data.meta.height;
                     }else{
                         meta.main = "No data";
                     }
@@ -658,7 +665,7 @@ jQuery(function($){
 
                 newImage.onerror = function () {
                     if (attemptsToLoadImg > 0) {
-                        setTimeout(function () { load($imgElem, newImage, src + imgParams); }, 2000);
+                        setTimeout(function () { load($imgElem, newImage, src); }, 2000);
                         attemptsToLoadImg--;
                     }
                 }
@@ -716,7 +723,7 @@ jQuery(function($){
         }
 
 
-        function wideSearchField(){
+        function wideSearchField(e){
             $(this).removeClass('sirv-search-narrow').addClass('sirv-search-wide');
             $('.sirv-search-cancel').removeClass('narrow').addClass('wide');
         }
@@ -726,15 +733,22 @@ jQuery(function($){
             if($(this).val() == ""){
                 $(this).removeClass('sirv-search-wide').addClass('sirv-search-narrow');
                 $('.sirv-search-cancel').removeClass('wide').addClass('narrow');
+                hideSearchMenu();
             }
         }
 
 
-        function globalSearch(from = 0, continuosSearch=false){
+        function globalSearch(from = 0, continuosSearch=false, dir=''){
             let query = $('#sirv-search-field').val();
-            //from = from || 0;
+            let queryMsg = (getCurrentDir() == '/' || !!dir) ? '' : " in entire account";
+            let dirMsg = !!dir ? " in folder '" + dir +"'" : '';
 
             if(!!!query) return;
+
+            if(!!!dir) isInDirSearch = false;
+
+            hideSearchMenu();
+
 
             let ajaxData = {
                 url: sirv_ajax_object.ajaxurl,
@@ -742,6 +756,7 @@ jQuery(function($){
                     action: 'sirv_get_search_data',
                     search_query: query,
                     from: from,
+                    dir: dir,
                 },
                 type: 'POST',
                 dataType: 'json',
@@ -749,7 +764,7 @@ jQuery(function($){
             //sendAjaxRequest(AjaxData, processingOverlay=false, showingArea=false, isDebug=false, doneFn=false, beforeSendFn=false, errorFn=false)
             sendAjaxRequest(ajaxData, processingOverlay = '.loading-ajax', showingArea = false, isdebug = false, function (data) {
                 if(data){
-                    $('.sirv-search-for').text("Results for '" + query + "'");
+                    $('.sirv-search-for').text("Results for '" + query + "'" + queryMsg + dirMsg);
                     if (from == 0) if ($('.sirv-items-container').scrollTop() > 0) $('.sirv-items-container').scrollTop(0);
                     if(data.isContinuation){
                         $('.sirv-items-container').on('scroll', searchLoadOnScroll);
@@ -759,7 +774,7 @@ jQuery(function($){
                         searchFrom = 0;
                     }
 
-                    console.log(data);
+                    //console.log(data);
                     unbindEvents();
                     showSearchResults(true, continuosSearch);
                     renderSearch(data);
@@ -771,7 +786,7 @@ jQuery(function($){
             function(){
                 $('.breadcrumb').hide();
                 $('.sirv-search-for').show();
-                $('.sirv-search-for').text("Searching for '" + query +"'");
+                $('.sirv-search-for').text("Searching for '" + query + "'" + queryMsg + dirMsg);
             }
             );
         }
@@ -781,9 +796,83 @@ jQuery(function($){
             $('#sirv-search-field').val('');
             $('#sirv-search-field').removeClass('sirv-search-wide').addClass('sirv-search-narrow');
             $('.sirv-search-cancel').removeClass('wide').addClass('narrow');
+            hideSearchMenu();
             showSearchResults(false);
             restoreSelections(false);
             bindEvents();
+        }
+
+        function cancelSearchLight(){
+            $search = $('#sirv-search-field');
+            if(!!$search.val){
+                $search.val('');
+                $search.removeClass('sirv-search-wide').addClass('sirv-search-narrow');
+                $('.sirv-search-cancel').removeClass('wide').addClass('narrow');
+                hideSearchMenu();
+            }
+        }
+
+
+        function onChangeSearchInput(){
+            if( $(this).val() !== '' && getCurrentDir() !== '/'){
+                showSearchMenu();
+            }else{
+                hideSearchMenu();
+            }
+        }
+
+
+        function showSearchMenu(e){
+            $searchField = $('#sirv-search-field');
+            let offset = getElOffset($searchField[0]);
+
+            $menu = $('.sirv-search-dropdown');
+            $menu.css({'width': '300px', 'max-width' : '300px' });
+            $menu.css({'top': offset.top, 'left': offset.left });
+            $menu.show();
+        }
+
+
+        function reCalcSearchMenuPosition(){
+            $menu = $('.sirv-search-dropdown');
+
+            if($menu.is(":visible")){
+                $searchField = $('#sirv-search-field');
+                let offset = getElOffset($searchField[0]);
+                $menu.css({'top': offset.top, 'left': offset.left });
+            }
+        }
+
+
+        function hideSearchMenu(){
+            $menu = $('.sirv-search-dropdown');
+            $menu.hide();
+        }
+
+
+        function searchInDir(){
+            isInDirSearch = true;
+
+            globalSearch(0, false, getCurrentDir());
+        }
+
+
+        function getCurrentDir(){
+            let currentDir = $('#filesToUpload').attr('data-current-folder');
+            let dir = currentDir == '/' ? currentDir : '/' + currentDir.substring(0, currentDir.length -1);
+
+            return dir;
+        }
+
+
+        function getElOffset(el) {
+            const rect = el.getBoundingClientRect();
+            return {
+                //left: rect.left + window.scrollX,
+                left: rect.left,
+                //top: rect.top + window.scrollY
+                top: rect.top + rect.height,
+            };
         }
 
 
@@ -1184,6 +1273,9 @@ jQuery(function($){
             $('#sirv-search-field').on("focusout", narrowSearchField);
             $('#sirv-search-field').on('keyup', searchOnEnter);
             $('.sirv-search-cancel').on('click', cancelSearch);
+            $('#sirv-search-field').on('input', onChangeSearchInput);
+            $(window).on('resize', reCalcSearchMenuPosition);
+            $('.sirv-search-in-dir').on('click', searchInDir);
             $('.sirv-breadcramb-link').on('click', beforeGetContent);
             $('.sirv-item-body[data-type=dir]').on('click', beforeGetContent);
             $('.sirv-item-body:not([data-type=dir])').on('click', function(event){selectImagesNew(event, $(this))});
@@ -1214,6 +1306,9 @@ jQuery(function($){
             $('#sirv-search-field').off("focusout", narrowSearchField);
             $('#sirv-search-field').off('keyup', searchOnEnter);
             $('.sirv-search-cancel').off('click', cancelSearch);
+            $('#sirv-search-field').off('input', onChangeSearchInput);
+            $(window).off('resize', reCalcSearchMenuPosition);
+            $('.sirv-search-in-dir').off('click', searchInDir);
             $('.insert').off('click', insert);
             $('.sirv-create-gallery').off('click', createGallery);
             $('.sirv-breadcramb-link').off('click', beforeGetContent);
@@ -1254,10 +1349,11 @@ jQuery(function($){
             path = ( !!path ) ? path : '/';
 
             //clean searh field on update content
-            if($('#sirv-search-field').val() !== ''){
+            /* if($('#sirv-search-field').val() !== ''){
                 $('#sirv-search-field').val('');
                 $('#sirv-search-field').removeClass('sirv-search-wide').addClass('sirv-search-narrow');
-            }
+            } */
+            cancelSearchLight();
 
             let ajaxData = {
                             url: sirv_ajax_object.ajaxurl,
@@ -1393,7 +1489,8 @@ jQuery(function($){
             //clear progress bar data before start new upload
             $('.sirv-progress-bar').css('width', '0');
             $('.sirv-progress-text').html('');
-            $('.sirv-progress-text').html('<span class="sirv-traffic-loading-ico sirv-no-lmargin"></span>processing...');
+            //$('.sirv-progress-text').html('<span class="sirv-traffic-loading-ico sirv-no-lmargin"></span>processing...');
+            $('.sirv-progress-text').html('<span class="sirv-ajax-gif-animation sirv-no-lmargin"></span>processing...');
 
             //let files = event.target.files;
 
@@ -1839,12 +1936,18 @@ jQuery(function($){
                     original: $('.sirv-item-icon', $obj).attr('data-original'),
                     dir: $obj.attr('data-dir'),
                     type: $obj.attr('data-type'),
+                    width: $('.sirv-item-meta-container', $obj).attr('data-width') || 0,
+                    height: $('.sirv-item-meta-container', $obj).attr('data-height') || 0,
                 }
 
-                $('.selected-miniatures-container').append('<li class="selected-miniature"><img class="selected-miniature-img" data-id="' + data.id +
-                    '" data-original="' + data.original + '" data-type="' + data.type +
-                    '" data-dir="' + data.dir + '"' +
-                    ' data-caption="" src="' + data.original + getItemParams(data.type, 40) +'"' + ' /></li>\n');
+                $('.selected-miniatures-container').append(
+                    '<li class="selected-miniature">'+
+                        '<img class="selected-miniature-img" data-id="' + data.id +
+                        '" data-original="' + data.original + '" data-type="' + data.type +
+                        '" data-dir="' + data.dir + '"' +
+                        ' data-caption="" src="' + data.original + getItemParams(data.type, 40) +'"' +
+                        ' data-width="'+ data.width +'"'+' data-height="'+ data.height +'"'+
+                    ' /></li>\n');
             }
 
             function removeMiniatures($obj) {
@@ -2057,6 +2160,8 @@ jQuery(function($){
                         let imgSrc = getSirvCdnUrl($(value).attr('data-original'));
                         let title = $(this).parent().siblings('span').children().val();
                         let linkTag = '';
+                        let img_width = $(this).attr('data-width');
+                        let img_height = $(this).attr('data-height');
 
                         figure.classList.add('sirv-flx');
                         figure.classList.add('sirv-img-container');
@@ -2064,11 +2169,16 @@ jQuery(function($){
                         if(data.align) figure.classList.add(data.align);
                         if(data.isResponsive){
                             imgTag.classList.add('Sirv');
+                            if(img_width !== '0') imgTag.width = img_width;
+                            if(img_height !== '0') imgTag.height = img_height;
                             if(data.width) figure.style["width"] = data.width + 'px';
                         }
                         imgTag.classList.add('sirv-img-container__img');
                         if(data.isStatic){
                             imgTag.src = imgSrc + generateOptionsUriStr({'profile': data.profile, 'w': data.width});
+                            let size = calcImgSize(img_width, img_height, data.width);
+                            imgTag.width = size.width;
+                            imgTag.height = size.height;
                         }else{
                             if(!data.isLazyLoading) imgTag.setAttribute('data-options', 'lazy: false;');
                             imgTag.setAttribute('data-src', imgSrc + generateOptionsUriStr({'profile': data.profile}));
@@ -2092,13 +2202,31 @@ jQuery(function($){
                         if(!data.isAltCaption && title){
                             let figCaption = document.createElement('figcaption');
                             figCaption.classList.add('sirv-img-container__cap');
-                            figCaption.textContent = title;
+                            //figCaption.textContent = title;
+                            figCaption.innerHTML = removeNotAllowedHTMLTags(title);
                             figure.appendChild(figCaption);
                         }
 
                         imagesHTML += figure.outerHTML;
                     });
             return imagesHTML;
+        }
+
+
+        function calcImgSize(orig_width, orig_height, width){
+            let size = {width: orig_width, height: orig_height};
+
+            if(!!width){
+                size.width = width;
+                size.height = +width * calcProportion(orig_width, orig_height);
+            }
+
+            return size;
+        }
+
+
+        function calcProportion(width, height){
+            return +height/+width;
         }
 
 
@@ -2153,10 +2281,11 @@ jQuery(function($){
                     imagesData.push({
                         'origUrl': image.url + profileParams,
                         'modUrl' : image.url + imgParams,
-                        'caption': image.caption
+                        'caption': image.caption,
+                        'img_width' : image.image_width,
+                        'img_height' : image.image_height,
                     });
                 });
-
                 tmpObj.images.full.imagesData = imagesData;
 
 
@@ -2212,7 +2341,9 @@ jQuery(function($){
                         'thumb': data.images[i].url + imgThumbParams,
                         'original': data.images[i].url,
                         'link': data.images[i].url + imgParams,
-                        'alt': data.images[i].caption
+                        'alt': data.images[i].caption,
+                        'width' : data.images[i].image_width,
+                        'height' : data.images[i].image_height,
                     });
                 }
             }
@@ -2332,8 +2463,10 @@ jQuery(function($){
                                                         'data-order="'+ index +'"'+
                                                         'data-original="'+ $(value).attr('data-original') +
                                                         '" data-type="'+ $(value).attr('data-type') +'" alt=""'+
-                                                        ' title="' + basename($(value).attr('data-original')) +'"></div>'+
-                                                        '<span><input type="text" placeholder="Text caption.."'+
+                                                        ' title="' + basename($(value).attr('data-original')) + '"' +
+                                                        'data-width="'+ $(value).attr('data-width') +'" '+
+                                                        'data-height="'+ $(value).attr('data-height') +'">'+
+                                                        '</div><span><input type="text" placeholder="Text caption.."'+
                                                         ' data-setting="caption" class="image-caption" value="'+ $(value).attr('data-caption') +'" /></span></div></li>\n');
                     documentFragment.append(elemBlock);
                 });
@@ -2450,6 +2583,8 @@ jQuery(function($){
             setDataOptionPair(tmp_data_options['zgallery_data_options'], $('input[name=sirv-video-autoplay]:checked').attr('data-option-name'), $('input[name=sirv-video-autoplay]:checked').val());
 
             //spin options
+            //spinHeight
+            setDataOptionPair(tmp_data_options['spin_options'], $('input#spin-height').attr('data-option-name'), $('input#spin-height').val());
             setDataOptionPair(tmp_data_options['spin_options'], $('input[name=sirv-spin-spinmethod]:checked').attr('data-option-name'), $('input[name=sirv-spin-spinmethod]:checked').val());
             setDataOptionPair(tmp_data_options['spin_options'], $('#sirv-spin-autospin').attr('data-option-name'), $('#sirv-spin-autospin').val());
             setDataOptionPair(tmp_data_options['spin_options'], $('#sirv-spinrotation-duration').attr('data-option-name'), $('#sirv-spinrotation-duration').val());
@@ -2467,9 +2602,11 @@ jQuery(function($){
                 //tmp['url'] = tmp_url.replace(/http(?:s)*:/, '');
                 tmp['url'] = getSirvCdnUrl(url);
                 tmp['order'] = $(this).attr('data-order');
-                tmp['caption'] = $(this).parent().siblings('span').children().val() ;
+                tmp['caption'] = removeNotAllowedHTMLTags($(this).parent().siblings('span').children().val());
                 tmp['type'] = $(this).attr('data-type');
-                $.ajax({
+                tmp['image_width'] = $(this).attr('data-width');
+                tmp['image_height'] = $(this).attr('data-height');
+                /* $.ajax({
                     url:  url + "?info",
                     type: 'GET',
                     dataType: 'json',
@@ -2480,8 +2617,7 @@ jQuery(function($){
                 }).fail(function(jqXHR, status, error){
                     tmp['image_width'] = 0;
                     tmp['image_height'] = 0;
-                });
-
+                }); */
                 images.push(tmp);
             });
 
@@ -2492,6 +2628,12 @@ jQuery(function($){
 
         function setDataOptionPair(obj, key, value){
             obj[key] = value;
+        }
+
+
+        function removeNotAllowedHTMLTags(str){
+            let pattern = /<(?!\/?(em|strong|b|i|br|a)(?=>|\s?.*>))\/?.*?>/ig;
+            return str.replace(pattern, '');
         }
 
 
@@ -2572,6 +2714,9 @@ jQuery(function($){
                     let videoAutoplay = response['shortcode_options']['zgallery_data_options']['videoAutoplay'];
                     $('input[name=sirv-video-autoplay][value=' + videoAutoplay + ']').prop('checked', true);
 
+                    let spinHeight = response['shortcode_options']['spin_options']['spinHeight'];
+                    $('input#spin-height').val(spinHeight);
+
                     let spin = response['shortcode_options']['spin_options']['spin'];
                     $('input[name=sirv-spin-spinmethod][value=' + spin + ']').prop('checked', true);
 
@@ -2604,6 +2749,9 @@ jQuery(function($){
 
                 for(let i = 0; i < images.length; i++){
                     let caption = stripslashes(images[i]['caption']);
+
+                    images[i]['url'] = unescaped(images[i]['url']);
+
 
                     let elemBlock = $('<li class="gallery-item"><div><div><a class="delete-image delete-image-icon" href="#" title="Remove"></a>'+
                         '<img class="gallery-img" src="' + images[i]['url'] + getItemParams(images[i]['type'], 150) +'"'+
@@ -2655,6 +2803,7 @@ jQuery(function($){
             }
         }
 
+
         function stripslashes(str) {
             str = str.replace(/\\'/g,'\'');
             str = str.replace(/\\"/g,'&quot;');
@@ -2662,6 +2811,12 @@ jQuery(function($){
             str = str.replace(/\\\\/g,'\\');
             return str;
         }
+
+
+        function unescaped(escapedStr){
+            return escapedStr.replace(/\\?\\(\'|\")/g, '$1');
+        }
+
 
         function getSirvType(gallery){
             let itemsTypes = [];

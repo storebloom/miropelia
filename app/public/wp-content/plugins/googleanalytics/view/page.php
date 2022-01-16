@@ -3,6 +3,8 @@ $optimize_code = get_option( 'googleanalytics_optimize_code' );
 $universal     = get_option( 'googleanalytics_enable_universal_analytics', true );
 $anonymization = get_option( 'googleanalytics_ip_anonymization', true );
 $gdpr_config   = get_option( 'googleanalytics_gdpr_config');
+$plugin_dir = plugin_dir_path(__FILE__);
+$plugin_uri = trailingslashit(get_home_url()) . 'wp-content/plugins/googleanalytics/';
 ?>
 <div id="adblocker-notice" class="notice notice-error is-dismissible">
 	<p>
@@ -214,7 +216,7 @@ $gdpr_config   = get_option( 'googleanalytics_gdpr_config');
                         </label>
                     </td>
                 </tr>
-                <?php include plugin_dir_path(__FILE__) . 'templates/gdpr.php'; ?>
+                <?php include $plugin_dir . 'templates/gdpr.php'; ?>
             </table>
 
             <p class="submit">
@@ -222,70 +224,17 @@ $gdpr_config   = get_option( 'googleanalytics_gdpr_config');
                        value="<?php _e( 'Save Changes' ) ?>"/>
             </p>
         </form>
-        <?php if(empty($gdpr_config)) : ?>
-        <div class="sidebar-ad">
-            <h2 style="text-decoration: underline;">
-                <?php esc_html_e('Check out our new GDPR Compliance Tool!', 'googleanalytics'); ?>
-            </h2>
-            <div class="row">
-                <div class="col-md-12">
-                    <img src="<?php echo trailingslashit(get_home_url()) . 'wp-content/plugins/googleanalytics/assets/images/gdpr-ex.png'; ?>" />
-                </div>
-                <div class="col-md-6">
-                    <h3><?php esc_html_e('Confirm Consent', 'googleanalytics'); ?></h3>
-                    <p>
-                        <?php esc_html_e(
-                            'A simple and streamlined way to confirm a user’s initial acceptance or rejection of cookie collection',
-                            'googleanalytics'
-                        ); ?>
-                    </p>
-                </div>
-                <div class="col-md-6">
-                    <h3><?php esc_html_e('Select Purpose', 'googleanalytics'); ?></h3>
-                    <p>
-                        <?php esc_html_e(
-                            'A transparent system of verifying the intent of collecting a user’s cookies, and giving the option to opt in or out',
-                            'googleanalytics'
-                        ); ?>
-                    </p>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-6">
-                    <h3><?php esc_html_e('Indicate Company', 'googleanalytics'); ?></h3>
-                    <p>
-                        <?php esc_html_e(
-                            'A comprehensive record of company-level information that allows users to monitor and control the recipients of cookie collection',
-                            'googleanalytics'
-                        ); ?>
-                    </p>
-                </div>
-                <div class="col-md-6">
-                    <h3><?php esc_html_e('Access Data Rights', 'googleanalytics'); ?></h3>
-                    <p>
-                        <?php esc_html_e(
-                            'A centralized database where users can review the latest privacy policies and information pertaining to their cookie collection',
-                            'googleanalytics'
-                        ); ?>
-                    </p>
-                </div>
-            </div>
-            <div class="row register-section">
-	            <?php if ( Ga_Helper::are_features_enabled() ) : ?>
-		            <td>
-			            <button class="gdpr-enable"><?php esc_html_e('Enable'); ?></button>
-		            </td>
-	            <?php else : ?>
-		            <td>
-			            <label class="<?php echo ( ! Ga_Helper::are_features_enabled() ) ? 'label-grey ga-tooltip' : '' ?>">
-				            <button class="gdpr-enable" disabled="disabled"><?php esc_html_e('Enable'); ?></button>
-				            <span class="ga-tooltiptext ga-tt-abs"><?php _e( $tooltip ); ?></span>
-			            </label>
-		            </td>
-	            <?php endif; ?>
-            </div>
-        </div>
-        <?php endif; ?>
+        <?php
+        // If GDPR isn't enabled show ad otherwise show demo ad.
+        if (empty($gdpr_config)) {
+            include $plugin_dir . 'templates/sidebar/gdpr-ad.php';
+        } else {
+            // If Demo is not enabled show ad.
+            if (! get_option('googleanalytics_demographic')) {
+                include $plugin_dir . 'templates/sidebar/demo-ad.php';
+            }
+        }
+        ?>
     </div>
     <?php if ( $data['debug_info'] ) : ?>
         <tr valign="top">
@@ -316,3 +265,4 @@ $gdpr_config   = get_option( 'googleanalytics_gdpr_config');
         ga_switcher.init('<?php echo $data[ Ga_Admin::GA_DISABLE_ALL_FEATURES ]; ?>');
     });
 </script>
+<?php include 'templates/demo-popup.php';

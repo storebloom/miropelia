@@ -134,6 +134,6 @@ if (isset($data['handle_rows_contracted']['scripts'][$data['row']['obj']->handle
 	    </div>
         <img style="display: none;"
              class="wpacu-ajax-loader"
-             src="<?php echo WPACU_PLUGIN_URL; ?>/assets/icons/icon-ajax-loading-spinner.svg" alt="" />
+             src="<?php echo WPACU_PLUGIN_URL; ?>/assets/icons/icon-ajax-loading-spinner.svg" alt="<?php echo __('Loading'); ?>..." />
 	</td>
 </tr>

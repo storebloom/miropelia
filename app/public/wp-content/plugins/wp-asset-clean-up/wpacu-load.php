@@ -94,6 +94,8 @@ if (is_admin()) {
 
 	$wpacuTools = new \WpAssetCleanUp\Tools();
 	$wpacuTools->init();
+
+	new \WpAssetCleanUp\AjaxSearchAutocomplete();
 } elseif (\WpAssetCleanUp\Misc::triggerFrontendOptimization()) {
 	/*
 	 * Trigger the CSS & JS combination only in the front-end view in certain conditions (not within the Dashboard)

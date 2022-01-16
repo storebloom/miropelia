@@ -79,6 +79,7 @@ class FileSystem
 	{
 		if ( (strpos($localPathToFile, WP_CONTENT_DIR . OptimizeCss::getRelPathCssCacheDir()) !== false && ! is_dir(dirname($localPathToFile)))
 			|| (strpos($localPathToFile, WP_CONTENT_DIR . OptimizeJs::getRelPathJsCacheDir()) !== false && ! is_dir(dirname($localPathToFile)))
+			|| (strpos($localPathToFile, '/_storage/_recent_items/') !== false && ! is_dir(dirname($localPathToFile)))
 		) {
 			@mkdir(dirname($localPathToFile), 0755, true );
 		}

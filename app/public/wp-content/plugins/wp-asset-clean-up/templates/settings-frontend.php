@@ -6,7 +6,7 @@ if (! isset($data)) {
     exit;
 }
 ?>
-<form action="#wpacu_wrap_assets" method="post">
+<form id="wpacu-frontend-form" action="#wpacu_wrap_assets" method="post">
     <div id="wpacu_wrap_assets">
         <?php
         if ($data['is_updateable']) {
@@ -74,7 +74,14 @@ if (! isset($data)) {
                 <?php
             }
 
-	        require_once 'meta-box-loaded.php';
+	        // Perhaps "Do not load Asset CleanUp on this page (this will disable any functionality of the plugin)" is set for this page
+	        // Or it's matched from "Settings" -> "Plugin Usage Preferences" -> "Do not load the plugin on certain pages"
+	        if (isset($data['status']) && in_array($data['status'], array(5, 6)) && in_array($data['wpacu_type'], array('post', 'front_page'))) {
+		        $data['page_options_with_assets_manager_no_load'] = true;
+		        include __DIR__.'/meta-box-restricted-page-load.php';
+	        } else {
+		        require_once 'meta-box-loaded.php';
+	        }
         } else {
 	        // Category, Tag, Search, 404, Author, Date pages (not supported by Lite version)
             $contentUnlockFeature = ' <p class="pro-page-unlock-notice">'.__('To unlock this feature, you can upgrade to the Pro version.', 'wp-asset-clean-up').'</p>';

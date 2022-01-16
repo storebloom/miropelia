@@ -146,4 +146,6 @@ if ( isset( $data['all']['hardcoded'] ) && ! empty( $data['all']['hardcoded'] ) 
 * ----------------------------
 */
 
+include_once __DIR__ . '/_page-options.php';
+
 include '_inline_js.php';

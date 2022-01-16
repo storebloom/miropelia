@@ -34,7 +34,7 @@
                 "bin/minifyjs"
             ],
             "type": "library",
-            "installation-source": "dist",
+            "installation-source": "source",
             "autoload": {
                 "psr-4": {
                     "MatthiasMullie\\Minify\\": "src/"

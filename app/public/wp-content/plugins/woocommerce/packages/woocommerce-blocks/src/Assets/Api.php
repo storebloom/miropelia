@@ -2,7 +2,7 @@
 namespace Automattic\WooCommerce\Blocks\Assets;
 
 use Automattic\WooCommerce\Blocks\Domain\Package;
-
+use Exception;
 /**
  * The Api class provides an interface to various asset registration helpers.
  *
@@ -11,6 +11,12 @@ use Automattic\WooCommerce\Blocks\Domain\Package;
  * @since 2.5.0
  */
 class Api {
+	/**
+	 * Stores inline scripts already enqueued.
+	 *
+	 * @var array
+	 */
+	private $inline_scripts = [];
 
 	/**
 	 * Reference to the Package instance
@@ -69,19 +75,43 @@ class Api {
 	 * @param bool   $has_i18n      Optional. Whether to add a script
 	 *                              translation call to this file. Default:
 	 *                              true.
+	 *
+	 * @throws Exception If the registered script has a dependency on itself.
 	 */
 	public function register_script( $handle, $relative_src, $dependencies = [], $has_i18n = true ) {
-		$src        = $this->get_asset_url( $relative_src );
-		$asset_path = $this->package->get_path(
-			str_replace( '.js', '.asset.php', $relative_src )
-		);
+		$src     = '';
+		$version = '1';
 
-		if ( file_exists( $asset_path ) ) {
-			$asset        = require $asset_path;
-			$dependencies = isset( $asset['dependencies'] ) ? array_merge( $asset['dependencies'], $dependencies ) : $dependencies;
-			$version      = ! empty( $asset['version'] ) ? $asset['version'] : $this->get_file_version( $relative_src );
-		} else {
-			$version = $this->get_file_version( $relative_src );
+		if ( $relative_src ) {
+			$src        = $this->get_asset_url( $relative_src );
+			$asset_path = $this->package->get_path(
+				str_replace( '.js', '.asset.php', $relative_src )
+			);
+
+			if ( file_exists( $asset_path ) ) {
+				$asset        = require $asset_path;
+				$dependencies = isset( $asset['dependencies'] ) ? array_merge( $asset['dependencies'], $dependencies ) : $dependencies;
+				$version      = ! empty( $asset['version'] ) ? $asset['version'] : $this->get_file_version( $relative_src );
+			} else {
+				$version = $this->get_file_version( $relative_src );
+			}
+		}
+
+		if ( in_array( $handle, $dependencies, true ) ) {
+			if ( $this->package->feature()->is_development_environment() ) {
+				$dependencies = array_diff( $dependencies, [ $handle ] );
+					add_action(
+						'admin_notices',
+						function() use ( $handle ) {
+								echo '<div class="error"><p>';
+								/* translators: %s file handle name. */
+								printf( esc_html__( 'Script with handle %s had a dependency on itself which has been removed. This is an indicator that your JS code has a circular dependency that can cause bugs.', 'woocommerce' ), esc_html( $handle ) );
+								echo '</p></div>';
+						}
+					);
+			} else {
+				throw new Exception( sprintf( 'Script with handle %s had a dependency on itself. This is an indicator that your JS code has a circular dependency that can cause bugs.', $handle ) );
+			}
 		}
 
 		wp_register_script( $handle, $src, apply_filters( 'woocommerce_blocks_register_script_dependencies', $dependencies, $handle ), $version, true );
@@ -89,27 +119,6 @@ class Api {
 		if ( $has_i18n && function_exists( 'wp_set_script_translations' ) ) {
 			wp_set_script_translations( $handle, 'woocommerce', $this->package->get_path( 'languages' ) );
 		}
-	}
-
-	/**
-	 * Queues a block script in the frontend.
-	 *
-	 * @since 2.5.0
-	 * @since 2.6.0 Changed $name to $script_name and added $handle argument.
-	 * @since 2.9.0 Made it so scripts are not loaded in admin pages.
-	 *
-	 * @param string $script_name  Name of the script used to identify the file inside build folder.
-	 * @param string $handle       Optional. Provided if the handle should be different than the script name. `wc-` prefix automatically added.
-	 * @param array  $dependencies Optional. An array of registered script handles this script depends on. Default empty array.
-	 */
-	public function register_block_script( $script_name, $handle = '', $dependencies = [] ) {
-		if ( is_admin() ) {
-			return;
-		}
-		$relative_src = $this->get_block_asset_build_path( $script_name );
-		$handle       = '' !== $handle ? 'wc-' . $handle : 'wc-' . $script_name;
-		$this->register_script( $handle, $relative_src, $dependencies );
-		wp_enqueue_script( $handle );
 	}
 
 	/**
@@ -146,5 +155,25 @@ class Api {
 			? ''
 			: '-legacy';
 		return "build/$filename$suffix.$type";
+	}
+
+	/**
+	 * Adds an inline script, once.
+	 *
+	 * @param string $handle Script handle.
+	 * @param string $script Script contents.
+	 */
+	public function add_inline_script( $handle, $script ) {
+		if ( ! empty( $this->inline_scripts[ $handle ] ) && in_array( $script, $this->inline_scripts[ $handle ], true ) ) {
+			return;
+		}
+
+		wp_add_inline_script( $handle, $script );
+
+		if ( isset( $this->inline_scripts[ $handle ] ) ) {
+			$this->inline_scripts[ $handle ][] = $script;
+		} else {
+			$this->inline_scripts[ $handle ] = array( $script );
+		}
 	}
 }

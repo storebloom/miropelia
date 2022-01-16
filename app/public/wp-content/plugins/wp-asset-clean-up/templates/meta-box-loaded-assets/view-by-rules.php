@@ -138,5 +138,6 @@ if ( isset( $data['all']['hardcoded'] ) && ! empty( $data['all']['hardcoded'] ) 
 * [END] BY (ANY) RULES SET (yes or no)
 * -------------------------------------
 */
+include_once __DIR__ . '/_page-options.php';
 
 include '_inline_js.php';

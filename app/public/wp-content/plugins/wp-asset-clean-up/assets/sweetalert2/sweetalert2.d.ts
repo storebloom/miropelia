@@ -5,14 +5,14 @@ declare module 'sweetalert2' {
    *
    * Example:
    * ```
-   * Swal.fire('Hey user!', 'You are the rockstar!', 'info');
+   * wpacuSwal.fire('Hey user!', 'You are the rockstar!', 'info');
    *
-   * Swal.update({
+   * wpacuSwal.update({
    *   icon: 'success'
    * })
    * ```
    */
-  namespace Swal {
+  namespace wpacuSwal {
 
     /**
      * Function to display a SweetAlert2 popup, with an object of options, all being optional.
@@ -20,7 +20,7 @@ declare module 'sweetalert2' {
      *
      * Example:
      * ```
-     * Swal.fire({
+     * wpacuSwal.fire({
      *   title: 'Auto close alert!',
      *   text: 'I will close in 2 seconds.',
      *   timer: 2000
@@ -34,17 +34,17 @@ declare module 'sweetalert2' {
      *
      * Example:
      * ```
-     * Swal.fire('The Internet?', 'That thing is still around?', 'question');
+     * wpacuSwal.fire('The Internet?', 'That thing is still around?', 'question');
      * ```
      */
     function fire<T = any>(title?: string, html?: string, icon?: SweetAlertIcon): Promise<SweetAlertResult<Awaited<T>>>;
 
     /**
-     * Reuse configuration by creating a `Swal` instance.
+     * Reuse configuration by creating a `wpacuSwal` instance.
      *
      * Example:
      * ```
-     * const Toast = Swal.mixin({
+     * const Toast = wpacuSwal.mixin({
      *   toast: true,
      *   position: 'top-end',
      *   timer: 3000,
@@ -55,7 +55,7 @@ declare module 'sweetalert2' {
      *
      * @param options the default options to set for this instance.
      */
-    function mixin(options: SweetAlertOptions): typeof Swal;
+    function mixin(options: SweetAlertOptions): typeof wpacuSwal;
 
     /**
      * Determines if a popup is shown.
@@ -68,7 +68,7 @@ declare module 'sweetalert2' {
      *
      * Example:
      * ```
-     * Swal.update({
+     * wpacuSwal.update({
      *   icon: 'error'
      * })
      * ```
@@ -78,7 +78,7 @@ declare module 'sweetalert2' {
     /**
      * Closes the currently open SweetAlert2 popup programmatically.
      *
-     * @param result The promise originally returned by `Swal.fire()` will be resolved with this value.
+     * @param result The promise originally returned by `wpacuSwal.fire()` will be resolved with this value.
      *               If no object is given, the promise is resolved with an empty `SweetAlertResult` object.
      */
     function close(result?: SweetAlertResult): void;
@@ -295,7 +295,7 @@ declare module 'sweetalert2' {
     /**
      * Inserts a popup in the queue.
      *
-     * @param step  The step configuration (same object as in the `Swal.fire()` call).
+     * @param step  The step configuration (same object as in the `wpacuSwal.fire()` call).
      * @param index The index to insert the step at.
      *              By default a popup will be added to the end of a queue.
      */
@@ -316,19 +316,19 @@ declare module 'sweetalert2' {
     function isValidParameter(paramName: string): paramName is keyof SweetAlertOptions;
 
     /**
-     * Determines if a given parameter name is valid for `Swal.update()` method.
+     * Determines if a given parameter name is valid for `wpacuSwal.update()` method.
      *
      * @param paramName The parameter to check
      */
     function isUpdatableParameter(paramName: string): paramName is SweetAlertUpdatableParameters;
 
     /**
-     * Normalizes the arguments you can give to Swal.fire() in an object of type SweetAlertOptions.
+     * Normalizes the arguments you can give to wpacuSwal.fire() in an object of type SweetAlertOptions.
      *
      * Example:
      * ```
-     * Swal.argsToParams(['title', 'text']); //=> { title: 'title', text: 'text' }
-     * Swal.argsToParams([{ title: 'title', text: 'text' }]); //=> { title: 'title', text: 'text' }
+     * wpacuSwal.argsToParams(['title', 'text']); //=> { title: 'title', text: 'text' }
+     * wpacuSwal.argsToParams([{ title: 'title', text: 'text' }]); //=> { title: 'title', text: 'text' }
      * ```
      *
      * @param params The array of arguments to normalize.
@@ -443,13 +443,13 @@ declare module 'sweetalert2' {
     readonly isDenied: boolean;
     readonly isDismissed: boolean;
     readonly value?: T;
-    readonly dismiss?: Swal.DismissReason;
+    readonly dismiss?: wpacuSwal.DismissReason;
   }
 
   export interface SweetAlertOptions<PreConfirmResult = any, PreConfirmCallbackValue = any> {
     /**
      * The title of the popup, as HTML.
-     * It can either be added to the object under the key `title` or passed as the first parameter of `Swal.fire()`.
+     * It can either be added to the object under the key `title` or passed as the first parameter of `wpacuSwal.fire()`.
      *
      * @default ''
      */
@@ -472,7 +472,7 @@ declare module 'sweetalert2' {
 
     /**
      * A HTML description for the popup.
-     * It can either be added to the object under the key `html` or passed as the second parameter of `Swal.fire()`.
+     * It can either be added to the object under the key `html` or passed as the second parameter of `wpacuSwal.fire()`.
      *
      * @default ''
      */
@@ -482,7 +482,7 @@ declare module 'sweetalert2' {
      * The icon of the popup.
      * SweetAlert2 comes with 5 built-in icons which will show a corresponding icon animation:
      * `'warning'`, `'error'`, `'success'`, `'info'` and `'question'`.
-     * It can either be put to the object under the key `icon` or passed as the third parameter of `Swal.fire()`.
+     * It can either be put to the object under the key `icon` or passed as the third parameter of `wpacuSwal.fire()`.
      *
      * @default undefined
      */
@@ -500,7 +500,7 @@ declare module 'sweetalert2' {
      *
      * Example:
      * ```
-     * Swal.fire({
+     * wpacuSwal.fire({
      *   icon: 'error',
      *   iconHtml: '<i class="fas fa-bug"></i>'
      * })
@@ -603,7 +603,7 @@ declare module 'sweetalert2' {
      *
      * Example:
      * ```
-     * Swal.fire({
+     * wpacuSwal.fire({
      *   customClass: {
      *     container: 'container-class',
      *     popup: 'popup-class',
@@ -864,7 +864,7 @@ declare module 'sweetalert2' {
      *
      * Example:
      * ```
-     * Swal.fire({
+     * wpacuSwal.fire({
      *   title: 'Multiple inputs',
      *   html:
      *     '<input id="swal-input1" class="swal2-input">' +
@@ -874,7 +874,7 @@ declare module 'sweetalert2' {
      *     document.querySelector('#swal-input1').value,
      *     document.querySelector('#swal-input2').value
      *   ]
-     * }).then(result => Swal.fire(JSON.stringify(result));
+     * }).then(result => wpacuSwal.fire(JSON.stringify(result));
      * ```
      *
      * @default undefined
@@ -950,7 +950,7 @@ declare module 'sweetalert2' {
      *
      * Example:
      * ```
-     * Swal.fire({
+     * wpacuSwal.fire({
      *   title: 'Select a file',
      *   input: 'file',
      *   inputAttributes: {
@@ -968,7 +968,7 @@ declare module 'sweetalert2' {
      *
      * Example:
      * ```
-     * Swal.fire({
+     * wpacuSwal.fire({
      *   title: 'Select color',
      *   input: 'radio',
      *   inputValidator: result => !result && 'You need to select something!'
@@ -992,7 +992,7 @@ declare module 'sweetalert2' {
      *
      * Example:
      * ```
-     * Swal.fire({
+     * wpacuSwal.fire({
      *   input: 'email',
      *   validationMessage: 'Adresse e-mail invalide'
      * })
@@ -1060,8 +1060,8 @@ declare module 'sweetalert2' {
     /**
      * Popup lifecycle hook. Synchronously runs after the popup DOM has been updated (ie. just before the popup is
      * repainted on the screen).
-     * Typically, this will happen after `Swal.fire()` or `Swal.update()`.
-     * If you want to perform changes in the popup's DOM, that survive `Swal.update()`, prefer `didRender` over
+     * Typically, this will happen after `wpacuSwal.fire()` or `wpacuSwal.update()`.
+     * If you want to perform changes in the popup's DOM, that survive `wpacuSwal.update()`, prefer `didRender` over
      * `willOpen`.
      *
      * @default undefined
@@ -1122,7 +1122,7 @@ declare module 'sweetalert2' {
     scrollbarPadding?: boolean;
   }
 
-  export default Swal
+  export default wpacuSwal
 }
 
 declare module 'sweetalert2/*/sweetalert2.js' {

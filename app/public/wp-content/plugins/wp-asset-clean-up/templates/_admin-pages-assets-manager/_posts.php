@@ -26,16 +26,29 @@ if (! isset($data)) {
         </div>
 		<?php
 	}
+
+	$data['post_id'] = (isset($_GET['wpacu_post_id']) && $_GET['wpacu_post_id']) ? $_GET['wpacu_post_id'] : false;
+    ?>
+        <p style="margin-bottom: 0;">Post Type: 'post' (e.g. blog entries) &#10230; <a target="_blank" href="https://wordpress.org/support/article/writing-posts/"><?php _e('read more', 'wp-asset-clean-up'); ?></a></p>
+        <div style="margin: 15px 0 0;" class="clearfix"></div>
+    <?php
+    $data['dashboard_edit_not_allowed'] = false;
+
+    require_once __DIR__.'/common/_is-dashboard-edit-allowed.php';
+
+    if ($data['dashboard_edit_not_allowed']) {
+        return; // stop here as the message about the restricted access has been printed
+    }
+
+	if ($data['post_id']) {
+	    // There's a POST ID requested in the URL / Show the assets
+	    $data['post_type'] = get_post_type($data['post_id']);
+		do_action('wpacu_admin_notices');
+	    require_once __DIR__.'/_singular-page.php';
+    } else {
+		// There's no POST ID requested
+	    $data['post_type'] = 'post';
+		require_once '_singular-page-search-form.php';
+	}
 	?>
-    <p>Post Type: 'post' (e.g. blog entries) &#10230; <a target="_blank" href="https://wordpress.org/support/article/writing-posts/"><?php _e('read more', 'wp-asset-clean-up'); ?></a></p>
-
-    <strong>How to retrieve the loaded styles &amp; scripts?</strong>
-
-    <p style="margin-bottom: 0;"><span class="dashicons dashicons-yes"></span> If "Manage in the Dashboard?" (<em>from "Settings" -&gt; "Plugin Usage Preferences"</em>) is enabled:</p>
-    <p style="margin-top: 0;">Go to "Posts" -&gt; "All Posts" -&gt; [Choose the page you want to manage the assets for] -&gt; Scroll to "Asset CleanUp" meta box where you will see the loaded CSS &amp; JavaScript files</p>
-
-    <hr />
-
-    <p style="margin-bottom: 0;"><span class="dashicons dashicons-yes"></span> If "Manage in the Front-end?" (<em>from "Settings" -&gt; "Plugin Usage Preferences"</em>) is enabled and you're logged in:</p>
-    <p style="margin-top: 0;">Go to the page where you want to manage the files and scroll to the bottom of the page where you will see the list.</p>
 </div>

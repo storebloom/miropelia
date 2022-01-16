@@ -5,9 +5,9 @@ Tags: review, sharethis, share this, impression, rating, emoji, ranking, thought
 Author URI: https://sharethis.com/
 Author: ShareThis
 Requires at least: 4.5
-Tested up to: 5.2.2
-Stable tag: 1.1.2
-Version: 1.1.2
+Tested up to: 5.7
+Stable tag: 1.2.0
+Version: 1.2.0
 License: GPLv2 or later
 
 Integrate ShareThis reviews seamlessly into your Wordpress site.
@@ -58,6 +58,10 @@ With ShareThis reviews, we give you the option to have reviews with or without r
 YES!!  To show the reviews, ratings or impressions sections on any post or page even if not enabled use the following: ['sharethis-reviews'] ['sharethis-ratings'] ['sharethis-impressions'].  You can also enable ratings on reviews using ['sharethis-reviews' ratings="true"].
 
 == Changelog ==
+
+= 1.2.0 =
+- Fix review management.
+- Fix duplicate review display.
 
 = 1.1.2 =
 - Addition of 3 new blocks.

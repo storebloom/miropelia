@@ -25,7 +25,7 @@ class CleanUp
 	 */
 	public function doClean()
 	{
-		if (Plugin::preventAnyChanges() || Main::instance()->preventAssetsSettings()) {
+		if ( Plugin::preventAnyFrontendOptimization() || Main::instance()->preventAssetsSettings() || (defined('WPACU_ALLOW_ONLY_UNLOAD_RULES') && WPACU_ALLOW_ONLY_UNLOAD_RULES) ) {
 			return;
 		}
 
@@ -376,6 +376,14 @@ class CleanUp
 			$strContains = array($strContains);
 		}
 
+		$strContains = array_map(function($value) {
+			if (strpos($value, 'data-wpacu-style-handle') !== false) {
+				return $value; // no need to use preg-quote
+			}
+
+			return preg_quote($value, '/');
+		}, $strContains);
+
 		preg_match_all(
 			'#<link[^>]*('.implode('|', $strContains).')[^>].*(>)#Usmi',
 			$htmlSource,
@@ -412,6 +420,14 @@ class CleanUp
 		if (! is_array($strContains)) {
 			$strContains = array($strContains);
 		}
+
+		$strContains = array_map(function($value) {
+			if (strpos($value, 'data-wpacu-script-handle') !== false) {
+				return $value; // no need to use preg-quote
+			}
+
+			return preg_quote($value, '/');
+		}, $strContains);
 
 		preg_match_all(
 			'#<script[^>]*('.implode('|', $strContains).')[^>].*(>)#Usmi',
@@ -518,6 +534,9 @@ class CleanUp
 		}
 
 		// No Autoptimize
+		if (! defined('AUTOPTIMIZE_NOBUFFER_OPTIMIZE')) {
+			define( 'AUTOPTIMIZE_NOBUFFER_OPTIMIZE', true );
+		}
 		add_filter('autoptimize_filter_noptimize', '__return_false');
 
 		// Use less resources during CSS/JS fetching by preventing other plugins to interfere with the HTML output as it's completely unnecessary in this instance

@@ -6,6 +6,8 @@ if (! isset($data)) {
 	exit;
 }
 
+use WpAssetCleanUp\Misc;
+
 include_once '_top-area.php';
 
 do_action('wpacu_admin_notices');
@@ -201,7 +203,7 @@ do_action('wpacu_admin_notices');
             </form>
             <hr />
             <div>There are situations when you might want to access a certain page as if <?php echo WPACU_PLUGIN_TITLE; ?> is deactivated or you wish to access the page with only a part of the plugin's settings (without going through the standard deactivation and re-activation process which takes time). To do that, you can use the following query strings:</div>
-            <style type="text/css">
+            <style <?php echo Misc::getStyleTypeAttribute(); ?>>
                 ul.wpacu-debug-list-params li {
                     margin-bottom: 15px;
                 }

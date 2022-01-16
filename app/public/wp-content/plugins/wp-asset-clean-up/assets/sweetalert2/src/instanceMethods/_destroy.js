@@ -10,7 +10,7 @@ export function _destroy () {
     return // This instance has already been destroyed
   }
 
-  // Check if there is another Swal closing
+  // Check if there is another wpacuSwal closing
   if (domCache.popup && globalState.swalCloseEventFinishedCallback) {
     globalState.swalCloseEventFinishedCallback()
     delete globalState.swalCloseEventFinishedCallback

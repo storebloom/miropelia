@@ -170,6 +170,10 @@ class FontsGoogleRemove
 	 */
 	public static function stripReferencesFromJsCode($jsContent)
 	{
+		if (self::preventAnyChange()) {
+			return $jsContent;
+		}
+
 		$webFontConfigReferenceOne = "#src(\s+|)=(\s+|)(?<startDel>'|\")(\s+|)((http:|https:|)(".implode('|', self::$possibleWebFontConfigCdnPatterns).")(\s+|))(?<endDel>'|\")#si";
 
 		if (stripos($jsContent, 'WebFontConfig') !== false
@@ -201,6 +205,10 @@ class FontsGoogleRemove
 	 */
 	public static function cleanFontFaceReferences($cssContent)
 	{
+		if (self::preventAnyChange()) {
+			return $cssContent;
+		}
+
 		preg_match_all('#@font-face(|\s+){(.*?)}#si', $cssContent, $matchesFromCssCode, PREG_SET_ORDER);
 
 		if (! empty($matchesFromCssCode)) {
@@ -215,5 +223,17 @@ class FontsGoogleRemove
 		}
 
 		return $cssContent;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public static function preventAnyChange()
+	{
+		if (defined('WPACU_ALLOW_ONLY_UNLOAD_RULES') && WPACU_ALLOW_ONLY_UNLOAD_RULES) {
+			return true;
+		}
+
+		return false;
 	}
 }

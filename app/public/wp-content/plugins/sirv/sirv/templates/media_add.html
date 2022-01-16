@@ -396,9 +396,9 @@ jQuery(document).ready(function(){
     }
 
     //--------------------------initialization----------------------------
-     setProfiles();
-     jQuery('.nav-tab-sirv-choose-shortcodes').on('click', showShortcodeTab);
-     isAddMedia();
+    setProfiles();
+    jQuery('.nav-tab-sirv-choose-shortcodes').on('click', showShortcodeTab);
+    isAddMedia();
 
 });// domready end
 </script>
@@ -450,7 +450,7 @@ jQuery(document).ready(function(){
                             <div class="sub-toolbar-right">
                                 <div class="sirv-search-container">
                                     <input id="sirv-search-field" class="sirv-search-narrow" type="text" class="strech"
-                                        placeholder="🔍 Search" value="" />
+                                        placeholder="🔍 Search" autocomplete="off" value="" />
                                     <button class="sirv-search-cancel">
                                         <span class="dashicons dashicons-no-alt"></span>
                                     </button>
@@ -563,16 +563,23 @@ jQuery(document).ready(function(){
 
                         <h2>Options</h2>
                         <label data-option-type="zoom gallery video"><input id="gallery-show-caption" type="checkbox" />Show caption</label>
+                        <!--Spin Height-->
+                        <label data-option-type="spin" class="sirv-spin-height">
+                            <span class="sirv-label-height">Height (px)</span>
+                            <input id="spin-height" data-option-name="spinHeight" type="text" size="5" value="" placeholder="auto" />
+                        </label>
                         <!--WIDTH text-->
-                        <label data-option-type="responsive static zoom gallery spin"><span class="sirv-label-width">Width (px)</span>
-                        <input id="gallery-width" type="text" size="5" value="" placeholder="auto" /></label>
+                        <label data-option-type="responsive static zoom gallery spin">
+                            <span class="sirv-label-width">Width (px)</span>
+                            <input id="gallery-width" type="text" size="5" value="" placeholder="auto" />
+                        </label>
                         <!--Responsive lazy loading checknox-->
                         <label data-option-type="responsive"><input id="responsive-lazy-loading" type="checkbox" checked />Lazy loading</label>
                         <!-- <label data-option-type="responsive static"><input id="responsive-static-caption-as-alt" type="checkbox" checked />Use caption as alt</label> -->
                         <label data-option-type="responsive static" class="sirv-alt-caption">
                             Caption<br>
-                            <label class="sirv-flat-radio-button"><input data-option-name="altCaption" type="radio" name="sirv-alt-caption" value="true">Use caption for alt & caption</label>
-                            <label class="sirv-flat-radio-button"><input data-option-name="altCaption" type="radio" name="sirv-alt-caption" checked value="false">Use caption for alt</label>
+                            <label class="sirv-flat-radio-button"><input data-option-name="altCaption" type="radio" name="sirv-alt-caption" checked value="true">Use caption for alt & caption</label>
+                            <label class="sirv-flat-radio-button"><input data-option-name="altCaption" type="radio" name="sirv-alt-caption" value="false">Use caption for alt</label>
                         </label>
 
                         <!--Align select-->
@@ -642,6 +649,7 @@ jQuery(document).ready(function(){
                         <!--Spin method radio -->
                         <label data-option-type="spin" class="sirv-spin-spinmethod">
                             Spin method<br>
+                            <span style="font-size: 10px; color: #a5a2a2; line-height: 21px;">Always drag in Sirv JS v3</span><br>
                             <label class="sirv-flat-radio-buttons"><input data-option-name="spin" type="radio" name="sirv-spin-spinmethod" checked value="drag">Drag</label>
                             <label class="sirv-flat-radio-buttons"><input data-option-name="spin" type="radio" name="sirv-spin-spinmethod" value="hover">Hover</label>
                         </label>
@@ -687,4 +695,9 @@ jQuery(document).ready(function(){
         <div class="sirv-pagination"></div>
     </div>
     <div class="sirv-dropdown"></div>
+    <div class="sirv-active-menu sirv-search-dropdown">
+        <span style="font-size: 11px;margin-left: 10px; color: #81878b;">Press enter to search or use additional
+            actions</span>
+        <a class="sirv-dropdown-item sirv-search-in-dir">Search in current folder</a>
+    </div>
 </div>

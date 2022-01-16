@@ -925,7 +925,7 @@
   };
 
   /**
-   * This module containts `WeakMap`s for each effectively-"private  property" that a `Swal` has.
+   * This module containts `WeakMap`s for each effectively-"private  property" that a `wpacuSwal` has.
    * For example, to set the private property "foo" of `this` to "bar", you can `privateProps.foo.set(this, 'bar')`
    * This is the approach that Babel will probably take to implement private methods/fields
    *   https://github.com/tc39/proposal-private-methods
@@ -1446,7 +1446,7 @@
   };
 
   var addClasses = function addClasses(popup, params) {
-    // Default Class + showClass when updating Swal.update({})
+    // Default Class + showClass when updating wpacuSwal.update({})
     popup.className = "".concat(swalClasses.popup, " ").concat(isVisible(popup) ? params.showClass.popup : '');
 
     if (params.toast) {
@@ -1524,18 +1524,18 @@
   }
 
   /**
-   * Returns an extended version of `Swal` containing `params` as defaults.
-   * Useful for reusing Swal configuration.
+   * Returns an extended version of `wpacuSwal` containing `params` as defaults.
+   * Useful for reusing wpacuSwal configuration.
    *
    * For example:
    *
    * Before:
    * const textPromptOptions = { input: 'text', showCancelButton: true }
-   * const {value: firstName} = await Swal.fire({ ...textPromptOptions, title: 'What is your first name?' })
-   * const {value: lastName} = await Swal.fire({ ...textPromptOptions, title: 'What is your last name?' })
+   * const {value: firstName} = await wpacuSwal.fire({ ...textPromptOptions, title: 'What is your first name?' })
+   * const {value: lastName} = await wpacuSwal.fire({ ...textPromptOptions, title: 'What is your last name?' })
    *
    * After:
-   * const TextPrompt = Swal.mixin({ input: 'text', showCancelButton: true })
+   * const TextPrompt = wpacuSwal.mixin({ input: 'text', showCancelButton: true })
    * const {value: firstName} = await TextPrompt('What is your first name?')
    * const {value: lastName} = await TextPrompt('What is your last name?')
    *
@@ -1795,7 +1795,7 @@
     return Object.prototype.hasOwnProperty.call(defaultParams, paramName);
   };
   /**
-   * Is valid parameter for Swal.update() method
+   * Is valid parameter for wpacuSwal.update() method
    * @param {String} paramName
    */
 
@@ -2088,7 +2088,7 @@
   };
 
   /**
-   * This module containts `WeakMap`s for each effectively-"private  property" that a `Swal` has.
+   * This module containts `WeakMap`s for each effectively-"private  property" that a `wpacuSwal` has.
    * For example, to set the private property "foo" of `this` to "bar", you can `privateProps.foo.set(this, 'bar')`
    * This is the approach that Babel will probably take to implement private methods/fields
    *   https://github.com/tc39/proposal-private-methods
@@ -2155,13 +2155,13 @@
     var backdrop = getContainer();
     removeClass(backdrop, innerParams.showClass.backdrop);
     addClass(backdrop, innerParams.hideClass.backdrop);
-    handlePopupAnimation(this, popup, innerParams); // Resolve Swal promise
+    handlePopupAnimation(this, popup, innerParams); // Resolve wpacuSwal promise
 
     swalPromiseResolve(resolveValue);
   }
 
   var prepareResolveValue = function prepareResolveValue(resolveValue) {
-    // When user calls Swal.close()
+    // When user calls wpacuSwal.close()
     if (typeof resolveValue === 'undefined') {
       return {
         isConfirmed: false,
@@ -2414,7 +2414,7 @@
       warn('showLoaderOnConfirm is set to true, but preConfirm is not defined.\n' + 'showLoaderOnConfirm should be used together with preConfirm, see usage example:\n' + 'https://sweetalert2.github.io/#ajax-request');
     } // params.animation will be actually used in renderPopup.js
     // but in case when params.animation is a function, we need to call that function
-    // before popup (re)initialization, so it'll be possible to check Swal.isVisible()
+    // before popup (re)initialization, so it'll be possible to check wpacuSwal.isVisible()
     // inside the params.animation function
 
 
@@ -3221,7 +3221,7 @@
 
     if (!innerParams) {
       return; // This instance has already been destroyed
-    } // Check if there is another Swal closing
+    } // Check if there is another wpacuSwal closing
 
 
     if (domCache.popup && globalState.swalCloseEventFinishedCallback) {

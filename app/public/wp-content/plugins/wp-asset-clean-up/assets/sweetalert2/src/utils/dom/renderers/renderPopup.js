@@ -20,7 +20,7 @@ export const renderPopup = (instance, params) => {
 }
 
 const addClasses = (popup, params) => {
-  // Default Class + showClass when updating Swal.update({})
+  // Default Class + showClass when updating wpacuSwal.update({})
   popup.className = `${swalClasses.popup} ${dom.isVisible(popup) ? params.showClass.popup : ''}`
 
   if (params.toast) {

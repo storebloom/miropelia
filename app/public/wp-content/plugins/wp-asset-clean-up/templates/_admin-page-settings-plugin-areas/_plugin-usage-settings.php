@@ -2,9 +2,11 @@
 /*
  * No direct access to this file
  */
-if (! isset($data)) {
+if (! isset($data, $selectedTabArea)) {
 	exit;
 }
+
+use WpAssetCleanUp\Misc;
 
 $tabIdArea = 'wpacu-setting-plugin-usage-settings';
 $styleTabContent = ($selectedTabArea === $tabIdArea) ? 'style="display: table-cell;"' : '';
@@ -108,19 +110,24 @@ foreach (\WpAssetCleanUp\MetaBoxes::$noMetaBoxesForPostTypes as $noMetaBoxesForP
                 </div>
 
                 <div id="wpacu-settings-hide-meta-boxes">
-                    <p><?php _e('If you wish to hide the meta boxes completely for any reason (e.g. you rarely manage the assets and you want to reduce cluttering in the edit post/page/taxonomy area, especially if you do lots of edits), you can do so using the options below (<em>don\'t forget to uncheck them whenever you wish to manage the CSS/JS assets again</em>)', 'wp-asset-clean-up'); ?>:</p>
+                    <p><?php _e('If you wish to hide the assets management area for any reason (e.g. you rarely manage the assets and you want to reduce cluttering in the edit post/page/taxonomy area, especially if you do lots of edits), you can do so using the option below (<em>don\'t forget to uncheck them whenever you wish to manage the CSS/JS assets again</em>)', 'wp-asset-clean-up'); ?>:</p>
                     <ul>
-                        <li><label for="wpacu-hide-assets-meta-box-checkbox"><input <?php echo (($data['hide_assets_meta_box'] == 1) ? 'checked="checked"' : ''); ?> id="wpacu-hide-assets-meta-box-checkbox" type="checkbox" name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[hide_assets_meta_box]" value="1" /> Hide "<?php echo WPACU_PLUGIN_TITLE; ?>: CSS &amp; JavaScript Manager" meta box</label></li>
-                        <li><label for="wpacu-hide-options-meta-box-checkbox"><input <?php echo (($data['hide_options_meta_box'] == 1) ? 'checked="checked"' : ''); ?> id="wpacu-hide-options-meta-box-checkbox" type="checkbox" name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[hide_options_meta_box]" value="1" /> Hide "<?php echo WPACU_PLUGIN_TITLE; ?>: Options" meta box</label></li>
+                        <li><label for="wpacu-hide-assets-meta-box-checkbox"><input <?php echo (($data['hide_assets_meta_box'] == 1) ? 'checked="checked"' : ''); ?> id="wpacu-hide-assets-meta-box-checkbox" type="checkbox" name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[hide_assets_meta_box]" value="1" /> Hide "<?php echo WPACU_PLUGIN_TITLE; ?>: CSS &amp; JavaScript Manager / Page Options" meta box</label></li>
+
+                        <?php
+                        ?>
                     </ul>
                     <hr />
 
-                    <label for="wpacu-hide-meta-boxes-for-post-types">Hide all meta boxes for the following public post types (multiple selection drop-down):</label><br />
+                    <label for="wpacu-hide-meta-boxes-for-post-types">Hide the meta box for the following public post types (multiple selection drop-down):</label><br />
                 </div>
 
-                <select style="margin-top: 4px; min-width: 340px;" id="wpacu-hide-meta-boxes-for-post-types"
-                        data-placeholder="Choose Post Type(s)..."
-                        class="wpacu-chosen-select"
+                <select style="margin-top: 4px; min-width: 340px;"
+                        id="wpacu-hide-meta-boxes-for-post-types"
+	                    <?php if ($data['input_style'] !== 'standard') { ?>
+                            data-placeholder="Choose Post Type(s)..."
+                            class="wpacu-chosen-select"
+                        <?php } ?>
                         multiple="multiple"
                         name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[hide_meta_boxes_for_post_types][]">
                     <?php foreach ($postTypesList as $postTypeKey => $postTypeValue) { ?>
@@ -166,7 +173,19 @@ foreach (\WpAssetCleanUp\MetaBoxes::$noMetaBoxesForPostTypes as $noMetaBoxesForP
                 <p class="wpacu_subtitle"><small><em><?php _e('Only the chosen administrators will have access to the plugin\'s CSS &amp; JS Manager.', 'wp-asset-clean-up'); ?></em></small></p>
             </th>
             <td>
-                <select id="wpacu-allow-manage-assets-to-select" name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[allow_manage_assets_to]">
+                <?php
+                $currentUserId = get_current_user_id();
+
+                $args = array(
+	                'role'    => 'administrator',
+	                'orderby' => 'user_nicename',
+	                'order'   => 'ASC'
+                );
+
+                $users = get_users( $args );
+
+                ?>
+                <select style="vertical-align: top;" id="wpacu-allow-manage-assets-to-select" name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[allow_manage_assets_to]">
                     <option <?php if (in_array($data['allow_manage_assets_to'], array('', 'any_admin'))) { ?>selected="selected"<?php } ?> value="any_admin">any administrator</option>
                     <option <?php if ($data['allow_manage_assets_to'] === 'chosen') { ?>selected="selected"<?php } ?> value="chosen">only to the following administrator(s):</option>
                 </select>
@@ -175,22 +194,11 @@ foreach (\WpAssetCleanUp\MetaBoxes::$noMetaBoxesForPostTypes as $noMetaBoxesForP
                     id="wpacu-allow-manage-assets-to-select-list-area">
                 <select id="wpacu-allow-manage-assets-to-select-list"
                         name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[allow_manage_assets_to_list][]"
-                        data-placeholder="Choose the admin(s) who will access the list..."
-	                    <?php if ($data['allow_manage_assets_to'] === 'chosen') { ?>
-                        class="wpacu-chosen-select"
+                        <?php if ($data['input_style'] !== 'standard') { ?>
+                            data-placeholder="Choose the admin(s) who will access the list..."
                         <?php } ?>
                         multiple="multiple">
                     <?php
-                    $currentUserId = get_current_user_id();
-
-                    $args = array(
-                        'role'    => 'administrator',
-                        'orderby' => 'user_nicename',
-                        'order'   => 'ASC'
-                    );
-
-                    $users = get_users( $args );
-
                     foreach ( $users as $user ) {
                         $appendText = $selected = '';
 
@@ -205,7 +213,8 @@ foreach (\WpAssetCleanUp\MetaBoxes::$noMetaBoxesForPostTypes as $noMetaBoxesForP
                         echo '<option '.$selected.' value="'.$user->ID.'">' . esc_html( $user->display_name ) . ' (' . esc_html( $user->user_email ) . ')'.$appendText.'</option>';
                     }
                     ?>
-                </select> * <small>if none is chosen, it will default to "any administrator"</small>
+                </select>
+                    <div style="margin: 2px 0 0;"><small>This is a multiple selection drop-down. If nothing is chosen from the list, it will default to "any administrator".</small></div>
                 </div>
 
                 <div style="margin: 10px 0 0;"><p>Some people that have admin access might be confused by the CSS/JS manager (which could be for the developer of the website). If they are mostly editing articles, updating WooCommerce products and so on, there's no point for them to keep seeing a cluttered edit post/page with CSS/JS assets that can even be changed by mistake. You can leave this only to the developers with "administrator" roles.</p></div>
@@ -466,7 +475,7 @@ foreach (\WpAssetCleanUp\MetaBoxes::$noMetaBoxesForPostTypes as $noMetaBoxesForP
     </table>
 </div>
 
-<style type="text/css">
+<style <?php echo Misc::getStyleTypeAttribute(); ?>>
     #wpacu-show-tracked-data-list-modal {
         margin: 14px 0 0;
     }

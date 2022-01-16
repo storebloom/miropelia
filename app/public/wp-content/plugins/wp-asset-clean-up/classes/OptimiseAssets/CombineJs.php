@@ -40,19 +40,22 @@ class CombineJs
 
 		$isDeferAppliedOnBodyCombineGroupNo = false;
 
-		// Speed up processing by getting the already existing final CSS file URI
-		// This will avoid parsing the HTML DOM and determine the combined URI paths for all the CSS files
-		$finalCacheList = OptimizeCommon::getAssetCachedData(self::$jsonStorageFile, OptimizeJs::getRelPathJsCacheDir(), 'js');
-
 		// $uriToFinalJsFile will always be relative ONLY within WP_CONTENT_DIR . self::getRelPathJsCacheDir()
 		// which is usually "wp-content/cache/asset-cleanup/js/"
 
 		// "true" would make it avoid checking the cache and always use the DOM Parser / RegExp
 		// for DEV purposes ONLY as it uses more resources
+		$finalCacheList = array();
 		$skipCache = false;
 
-		if (isset($_GET['wpacu_no_cache'])) {
+		if (isset($_GET['wpacu_no_cache']) || (defined('WPACU_NO_CACHE') && WPACU_NO_CACHE === true)) {
 			$skipCache = true;
+		}
+
+		if (! $skipCache) {
+			// Speed up processing by getting the already existing final CSS file URI
+			// This will avoid parsing the HTML DOM and determine the combined URI paths for all the CSS files
+			$finalCacheList = OptimizeCommon::getAssetCachedData( self::$jsonStorageFile, OptimizeJs::getRelPathJsCacheDir(), 'js' );
 		}
 
 		if ( $skipCache || empty($finalCacheList) ) {
@@ -67,7 +70,7 @@ class CombineJs
 			$jQueryMigrateInBody = false;
 			$jQueryLibInBodyCount = 0;
 
-			$minifyJsInlineTagsIsNotEnabled = ! (MinifyJs::isMinifyJsEnabled() && Main::instance()->settings['minify_loaded_js_inline']);
+			$minifyJsInlineTagsIsNotEnabled = ! (MinifyJs::isMinifyJsEnabled() && in_array(Main::instance()->settings['minify_loaded_js_for'], array('inline', 'all')));
 
 			if ($minifyJsInlineTagsIsNotEnabled) {
 				$domTag = new \DOMDocument();
@@ -81,6 +84,10 @@ class CombineJs
 
 				if (Main::instance()->isFrontendEditView) {
 					$htmlSourceAlt = preg_replace( '@<form action="#wpacu_wrap_assets" method="post">.*?</form>@si', '', $htmlSourceAlt );
+				}
+
+				if ($htmlSourceAlt === '') {
+					$htmlSourceAlt = $htmlSource;
 				}
 
 				$domTag->loadHTML( $htmlSourceAlt );
@@ -133,9 +140,10 @@ class CombineJs
 							$handleToCheck = isset($scriptAttributes['data-wpacu-script-handle']) ? $scriptAttributes['data-wpacu-script-handle'] : ''; // Maybe: JS Inline (Before, After)
 							if ($handleToCheck === '' && isset($scriptAttributes['id'])) {
 								$replaceToGetHandle = '';
-								if (strpos($scriptAttributes['id'], '-js-extra') !== false)  { $replaceToGetHandle = '-js-extra';  }
-								if (strpos($scriptAttributes['id'], '-js-before') !== false) { $replaceToGetHandle = '-js-before'; }
-								if (strpos($scriptAttributes['id'], '-js-after') !== false)  { $replaceToGetHandle = '-js-after';  }
+								if (strpos($scriptAttributes['id'], '-js-extra') !== false)        { $replaceToGetHandle = '-js-extra';        }
+								if (strpos($scriptAttributes['id'], '-js-before') !== false)       { $replaceToGetHandle = '-js-before';       }
+								if (strpos($scriptAttributes['id'], '-js-after') !== false)        { $replaceToGetHandle = '-js-after';        }
+								if (strpos($scriptAttributes['id'], '-js-translations') !== false) { $replaceToGetHandle = '-js-translations'; }
 
 								if ($replaceToGetHandle) {
 									$handleToCheck = str_replace( $replaceToGetHandle, '', $scriptAttributes['id'] ); // Maybe: JS Inline (Data)
@@ -156,7 +164,6 @@ class CombineJs
 								}
 							}
 
-
 							$scriptNotCombinable = true;
 						}
 					}
@@ -169,6 +176,13 @@ class CombineJs
 						$src = (string)$scriptAttributes['src'];
 
 						if (self::skipCombine($src)) {
+							$scriptNotCombinable = true;
+						}
+
+						// Avoid any errors when code like the following one is used:
+						// wp.i18n.setLocaleData( localeData, domain );
+						// Because the inline JS is not appended to the combined JS, /wp-includes/js/dist/i18n.(min).js has to be called earlier (outside the combined JS file)
+						if ( ! OptimizeCommon::appendInlineCodeToCombineAssetType('js') && (strpos($src, '/wp-includes/js/dist/i18n.') !== false) ) {
 							$scriptNotCombinable = true;
 						}
 
@@ -203,8 +217,20 @@ class CombineJs
 						if ( $localAssetPath = OptimizeCommon::getLocalAssetPath( $src, 'js' ) ) {
 							$scriptExtra = array();
 
-							if (isset($scriptAttributes['data-wpacu-script-handle'], $wpacuRegisteredScripts[$scriptAttributes['data-wpacu-script-handle']]->extra) && OptimizeCommon::appendInlineCodeToCombineAssetType('js')) {
-								$scriptExtra = $wpacuRegisteredScripts[$scriptAttributes['data-wpacu-script-handle']]->extra;
+							if ( OptimizeCommon::appendInlineCodeToCombineAssetType('js') ) {
+								if ( isset( $scriptAttributes['data-wpacu-script-handle'], $wpacuRegisteredScripts[ $scriptAttributes['data-wpacu-script-handle'] ]->extra ) ) {
+									$scriptExtra = $wpacuRegisteredScripts[ $scriptAttributes['data-wpacu-script-handle'] ]->extra;
+								}
+
+								$anyScriptTranslations = false;
+
+								if (method_exists('wp_scripts', 'print_translations')) {
+									$anyScriptTranslations = wp_scripts()->print_translations( $scriptAttributes['data-wpacu-script-handle'], false );
+								}
+
+								if ( $anyScriptTranslations ) {
+									$scriptExtra['translations'] = $anyScriptTranslations;
+								}
 							}
 
 							// Standard (could be multiple groups per $docLocationScript), Async & Defer, Async, Defer
@@ -260,7 +286,7 @@ class CombineJs
 						continue;
 					}
 
-					$combinedUriPaths = $localAssetsPaths = $groupScriptSrcs = array();
+					$localAssetsPaths = $groupScriptSrcs = array();
 					$localAssetsExtra = array();
 					$jQueryIsIncludedInGroup = false;
 
@@ -277,15 +303,11 @@ class CombineJs
 
 						$src                    = $groupFileData['src'];
 						$groupScriptSrcs[]      = $src;
-						$combinedUriPaths[]     = OptimizeCommon::getSourceRelPath($src);
 						$localAssetsPaths[$src] = $groupFileData['local'];
 						$localAssetsExtra[$src] = $groupFileData['extra'];
 					}
 
-					$shaOneForCombinedJs = self::generateShaOneForCombinedJs($combinedUriPaths, $localAssetsExtra);
-
 					$maybeDoJsCombine = self::maybeDoJsCombine(
-						$shaOneForCombinedJs,
 						$localAssetsPaths,
 						$localAssetsExtra,
 						$docLocationScript
@@ -346,6 +368,8 @@ class CombineJs
 			$cdnUrls = OptimizeCommon::getAnyCdnUrls();
 			$cdnUrlForJs = isset($cdnUrls['js']) ? $cdnUrls['js'] : false;
 
+			$typeAttr = Misc::getScriptTypeAttribute();
+
 			foreach ( $finalCacheList as $docLocationScript => $cachedGroupsList ) {
 				foreach ($cachedGroupsList as $groupNo => $cachedValues) {
 					$htmlSourceBeforeGroupReplacement = $htmlSource;
@@ -371,7 +395,7 @@ class CombineJs
 					}
 
 					$finalJsTag = <<<HTML
-<script {$finalJsTagAttrsOutput} id='wpacu-combined-js-{$docLocationScript}-group-{$groupNo}' type='text/javascript' src='{$finalTagUrl}'></script>
+<script {$finalJsTagAttrsOutput} id='wpacu-combined-js-{$docLocationScript}-group-{$groupNo}' {$typeAttr} src='{$finalTagUrl}'></script>
 HTML;
 					// In case one needs to alter it (e.g. developers that might want to add custom attributes such as data-cfasync="false")
 					$finalJsTag = apply_filters(
@@ -419,8 +443,10 @@ HTML;
 
 		if (isset($finalCacheList['body']) && (! empty($finalCacheList['body'])) && Main::instance()->settings['combine_loaded_js_defer_body']) {
 			// CACHE RE-BUILT
+			$typeAttr = Misc::getScriptTypeAttribute();
+
 			if ($isDeferAppliedOnBodyCombineGroupNo > 0 && $domTag = ObjectCache::wpacu_cache_get('wpacu_html_dom_body_tag_for_js')) {
-				$strPart = "id='wpacu-combined-js-body-group-".$isDeferAppliedOnBodyCombineGroupNo."' type='text/javascript' ";
+				$strPart = "id='wpacu-combined-js-body-group-".$isDeferAppliedOnBodyCombineGroupNo."' $typeAttr ";
 				list(,$htmlAfterFirstCombinedDeferScript) = explode($strPart, $htmlSource);
 				$htmlAfterFirstCombinedDeferScriptMaybeChanged = $htmlAfterFirstCombinedDeferScript;
 				$scriptTags = $domTag->getElementsByTagName('script');
@@ -438,7 +464,7 @@ HTML;
 					return $htmlSource;
 				}
 
-				$strPart = "id='wpacu-combined-js-body-group-".$isDeferAppliedOnBodyCombineGroupNo."' type='text/javascript' ";
+				$strPart = "id='wpacu-combined-js-body-group-".$isDeferAppliedOnBodyCombineGroupNo."' $typeAttr ";
 
 				$htmlAfterFirstCombinedDeferScriptMaybeChanged = false;
 
@@ -465,8 +491,8 @@ HTML;
 					$htmlSourceAlt = preg_replace( '@<form action="#wpacu_wrap_assets" method="post">.*?</form>@si', '', $htmlSourceAlt );
 				}
 
-				// It could no other SCRIPT left, stop here in this case
-				if (strpos($htmlSource, '<script') !== false) {
+				// No other SCRIPT left, stop here in this case
+				if (strpos($htmlSourceAlt, '<script') === false) {
 					return $htmlSource;
 				}
 
@@ -500,8 +526,8 @@ HTML;
 				// Has "src" attribute and "defer" is not applied? Add it
 				if ($htmlAfterFirstCombinedDeferScriptMaybeChanged !== false) {
 					$htmlAfterFirstCombinedDeferScriptMaybeChanged = trim( preg_replace(
-						'#src(\s+|)=(\s+|)(|"|\'|\s+)(' . preg_quote( $scriptAttributes['src'], '/' ) . ')(\3)#si',
-						'src=\3\4\3 defer=\'defer\'',
+						'#\ssrc(\s+|)=(\s+|)(|"|\'|\s+)(' . preg_quote( $scriptAttributes['src'], '/' ) . ')(\3)#si',
+						' src=\3\4\3 defer=\'defer\'',
 						$htmlAfterFirstCombinedDeferScriptMaybeChanged
 					) );
 				}
@@ -530,16 +556,16 @@ HTML;
 		);
 
 		if (Main::instance()->settings['combine_loaded_js_exceptions'] !== '') {
-			$loadedCssExceptionsPatterns = trim(Main::instance()->settings['combine_loaded_js_exceptions']);
+			$loadedJsExceptionsPatterns = trim(Main::instance()->settings['combine_loaded_js_exceptions']);
 
-			if (strpos($loadedCssExceptionsPatterns, "\n")) {
+			if (strpos($loadedJsExceptionsPatterns, "\n")) {
 				// Multiple values (one per line)
-				foreach (explode("\n", $loadedCssExceptionsPatterns) as $loadedCssExceptionPattern) {
-					$regExps[] = '#'.trim($loadedCssExceptionPattern).'#';
+				foreach (explode("\n", $loadedJsExceptionsPatterns) as $loadedJsExceptionsPattern) {
+					$regExps[] = '#'.trim($loadedJsExceptionsPattern).'#';
 				}
 			} else {
 				// Only one value?
-				$regExps[] = '#'.trim($loadedCssExceptionsPatterns).'#';
+				$regExps[] = '#'.trim($loadedJsExceptionsPatterns).'#';
 			}
 		}
 
@@ -549,7 +575,9 @@ HTML;
 		}
 
 		foreach ($regExps as $regExp) {
-			if (preg_match($regExp, $src)) {
+			$regExp = Misc::purifyRegexValue($regExp);
+
+			if ( @preg_match( $regExp, $src ) || ( strpos($src, $regExp) !== false ) ) {
 				// Skip combination
 				return true;
 			}
@@ -559,54 +587,56 @@ HTML;
 	}
 
 	/**
-	 * @param $shaOneForCombinedJs
 	 * @param $localAssetsPaths
 	 * @param $localAssetsExtra
 	 * @param $docLocationScript
 	 *
 	 * @return array
 	 */
-	public static function maybeDoJsCombine($shaOneForCombinedJs, $localAssetsPaths, $localAssetsExtra, $docLocationScript)
+	public static function maybeDoJsCombine($localAssetsPaths, $localAssetsExtra, $docLocationScript)
 	{
-		$uriToFinalJsFile = $docLocationScript . '-' . $shaOneForCombinedJs . '.js';
-		$localFinalJsFile  = WP_CONTENT_DIR . OptimizeJs::getRelPathJsCacheDir() . $uriToFinalJsFile;
-
 		// Only combine if $shaOneCombinedUriPaths.js does not exist
 		// If "?ver" value changes on any of the assets or the asset list changes in any way
 		// then $shaOneCombinedUriPaths will change too and a new JS file will be generated and loaded
-		$skipIfFileExists = true;
 
-		if ($skipIfFileExists || ! is_file($localFinalJsFile)) {
-			// Change $assetsContents as paths to fonts and images that are relative (e.g. ../, ../../) have to be updated
-			$finalJsContents = '';
+		// Change $assetsContents as paths to fonts and images that are relative (e.g. ../, ../../) have to be updated
+		$uriToFinalJsFile = $localFinalJsFile = $finalJsContents = '';
 
-			foreach ($localAssetsPaths as $assetHref => $localAssetsPath) {
-				if ($jsContent = trim(FileSystem::file_get_contents($localAssetsPath))) {
-					if ($jsContent === '') {
-						continue;
-					}
-
-					// Does it have a source map? Strip it
-					if (strpos($jsContent, 'sourceMappingURL') !== false) {
-						$jsContent = OptimizeCommon::stripSourceMap($jsContent);
-					}
-
-					$pathToAssetDir = OptimizeCommon::getPathToAssetDir($assetHref);
-
-					$contentToAddToCombinedFile = '/*!'.str_replace(ABSPATH, '/', $localAssetsPath)."*/\n";
-
-					// This includes the extra from 'data' (CDATA added via wp_localize_script()) & 'before' as they are both printed BEFORE the SCRIPT tag
-					$contentToAddToCombinedFile .= self::maybeWrapBetweenTryCatch(self::appendToCombineJs('before', $localAssetsExtra, $assetHref, $pathToAssetDir), $assetHref);
-					$contentToAddToCombinedFile .= self::maybeWrapBetweenTryCatch(OptimizeJs::maybeDoJsFixes($jsContent, $pathToAssetDir . '/'), $assetHref) . "\n";
-					// This includes the inline 'after' the SCRIPT tag
-					$contentToAddToCombinedFile .= self::maybeWrapBetweenTryCatch(self::appendToCombineJs('after', $localAssetsExtra, $assetHref, $pathToAssetDir), $assetHref);
-
-					$finalJsContents .= $contentToAddToCombinedFile;
+		foreach ($localAssetsPaths as $assetHref => $localAssetsPath) {
+			if ($jsContent = trim(FileSystem::file_get_contents($localAssetsPath))) {
+				if ($jsContent === '') {
+					continue;
 				}
-			}
 
-			if ($finalJsContents !== '') {
-				FileSystem::file_put_contents($localFinalJsFile, $finalJsContents);
+				// Does it have a source map? Strip it
+				if (strpos($jsContent, '//# sourceMappingURL=') !== false) {
+					$jsContent = OptimizeCommon::stripSourceMap($jsContent, 'js');
+				}
+
+				$pathToAssetDir = OptimizeCommon::getPathToAssetDir($assetHref);
+
+				$contentToAddToCombinedFile = '/*!'.str_replace(ABSPATH, '/', $localAssetsPath)."*/\n";
+
+				// This includes the extra from 'data' (CDATA added via wp_localize_script()) & 'before' as they are both printed BEFORE the SCRIPT tag
+				$contentToAddToCombinedFile .= self::maybeWrapBetweenTryCatch(self::appendToCombineJs('translations', $localAssetsExtra, $assetHref, $pathToAssetDir), $assetHref);
+				$contentToAddToCombinedFile .= self::maybeWrapBetweenTryCatch(self::appendToCombineJs('before', $localAssetsExtra, $assetHref, $pathToAssetDir), $assetHref);
+				$contentToAddToCombinedFile .= self::maybeWrapBetweenTryCatch(OptimizeJs::maybeDoJsFixes($jsContent, $pathToAssetDir . '/'), $assetHref) . "\n";
+				// This includes the inline 'after' the SCRIPT tag
+				$contentToAddToCombinedFile .= self::maybeWrapBetweenTryCatch(self::appendToCombineJs('after', $localAssetsExtra, $assetHref, $pathToAssetDir), $assetHref);
+
+				$finalJsContents .= $contentToAddToCombinedFile;
+			}
+		}
+
+		if ($finalJsContents !== '') {
+			$finalJsContents = trim($finalJsContents);
+			$shaOneForCombinedJs = sha1($finalJsContents);
+
+			$uriToFinalJsFile = $docLocationScript . '-' . $shaOneForCombinedJs . '.js';
+			$localFinalJsFile  = WP_CONTENT_DIR . OptimizeJs::getRelPathJsCacheDir() . $uriToFinalJsFile;
+
+			if (! is_file($localFinalJsFile)) {
+				FileSystem::file_put_contents( $localFinalJsFile, $finalJsContents );
 			}
 		}
 
@@ -614,42 +644,6 @@ HTML;
 			'uri_final_js_file'   => $uriToFinalJsFile,
 			'local_final_js_file' => $localFinalJsFile
 		);
-	}
-
-	/**
-	 * @param $combinedUriPaths
-	 * @param $localAssetsExtra
-	 *
-	 * @return string
-	 */
-	public static function generateShaOneForCombinedJs($combinedUriPaths, $localAssetsExtra)
-	{
-		$finalShaOneContent = implode('', $combinedUriPaths);
-
-		// Is '_combine_loaded_js_append_handle_extra' turned ON?
-		if ( OptimizeCommon::appendInlineCodeToCombineAssetType('js') && ! empty($localAssetsExtra) ) {
-			$afterContentForAll = '';
-
-			foreach ( $localAssetsExtra as $values ) {
-				if (empty($values)) {
-					continue;
-				}
-
-				foreach ( array( 'data', 'before', 'after' ) as $keyToCheck ) {
-					if ( isset( $values[ $keyToCheck ] ) && $values[ $keyToCheck ] ) {
-						if ( is_array( $values[ $keyToCheck ] ) ) {
-							$afterContentForAll .= implode( '', $values[ $keyToCheck ] );
-						} else {
-							$afterContentForAll .= $values[ $keyToCheck ];
-						}
-					}
-				}
-			}
-
-			$finalShaOneContent .= $afterContentForAll;
-		}
-
-		return sha1($finalShaOneContent);
 	}
 
 	/**
@@ -663,7 +657,7 @@ HTML;
 	public static function appendToCombineJs($addItLocation, $localAssetsExtra, $assetHref, $pathToAssetDir)
 	{
 		$extraContentToAppend = '';
-		$doJsMinifyInline = Main::instance()->settings['minify_loaded_js'] && Main::instance()->settings['minify_loaded_js_inline'];
+		$doJsMinifyInline = MinifyJs::isMinifyJsEnabled() && in_array(Main::instance()->settings['minify_loaded_js_for'], array('inline', 'all'));
 
 		if ($addItLocation === 'before') {
 			// [Before JS Content]
@@ -710,6 +704,10 @@ HTML;
 				}
 			}
 			// [/After JS Content]
+		} elseif ($addItLocation === 'translations' && isset($localAssetsExtra[$assetHref]['translations']) && $localAssetsExtra[$assetHref]['translations']) {
+			$inlineAfterJsData = OptimizeJs::maybeAlterContentForInlineScriptTag( $localAssetsExtra[$assetHref]['translations'], $doJsMinifyInline );
+			$inlineAfterJsData = OptimizeJs::maybeDoJsFixes( $inlineAfterJsData, $pathToAssetDir . '/' );
+			$extraContentToAppend .= '/* [inline: translations] */' . $inlineAfterJsData . '/* [/inline: translations] */' . "\n";
 		}
 
 		return $extraContentToAppend;
@@ -724,14 +722,13 @@ HTML;
 	public static function maybeWrapBetweenTryCatch($jsCode, $sourceUrl)
 	{
 		if ($jsCode && Main::instance()->settings['combine_loaded_js_try_catch']) {
-			$jsCodeWithTryCatch = <<<JS
+			return <<<JS
 try {
 	{$jsCode}
 } catch (err) {
 	console.log("Asset CleanUp - There is a JavaScript error related to the following source: {$sourceUrl} - Error: " + err.message); 
 }
 JS;
-			return $jsCodeWithTryCatch;
 		}
 
 		return $jsCode;
@@ -750,21 +747,33 @@ JS;
 		if (OptimizeCommon::appendInlineCodeToCombineAssetType('js')) {
 			$scriptExtrasValue      = OptimizeJs::getInlineAssociatedWithScriptHandle($scriptTag, $wpacuRegisteredScripts, 'tag', 'value');
 
-			$scriptExtraCdataValue  = (isset($scriptExtrasValue['data'])   && $scriptExtrasValue['data'])   ? $scriptExtrasValue['data']   : '';
-			$scriptExtraBeforeValue = (isset($scriptExtrasValue['before']) && $scriptExtrasValue['before']) ? $scriptExtrasValue['before'] : '';
-			$scriptExtraAfterValue  = (isset($scriptExtrasValue['after'])  && $scriptExtrasValue['after'])  ? $scriptExtrasValue['after']  : '';
+			$scriptExtraTranslationsValue  = (isset($scriptExtrasValue['translations']) && $scriptExtrasValue['translations']) ? $scriptExtrasValue['translations']   : '';
+			$scriptExtraCdataValue         = (isset($scriptExtrasValue['data'])   && $scriptExtrasValue['data'])   ? $scriptExtrasValue['data']   : '';
+			$scriptExtraBeforeValue        = (isset($scriptExtrasValue['before']) && $scriptExtrasValue['before']) ? $scriptExtrasValue['before'] : '';
+			$scriptExtraAfterValue         = (isset($scriptExtrasValue['after'])  && $scriptExtrasValue['after'])  ? $scriptExtrasValue['after']  : '';
 
 			$scriptExtrasHtml       = OptimizeJs::getInlineAssociatedWithScriptHandle($scriptTag, $wpacuRegisteredScripts, 'tag', 'html');
 			preg_match_all('#data-wpacu-script-handle=([\'])' . '(.*)' . '(\1)#Usmi', $scriptTag, $outputMatches);
 			$scriptHandle = (isset($outputMatches[2][0]) && $outputMatches[2][0]) ? trim($outputMatches[2][0], '"\'') : '';
 
+			$scriptExtraTranslationsHtml = (isset($scriptExtrasHtml['translations']) && $scriptExtrasHtml['translations']) ? $scriptExtrasHtml['translations'] : '';
 			$scriptExtraCdataHtml  = (isset($scriptExtrasHtml['data'])   && $scriptExtrasHtml['data'])   ? $scriptExtrasHtml['data']   : '';
 			$scriptExtraBeforeHtml = (isset($scriptExtrasHtml['before']) && $scriptExtrasHtml['before']) ? $scriptExtrasHtml['before'] : '';
 			$scriptExtraAfterHtml  = (isset($scriptExtrasHtml['after'])  && $scriptExtrasHtml['after'])  ? $scriptExtrasHtml['after']  : '';
 
-			if ($scriptExtraCdataValue || $scriptExtraBeforeValue || $scriptExtraAfterValue) {
+			if ($scriptExtraTranslationsValue || $scriptExtraCdataValue || $scriptExtraBeforeValue || $scriptExtraAfterValue) {
 				if ( $scriptExtraCdataValue && self::isInlineJsCombineable($scriptExtraCdataValue) ) {
 					$htmlSource = str_replace($scriptExtraCdataHtml, '', $htmlSource );
+				}
+
+				if ($scriptExtraTranslationsValue) {
+					$repsBefore = array(
+						$scriptExtraTranslationsHtml => '',
+						str_replace( '<script ', '<script data-wpacu-script-handle=\'' . $scriptHandle . '\' ', $scriptExtraTranslationsHtml ) => '',
+						'>'."\n".$scriptExtraTranslationsValue."\n".'</script>' => '></script>',
+						$scriptExtraTranslationsValue."\n" => ''
+					);
+					$htmlSource = str_replace(array_keys($repsBefore), array_values($repsBefore), $htmlSource );
 				}
 
 				if ($scriptExtraBeforeValue) {

@@ -5352,3 +5352,5 @@ Stack trace:
 [22-May-2021 04:32:34 UTC] PHP  15. spl_autoload_call() phar:///Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/wp-cli.phar/vendor/wp-cli/wp-cli/php/utils-wp.php:138
 [22-May-2021 04:32:34 UTC] PHP  16. Composer\Autoload\ClassLoader->loadClass() phar:///Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/wp-cli.phar/vendor/wp-cli/wp-cli/php/utils-wp.php:138
 [22-May-2021 04:32:34 UTC] PHP  17. Composer\Autoload\includeFile() phar:///Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/wp-cli.phar/vendor/composer/ClassLoader.php:322
+[16-Jan-2022 07:14:03 UTC] Flywheel::DatabaseConnection
+[16-Jan-2022 07:14:03 UTC] Flywheel::DatabaseConnection

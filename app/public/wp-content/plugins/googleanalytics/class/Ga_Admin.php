@@ -82,7 +82,7 @@ class Ga_Admin {
         delete_option('googleanalytics_gdpr_config');
         delete_option('googleanalytics_demographic');
         delete_option('googleanalytics_demo_data');
-	    delete_option('googleanalytics_demo_date');
+        delete_option('googleanalytics_demo_date');
         delete_option('googleanalytics_send_data');
         delete_option('googleanalytics_hide_terms');
         delete_option('googleanalytics_sharethis_terms');
@@ -479,25 +479,28 @@ class Ga_Admin {
      * @return string HTML code
      */
     public static function get_stats_page() {
-        $chart   = null;
-        $age_chart = null;
+        $age_chart    = null;
+        $boxes        = null;
+        $chart        = null;
+        $device_chart = null;
         $gender_chart = null;
-        $boxes   = null;
-        $labels  = null;
-        $sources = null;
+        $labels       = null;
+        $sources      = null;
+
         if ( Ga_Helper::is_authorized() && Ga_Helper::is_account_selected() && ! Ga_Helper::is_all_feature_disabled() ) {
-            list( $chart, $age_chart, $gender_chart, $boxes, $labels, $sources ) = self::generate_stats_data();
+            list( $chart, $age_chart, $device_chart, $gender_chart, $boxes, $labels, $sources ) = self::generate_stats_data();
         }
 
         return Ga_Helper::get_chart_page(
             'stats',
-            array(
-                'chart'   => $chart,
-                'gender_chart' => $gender_chart,
-                'age_chart' => $age_chart,
-                'boxes'   => $boxes,
-                'labels'  => $labels,
-                'sources' => $sources,
+            compact(
+                'age_chart',
+                'boxes',
+                'chart',
+                'device_chart',
+                'gender_chart',
+                'labels',
+                'sources'
             )
         );
     }
@@ -519,15 +522,13 @@ class Ga_Admin {
         }
 
         if ( Ga_Helper::get_option( self::GA_DISABLE_ALL_FEATURES ) ) {
-            echo wp_kses_post(
-                Ga_Helper::ga_wp_notice(
-                    __( 'You have disabled all extra features, click here to enable Dashboards, Viral Alerts and Google API.' ),
-                    'warning',
-                    false,
-                    array(
-                        'url'   => admin_url( Ga_Helper::create_url( Ga_Helper::GA_SETTINGS_PAGE_URL, array( Ga_Controller_Core::ACTION_PARAM_NAME => 'ga_action_enable_all_features' ) ) ),
-                        'label' => __( 'Enable' ),
-                    )
+            echo Ga_Helper::ga_wp_notice(
+                __( 'You have disabled all extra features, click here to enable Dashboards, Viral Alerts and Google API.' ),
+                'warning',
+                false,
+                array(
+                    'url'   => admin_url( Ga_Helper::create_url( Ga_Helper::GA_SETTINGS_PAGE_URL, array( Ga_Controller_Core::ACTION_PARAM_NAME => 'ga_action_enable_all_features' ) ) ),
+                    'label' => __( 'Enable' ),
                 )
             );
         }
@@ -546,7 +547,7 @@ class Ga_Admin {
      * @return string
      */
     public static function admin_notice_googleanalytics_wp_version() {
-        echo wp_kses_post( Ga_Helper::ga_wp_notice( 'Google Analytics plugin requires at least WordPress version ' . self::MIN_WP_VERSION, 'error' ) );
+        echo Ga_Helper::ga_wp_notice( 'Google Analytics plugin requires at least WordPress version ' . self::MIN_WP_VERSION, 'error' );
     }
 
     /**
@@ -767,21 +768,44 @@ class Ga_Admin {
     public static function generate_stats_data() {
         $selected = Ga_Helper::get_selected_account_data( true );
         $update_data = self::checkDataDate();
-        $query_params = isset( $_GET['th'] ) ? Ga_Stats::get_query( 'main_chart', $selected['view_id'], '30daysAgo' ) : Ga_Stats::get_query( 'main_chart', $selected['view_id'] );
+
+        $current_period = Ga_Helper::getDateRangeFromRequest();
+
+        $current_period['start'] = $current_period['from'] ?: date('Y-m-d', strtotime('-1 week'));
+        $current_period['end']   = $current_period['to'] ?: date('Y-m-d', strtotime('now'));
+
+        $previous_period = Ga_Helper::getPreviousPeriodForDates($current_period['start'], $current_period['end']);
+
+        $period_in_days = Ga_Helper::getPeriodInDays($current_period['start'], $current_period['end']);
+
+        $date_ranges = Ga_Stats::set_date_ranges(
+            $current_period['start'],
+            $current_period['end'],
+            $previous_period['start'],
+            $previous_period['end']
+        );
+
+        $query_params = Ga_Stats::get_query( 'main_chart', $selected['view_id'], $date_ranges );
         $stats_data   = self::api_client()->call(
-            'ga_api_data',
+        	'ga_api_data',
             [ $query_params ]
         );
-        $gender_params = isset( $_GET['th'] ) ? Ga_Stats::get_query( 'gender', $selected['view_id'], '30daysAgo' ) : Ga_Stats::get_query( 'gender', $selected['view_id'] );
+        $gender_params = Ga_Stats::get_query( 'gender', $selected['view_id'], $date_ranges );
         $gender_data = self::api_client()->call(
             'ga_api_data',
             [$gender_params]
         );
-        $age_params = isset( $_GET['th'] ) ? Ga_Stats::get_query( 'age', $selected['view_id'], '30daysAgo' ) : Ga_Stats::get_query( 'age', $selected['view_id'] );
+        $age_params = Ga_Stats::get_query( 'age', $selected['view_id'], $date_ranges );
         $age_data = self::api_client()->call(
             'ga_api_data',
             [$age_params]
         );
+        $device_params = Ga_Stats::get_query( 'device', $selected['view_id'], $date_ranges );
+        $device_data = self::api_client()->call(
+            'ga_api_data',
+            [ $device_params ]
+        );
+
         $boxes_data      = self::api_client()->call(
             'ga_api_data',
             [ Ga_Stats::get_query( 'boxes', $selected['view_id'] ) ]
@@ -791,9 +815,10 @@ class Ga_Admin {
             [ Ga_Stats::get_query( 'sources', $selected['view_id'] ) ]
         );
 
-        $chart           = ! empty( $stats_data ) ? Ga_Stats::get_chart( $stats_data->getData() ) : array();
-        $gender_chart    = ! empty($gender_data) ? Ga_Stats::get_gender_chart($gender_data->getData()) : [];
-        $age_chart       = ! empty($age_data) ? Ga_Stats::get_age_chart($age_data->getData()) : [];
+        $chart           = ! empty( $stats_data ) ? Ga_Stats::get_chart( $stats_data->getData(), $period_in_days ) : array();
+        $device_chart    = false === empty( $device_data ) ? Ga_Stats::get_device_chart( $device_data->getData() ) : array();
+        $gender_chart    = ! empty( $gender_data ) ? Ga_Stats::get_gender_chart( $gender_data->getData() ) : [];
+        $age_chart       = ! empty( $age_data ) ? Ga_Stats::get_age_chart( $age_data->getData() ) : [];
         $boxes           = ! empty( $boxes_data ) ? Ga_Stats::get_boxes( $boxes_data->getData() ) : array();
         $last_chart_date = ! empty( $chart ) ? $chart['date'] : strtotime( 'now' );
 
@@ -826,11 +851,12 @@ class Ga_Admin {
             );
         }
 
-        return [$chart, $age_chart, $gender_chart, $boxes, $labels, $sources];
+        return [$chart, $age_chart, $device_chart, $gender_chart, $boxes, $labels, $sources];
     }
 
     private static function updateDemoData($gender_response = false, $age_response = false)
     {
+        $x = 0;
         $demoSendData = [];
         if ($gender_response && $age_response) {
             foreach ($age_response as $type => $amount) {
@@ -860,6 +886,7 @@ class Ga_Admin {
     	$demo_enabled = get_option('googleanalytics_demographic');
     	$demo_date = get_option('googleanalytics_demo_date');
         $demo_date = !empty($demo_date) ? strtotime($demo_date) : '';
+        $current_date = date("Y-m-d");
         $thirty_date = '' !== $demo_date ? date("Y-m-d", strtotime("+1 month", $demo_date)) : '';
 
         if (empty($demo_enabled) || !$demo_enabled) {
@@ -963,7 +990,7 @@ class Ga_Admin {
      */
     private static function getVendors()
     {
-        $response = wp_remote_get('https://vendorlist.consensu.org/v2/vendor-list.json');
+        $response = wp_remote_get('https://vendor-list.consensu.org/v2/vendor-list.json');
 
         return json_decode(wp_remote_retrieve_body($response), true);
     }

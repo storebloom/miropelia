@@ -31,6 +31,8 @@ jQuery(function ($) {
     }
 
     $instance.jump(0);
+
+    updateCaption(sirv_woo_product.mainID);
   }
 
 
@@ -56,6 +58,39 @@ jQuery(function ($) {
   }
 
 
+  function updateSMVCacheData(){
+    if(!!!ids) return;
+
+    let vIDs = Object.keys(ids);
+    let fullIDs = {}
+
+    vIDs = vIDs.filter(function(id){ return id != sirv_woo_product.mainID;});
+
+    fullIDs[sirv_woo_product.mainID] = 'product';
+
+    for(let i = 0; i < vIDs.length; i++){
+      fullIDs[vIDs[i]] = 'variation';
+    }
+
+    $.ajax({
+      url: sirv_woo_product.ajaxurl,
+      data: {
+          action: 'sirv_update_smv_cache_data',
+          ids: fullIDs,
+          mainID: sirv_woo_product.mainID,
+      },
+      type: 'POST',
+      dataType: "json",
+    }).done(function (response) {
+      //debug
+      //console.log(response);
+
+    }).fail(function (jqXHR, status, error) {
+      console.error("Error during ajax request: " + error);
+    });
+  }
+
+
   function addIndex(id, index){
     if ( !ids.hasOwnProperty(id) ){
       ids[id] = [index];
@@ -65,9 +100,32 @@ jQuery(function ($) {
   }
 
 
+  function initializeCaption(){
+    let id = sirv_woo_product.mainID;
+    let isCaption = $('#sirv-woo-gallery_data_' + id).attr('data-is-caption');
+    if(!!isCaption){
+      let caption = getSlideCaption(id);
+      if (!!!$('.sirv-woo-smv-caption_' + id).length) {
+        $('#sirv-woo-gallery_' + id + ' .smv-slides-box').after('<div class="sirv-woo-smv-caption sirv-woo-smv-caption_' + id + '">'+ caption +'</div>');
+      }
+    }
+  }
+
+
+  function getSlideCaption(id){
+    let $caption = $($('#sirv-woo-gallery_' + id + ' .smv-slide.smv-shown .smv-content div')[0]);
+    return $caption.attr('data-slide-caption') || '';
+  }
+
+  function updateCaption(id){
+    $('.sirv-woo-smv-caption_' + id).html(getSlideCaption(id));
+  }
+
+
   $(document).ready(function () {
 
     onMVStart();
+    //updateSMVCacheData();
 
     $('input.variation_id').on('change', function () {
       let variation_id = $('input.variation_id').val();
@@ -88,6 +146,17 @@ jQuery(function ($) {
     Sirv.on('viewer:ready', function (viewer) {
       $('.sirv-skeleton').removeClass('sirv-skeleton');
       $instance = Sirv.viewer.getInstance('#sirv-woo-gallery_' + sirv_woo_product.mainID);
+      window.textsmvinst = $instance;
+      initializeCaption();
     });
+
+
+    Sirv.on('viewer:afterSlideIn', function(slide){
+        let id = sirv_woo_product.mainID;
+        let caption = getSlideCaption(id);
+
+        $('.sirv-woo-smv-caption_' + id).html(caption);
+    });
+
   }); //end dom ready
-});
+}); // end closure

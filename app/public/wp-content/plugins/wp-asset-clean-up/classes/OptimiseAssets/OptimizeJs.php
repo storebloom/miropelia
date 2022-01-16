@@ -34,7 +34,7 @@ class OptimizeJs
 	public static function prepareOptimizeList()
 	{
 		// Are both Minify and Cache Dynamic JS disabled? No point in continuing and using extra resources as there is nothing to change
-		if ( ! self::isWorthCheckingForOptimization() || Plugin::preventAnyChanges() ) {
+		if ( ! self::isWorthCheckingForOptimization() || Plugin::preventAnyFrontendOptimization() ) {
 			return;
 		}
 
@@ -42,55 +42,62 @@ class OptimizeJs
 
 		$jsOptimizeList = array();
 
-		$wpScriptsList = array_unique(array_merge($wp_scripts->done, $wp_scripts->queue));
+		$wpScriptsDone  = isset($wp_scripts->done)  && is_array($wp_scripts->done)  ? $wp_scripts->done  : array();
+		$wpScriptsQueue = isset($wp_scripts->queue) && is_array($wp_scripts->queue) ? $wp_scripts->queue : array();
+
+		$wpScriptsList = array_unique(array_merge($wpScriptsDone, $wpScriptsQueue));
 
 		// Collect all enqueued clean (no query strings) HREFs to later compare them against any hardcoded JS
 		$allEnqueuedCleanScriptSrcs = array();
 
-		foreach ($wpScriptsList as $index => $scriptHandle) {
-			if (isset(Main::instance()->wpAllScripts['registered'][$scriptHandle]->src) && ($src = Main::instance()->wpAllScripts['registered'][$scriptHandle]->src)) {
-				$localAssetPath = OptimizeCommon::getLocalAssetPath($src, 'js');
+		if ( ! empty($wpScriptsList) ) {
+			foreach ( $wpScriptsList as $index => $scriptHandle ) {
+				if ( isset( Main::instance()->wpAllScripts['registered'][ $scriptHandle ]->src ) && ( $src = Main::instance()->wpAllScripts['registered'][ $scriptHandle ]->src ) ) {
+					$localAssetPath = OptimizeCommon::getLocalAssetPath( $src, 'js' );
 
-				if (! $localAssetPath || ! is_file($localAssetPath)) {
-					continue; // not a local file
-				}
+					if ( ! $localAssetPath || ! is_file( $localAssetPath ) ) {
+						continue; // not a local file
+					}
 
-				ob_start();
-				$wp_scripts->do_item($scriptHandle);
-				$scriptSourceTag = trim(ob_get_clean());
+					ob_start();
+					$wp_scripts->do_item( $scriptHandle );
+					$scriptSourceTag = trim( ob_get_clean() );
 
-				// Check if the JS has any 'data-wpacu-skip' attribute; if it does, do not alter it
-				if (preg_match('#data-wpacu-skip([=>/ ])#i', $scriptSourceTag)) {
-					unset($wpScriptsList[$index]);
-					continue;
-				}
+					// Check if the JS has any 'data-wpacu-skip' attribute; if it does, do not alter it
+					if ( preg_match( '#data-wpacu-skip([=>/ ])#i', $scriptSourceTag ) ) {
+						unset( $wpScriptsList[ $index ] );
+						continue;
+					}
 
-				$cleanScriptSrcFromTagArray = OptimizeCommon::getLocalCleanSourceFromTag($scriptSourceTag, 'src');
+					$cleanScriptSrcFromTagArray = OptimizeCommon::getLocalCleanSourceFromTag( $scriptSourceTag, 'src' );
 
-				if (isset($cleanScriptSrcFromTagArray['source']) && $cleanScriptSrcFromTagArray['source']) {
-					$allEnqueuedCleanScriptSrcs[] = $cleanScriptSrcFromTagArray['source'];
+					if ( isset( $cleanScriptSrcFromTagArray['source'] ) && $cleanScriptSrcFromTagArray['source'] ) {
+						$allEnqueuedCleanScriptSrcs[] = $cleanScriptSrcFromTagArray['source'];
+					}
 				}
 			}
 		}
 
 		// [Start] Collect for caching
-		foreach ($wpScriptsList as $handle) {
-			if (! isset($wp_scripts->registered[$handle]->src)) {
-				continue;
-			}
+		if ( ! empty($wpScriptsList) ) {
+			foreach ( $wpScriptsList as $handle ) {
+				if ( ! isset( $wp_scripts->registered[ $handle ]->src ) ) {
+					continue;
+				}
 
-			$value = $wp_scripts->registered[$handle];
+				$value = $wp_scripts->registered[ $handle ];
 
-			$localAssetPath = OptimizeCommon::getLocalAssetPath($value->src, 'js');
-			if (! $localAssetPath || ! is_file($localAssetPath)) {
-				continue; // not a local file
-			}
+				$localAssetPath = OptimizeCommon::getLocalAssetPath( $value->src, 'js' );
+				if ( ! $localAssetPath || ! is_file( $localAssetPath ) ) {
+					continue; // not a local file
+				}
 
-			$optimizeValues = self::maybeOptimizeIt($value);
-			ObjectCache::wpacu_cache_set('wpacu_maybe_optimize_it_js_'.$handle, $optimizeValues);
+				$optimizeValues = self::maybeOptimizeIt( $value );
+				ObjectCache::wpacu_cache_set( 'wpacu_maybe_optimize_it_js_' . $handle, $optimizeValues );
 
-			if ( ! empty( $optimizeValues ) ) {
-				$jsOptimizeList[] = $optimizeValues;
+				if ( ! empty( $optimizeValues ) ) {
+					$jsOptimizeList[] = $optimizeValues;
+				}
 			}
 		}
 
@@ -120,7 +127,9 @@ class OptimizeJs
 
 		$doFileMinify = true;
 
-		if (! MinifyJs::isMinifyJsEnabled()) {
+		$isMinifyJsFilesEnabled = MinifyJs::isMinifyJsEnabled() && in_array(Main::instance()->settings['minify_loaded_js_for'], array('src', 'all', ''));
+
+		if (! $isMinifyJsFilesEnabled) {
 			$doFileMinify = false;
 		} elseif (MinifyJs::skipMinify($src, $value->handle)) {
 			$doFileMinify = false;
@@ -145,7 +154,7 @@ class OptimizeJs
 
 		$skipCache = false;
 
-		if (isset($_GET['wpacu_no_cache'])) {
+		if (isset($_GET['wpacu_no_cache']) || (defined('WPACU_NO_CACHE') && WPACU_NO_CACHE === true)) {
 			$skipCache = true;
 		}
 
@@ -343,6 +352,8 @@ class OptimizeJs
 			return array('content' => $jsContent);
 		}
 
+		$jsContentBefore = $jsContent;
+
 		/* [START] Change JS Content */
 		if ($doJsMinify) {
 			$jsContent = MinifyJs::applyMinification($jsContent);
@@ -356,13 +367,13 @@ class OptimizeJs
 		}
 		/* [END] Change JS Content */
 
-		$jsContentAfterAlterToCompare = $jsContent; // new possible values
-
-		// Does it have a source map? Strip it
-		if (strpos($jsContent, 'sourceMappingURL') !== false) {
-			$jsContent = OptimizeCommon::stripSourceMap($jsContent);
+		// Does it have a source map? Strip it only if any optimization was already applied
+		// As, otherwise, there's no point in creating a caching file, since there are no changes worth made to the file
+		if (($jsContentBefore !== $jsContent) && (strpos($jsContent, '// #sourceMappingURL') !== false) && Misc::endsWith(trim($jsContent), '.map')) {
+			$jsContent = OptimizeCommon::stripSourceMap($jsContent, 'js');
 		}
 
+		$jsContentAfterAlterToCompare = $jsContent; // new possible values
 		return array('content' => $jsContent , 'content_after_alter_to_compare' => $jsContentAfterAlterToCompare);
 	}
 
@@ -389,7 +400,7 @@ class OptimizeJs
 		}
 
 		// For debugging purposes
-		if (isset($_GET['wpacu_no_cache'])) { $useCacheForInlineScript = false; }
+		if (isset($_GET['wpacu_no_cache']) || (defined('WPACU_NO_CACHE') && WPACU_NO_CACHE === true)) { $useCacheForInlineScript = false; }
 
 		if ($useCacheForInlineScript) {
 			// Anything in the cache? Take it from there and don't spend resources with the minification
@@ -588,12 +599,22 @@ class OptimizeJs
 		$sourceUrlRel = is_array($sourceUrl) ? OptimizeCommon::getSourceRelPath($sourceUrl[0]) : OptimizeCommon::getSourceRelPath($sourceUrl);
 		$newScriptSourceTag = str_ireplace('<script ', '<script data-wpacu-script-rel-src-before="'.$sourceUrlRel.'" ', $newScriptSourceTag);
 
-		// Strip ?ver=
-		$toStrip = Misc::extractBetween($newScriptSourceTag, '?ver', '>');
+		preg_match_all( '#\ssrc=(["\'])(.*?)(["\'])#', $scriptSourceTag, $outputMatchesSrc );
 
-		if (in_array(substr($toStrip, -1), array('"', "'"))) {
-			$toStrip = '?ver'. trim(trim($toStrip, '"'), "'");
-			$newScriptSourceTag = str_replace($toStrip, '', $newScriptSourceTag);
+		// No space from the matching and ? should be there
+		if (isset( $outputMatchesSrc[2][0] ) && ( strpos( $outputMatchesSrc[2][0], ' ' ) === false )) {
+			if ( strpos( $outputMatchesSrc[2][0], '?' ) !== false ) {
+				// Strip things like ?ver=
+				list( , $toStrip ) = explode( '?', $outputMatchesSrc[2][0] );
+				$toStrip            = '?' . trim( $toStrip );
+				$newScriptSourceTag = str_replace( $toStrip, '', $newScriptSourceTag );
+			}
+
+			if ( strpos( $outputMatchesSrc[2][0], '&#038;ver' ) !== false ) {
+				// Replace any .js&#038;ver with .js
+				$toStrip = strrchr($outputMatchesSrc[2][0], '&#038;ver');
+				$newScriptSourceTag = str_replace( $toStrip, '', $newScriptSourceTag );
+			}
 		}
 
 		global $wp_version;
@@ -668,13 +689,20 @@ class OptimizeJs
 		Misc::scriptExecTimer($wpacuTimingName); /* [/wpacu_timing] */
 		$proceedWithCombineOnThisPage = true;
 
+		$isSingularPage = defined('WPACU_CURRENT_PAGE_ID') && WPACU_CURRENT_PAGE_ID > 0 && is_singular();
+
 		// If "Do not combine JS on this page" is checked in "Asset CleanUp Options" side meta box
 		// Works for posts, pages and custom post types
-		if (defined('WPACU_CURRENT_PAGE_ID') && WPACU_CURRENT_PAGE_ID > 0) {
-			$pageOptions = MetaBoxes::getPageOptions( WPACU_CURRENT_PAGE_ID );
+		if ($isSingularPage || Misc::isHomePage()) {
+			if ($isSingularPage) {
+				$pageOptions = MetaBoxes::getPageOptions( WPACU_CURRENT_PAGE_ID ); // Singular page
+			} else {
+				$pageOptions = MetaBoxes::getPageOptions(0, 'front_page'); // Home page
+			}
 
 			// 'no_js_optimize' refers to avoid the combination of JS files
-			if ( isset( $pageOptions['no_js_optimize'] ) && $pageOptions['no_js_optimize'] ) {
+			if ( (isset( $pageOptions['no_js_optimize'] )     && $pageOptions['no_js_optimize'])
+			  || (isset( $pageOptions['no_assets_settings'] ) && $pageOptions['no_assets_settings']) ) {
 				$proceedWithCombineOnThisPage = false;
 			}
 		}
@@ -685,7 +713,7 @@ class OptimizeJs
 		}
 		/* [wpacu_timing] */ Misc::scriptExecTimer($wpacuTimingName, 'end'); /* [/wpacu_timing] */
 
-		if (self::isWorthCheckingForOptimization() && ! Main::instance()->preventAssetsSettings() && (MinifyJs::isMinifyJsEnabled() && Main::instance()->settings['minify_loaded_js_inline'])) {
+		if (self::isWorthCheckingForOptimization() && ! Main::instance()->preventAssetsSettings() && (MinifyJs::isMinifyJsEnabled() && in_array(Main::instance()->settings['minify_loaded_js_for'], array('inline', 'all')))) {
 			/* [wpacu_timing] */ $wpacuTimingName = 'alter_html_source_for_minify_inline_script_tags'; Misc::scriptExecTimer($wpacuTimingName); /* [/wpacu_timing] */
 			$htmlSource = MinifyJs::minifyInlineScriptTags($htmlSource);
 			/* [wpacu_timing] */ Misc::scriptExecTimer($wpacuTimingName, 'end'); /* [/wpacu_timing] */
@@ -1022,6 +1050,10 @@ class OptimizeJs
 					$toReplaceTagList = array();
 
 					// If the handle has any inline JavaScript associated with it (before or after the tag), make sure it's stripped as well
+					if ($translationsContent = self::generateInlineAssocHtmlForHandle($scriptHandle, 'translations')) {
+						$toReplaceTagList[] = $translationsContent;
+					}
+
 					if ($cDataContent = self::generateInlineAssocHtmlForHandle($scriptHandle, 'data')) {
 						$toReplaceTagList[] = $cDataContent;
 					}
@@ -1041,7 +1073,7 @@ class OptimizeJs
 					// Extra, in case the previous replace didn't go through
 					$listWithMatches   = array();
 					$listWithMatches[] = 'data-wpacu-script-handle=[\'"]'.$scriptHandle.'[\'"]';
-					$listWithMatches[] = preg_quote(OptimizeCommon::getSourceRelPath($scriptSrc), '/');
+					$listWithMatches[] = OptimizeCommon::getSourceRelPath($scriptSrc);
 
 					$htmlSource = CleanUp::cleanScriptTagFromHtmlSource($listWithMatches, $htmlSource);
 				}
@@ -1071,32 +1103,41 @@ class OptimizeJs
 			$scriptHandle = $scriptTagOrHandle;
 		}
 
-		if ( $return === 'value' && $scriptHandle && isset($wpacuRegisteredScripts[$scriptHandle]->extra) ) {
+		if ( $return === 'value' && $scriptHandle ) {
 			$scriptExtraCdata = $scriptExtraBefore = $scriptExtraAfter = '';
 
-			$scriptExtraArray = $wpacuRegisteredScripts[$scriptHandle]->extra;
+			if (isset($wpacuRegisteredScripts[$scriptHandle]->extra)) {
+				$scriptExtraArray = $wpacuRegisteredScripts[ $scriptHandle ]->extra;
 
-			if (isset($scriptExtraArray['data']) && $scriptExtraArray['data']) {
-				$scriptExtraCdata .= $scriptExtraArray['data']."\n";
-			}
+				if ( isset( $scriptExtraArray['data'] ) && $scriptExtraArray['data'] ) {
+					$scriptExtraCdata .= $scriptExtraArray['data'] . "\n";
+				}
 
-			if (isset($scriptExtraArray['before']) && ! empty($scriptExtraArray['before'])) {
-				foreach ($scriptExtraArray['before'] as $beforeData) {
-					if (! is_bool($beforeData)) {
-						$scriptExtraBefore .= $beforeData."\n";
+				if ( isset( $scriptExtraArray['before'] ) && ! empty( $scriptExtraArray['before'] ) ) {
+					foreach ( $scriptExtraArray['before'] as $beforeData ) {
+						if ( ! is_bool( $beforeData ) ) {
+							$scriptExtraBefore .= $beforeData . "\n";
+						}
+					}
+				}
+
+				if ( isset( $scriptExtraArray['after'] ) && ! empty( $scriptExtraArray['after'] ) ) {
+					foreach ( $scriptExtraArray['after'] as $afterData ) {
+						if ( ! is_bool( $afterData ) ) {
+							$scriptExtraAfter .= $afterData . "\n";
+						}
 					}
 				}
 			}
 
-			if (isset($scriptExtraArray['after']) && ! empty($scriptExtraArray['after'])) {
-				foreach ($scriptExtraArray['after'] as $afterData) {
-					if (! is_bool($afterData)) {
-						$scriptExtraAfter .= $afterData."\n";
-					}
-				}
+			$scriptTranslations = '';
+
+			if (method_exists('wp_scripts', 'print_translations')) {
+				$scriptTranslations = wp_scripts()->print_translations( $scriptHandle, false );
 			}
 
 			return array(
+				'translations' => trim($scriptTranslations),
 				'data'   => trim($scriptExtraCdata),
 				'before' => trim($scriptExtraBefore),
 				'after'  => trim($scriptExtraAfter)
@@ -1105,13 +1146,14 @@ class OptimizeJs
 
 		if ( $return === 'html' && $scriptHandle ) {
 			return array(
-				'data'   => self::generateInlineAssocHtmlForHandle($scriptHandle, 'data'),
-				'before' => self::generateInlineAssocHtmlForHandle($scriptHandle, 'before'),
-				'after'  => self::generateInlineAssocHtmlForHandle($scriptHandle, 'after')
+				'translations' => self::generateInlineAssocHtmlForHandle($scriptHandle, 'translations'),
+				'data'         => self::generateInlineAssocHtmlForHandle($scriptHandle, 'data'),
+				'before'       => self::generateInlineAssocHtmlForHandle($scriptHandle, 'before'),
+				'after'        => self::generateInlineAssocHtmlForHandle($scriptHandle, 'after')
 			);
 		}
 
-		return array('data' => '', 'before' => '', 'after' => '');
+		return array('translations' => '', 'data' => '', 'before' => '', 'after' => '');
 	}
 
 	/**
@@ -1125,15 +1167,21 @@ class OptimizeJs
 	{
 		global $wp_scripts;
 
-		$typeAttr = '';
-
-		if ( function_exists( 'is_admin' ) && ! is_admin() &&
-		     function_exists( 'current_theme_supports' ) && ! current_theme_supports( 'html5', 'script' )
-		) {
-			$typeAttr = " type='text/javascript'";
-		}
+		$typeAttr = Misc::getScriptTypeAttribute();
 
 		$output = '';
+
+		if ($position === 'translations') {
+			$translations = false;
+
+			if (method_exists('wp_scripts', 'print_translations')) {
+				$translations = $wp_scripts->print_translations( $handle, false );
+			}
+
+			if ( $translations ) {
+				$output = sprintf( "<script%s id='%s-js-translations'>\n%s\n</script>\n", $typeAttr, esc_attr( $handle ), $translations );
+			}
+		}
 
 		if ( $position === 'data' ) {
 			if ( $inlineScriptContent === '' ) {

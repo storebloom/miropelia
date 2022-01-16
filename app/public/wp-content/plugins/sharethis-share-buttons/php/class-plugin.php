@@ -86,12 +86,13 @@ class Plugin extends Plugin_Base
         wp_register_script("{$this->assets_prefix}-mua",
             '//platform-api.sharethis.com/js/sharethis.js?product=inline-share-buttons', null, null, false);
         wp_register_script("{$this->assets_prefix}-admin", "{$this->dir_url}js/admin.js",
-            array('jquery', 'jquery-ui-sortable', 'wp-util'), time());
+            array('jquery', 'jquery-ui-sortable', 'wp-util'), filemtime("{$this->dir_path}js/admin.js"));
         wp_register_script("{$this->assets_prefix}-meta-box", "{$this->dir_url}js/meta-box.js",
             array('jquery', 'wp-util'));
         wp_register_script("{$this->assets_prefix}-credentials", "{$this->dir_url}js/set-credentials.js",
             array('jquery', 'jquery-ui-sortable', 'wp-util'), time());
-        wp_register_style("{$this->assets_prefix}-admin", "{$this->dir_url}css/admin.css", false, time());
+	    wp_register_style( "{$this->assets_prefix}-admin", "{$this->dir_url}css/admin.css", false,
+		    filemtime( "{$this->dir_path}css/admin.css" ) );
         wp_register_style("{$this->assets_prefix}-meta-box", "{$this->dir_url}css/meta-box.css", false);
     }
 }

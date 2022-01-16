@@ -22,6 +22,6 @@ $lockedForPro = str_replace('[wpacu_chosen_page_type]', $baseNamePageType, $data
 
     <strong>How to retrieve the loaded styles &amp; scripts?</strong>
 
-    <p style="margin-bottom: 0;"><span class="dashicons dashicons-yes"></span> If "Manage in the Front-end?" (<em>from "Settings" -&gt; "Plugin Usage Preferences"</em>) is enabled and you're logged in:</p>
+    <p style="margin-bottom: 0;"><span class="dashicons dashicons-yes" style="color: green;"></span> If "Manage in the Front-end?" is enabled and you're logged in:</p>
     <p style="margin-top: 0;">Go to the search results page (any search query as the managing will apply for any search term) and scroll to the bottom of the page where you will see the list.</p>
 </div>

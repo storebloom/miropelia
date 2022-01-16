@@ -28,7 +28,7 @@ class OptimizeCss
 	{
 		add_action('init', array($this, 'triggersAfterInit'));
 		add_action('wp_footer', static function() {
-			if ( Plugin::preventAnyChanges() || Main::isTestModeActive() ) { return; }
+			if ( Plugin::preventAnyFrontendOptimization() || Main::isTestModeActive() ) { return; }
 
 			/* [wpacu_timing] */ Misc::scriptExecTimer( 'prepare_optimize_files_css' ); /* [/wpacu_timing] */
 			self::prepareOptimizeList();
@@ -60,11 +60,12 @@ class OptimizeCss
 				});
 
 				add_filter('style_loader_tag', static function($styleTag) use ($allPatterns) {
-					preg_match_all('#<link[^>]*stylesheet[^>]*(' . implode('|', $allPatterns) . ').*(>)#Usmi',
-						$styleTag, $matchesSourcesFromTags, PREG_SET_ORDER);
+					foreach ($allPatterns as $patternToCheck) {
+						preg_match_all( '#<link[^>]*stylesheet[^>]*('.$patternToCheck.').*(>)#Usmi', $styleTag, $matchesSourcesFromTags, PREG_SET_ORDER );
 
-					if (! empty($matchesSourcesFromTags)) {
-						return str_replace('<link ', '<link wpacu-to-be-inlined=\'1\' ', $styleTag);
+						if ( ! empty( $matchesSourcesFromTags ) ) {
+							return str_replace( '<link ', '<link wpacu-to-be-inlined=\'1\' ', $styleTag );
+						}
 					}
 
 					return $styleTag;
@@ -85,11 +86,11 @@ class OptimizeCss
 		if (strpos($inlineCssFilesPatterns, "\n")) {
 			// Multiple values (one per line)
 			foreach (explode("\n", $inlineCssFilesPatterns) as $inlinePattern) {
-				$allPatterns[] = preg_quote(trim($inlinePattern), '/');
+				$allPatterns[] = trim($inlinePattern);
 			}
 		} else {
 			// Only one value?
-			$allPatterns[] = preg_quote(trim($inlineCssFilesPatterns), '/');
+			$allPatterns[] = trim($inlineCssFilesPatterns);
 		}
 
 		// Strip any empty values
@@ -101,7 +102,7 @@ class OptimizeCss
 	 */
 	public static function prepareOptimizeList()
 	{
-		if ( ! self::isWorthCheckingForOptimization() || Plugin::preventAnyChanges() ) {
+		if ( ! self::isWorthCheckingForOptimization() || Plugin::preventAnyFrontendOptimization() ) {
 			return;
 		}
 
@@ -113,57 +114,61 @@ class OptimizeCss
 		}
 
 		// [Start] Collect for caching
-		$wpStylesDone = $wp_styles->done;
-		$wpStylesRegistered = $wp_styles->registered;
+		$wpStylesDone       = isset($wp_styles->done)       && is_array($wp_styles->done)       ? $wp_styles->done       : array();
+		$wpStylesRegistered = isset($wp_styles->registered) && is_array($wp_styles->registered) ? $wp_styles->registered : array();
 
 		// Collect all enqueued clean (no query strings) HREFs to later compare them against any hardcoded CSS
 		$allEnqueuedCleanLinkHrefs = array();
 
-		foreach ($wpStylesDone as $index => $styleHandle) {
-			if (isset(Main::instance()->wpAllStyles['registered'][$styleHandle]->src) && ($src = Main::instance()->wpAllStyles['registered'][$styleHandle]->src)) {
-				$localAssetPath = OptimizeCommon::getLocalAssetPath($src, 'css');
+		if (! empty($wpStylesDone) && ! empty($wpStylesRegistered)) {
+			foreach ( $wpStylesDone as $index => $styleHandle ) {
+				if ( isset( Main::instance()->wpAllStyles['registered'][ $styleHandle ]->src ) && ( $src = Main::instance()->wpAllStyles['registered'][ $styleHandle ]->src ) ) {
+					$localAssetPath = OptimizeCommon::getLocalAssetPath( $src, 'css' );
 
-				if (! $localAssetPath || ! is_file($localAssetPath)) {
-					continue; // not a local file
-				}
+					if ( ! $localAssetPath || ! is_file( $localAssetPath ) ) {
+						continue; // not a local file
+					}
 
-				ob_start();
-				$wp_styles->do_item($styleHandle);
-				$linkSourceTag = trim(ob_get_clean());
+					ob_start();
+					$wp_styles->do_item( $styleHandle );
+					$linkSourceTag = trim( ob_get_clean() );
 
-				// Check if the CSS has any 'data-wpacu-skip' attribute; if it does, do not alter it
-				if (preg_match('#data-wpacu-skip([=>/ ])#i', $linkSourceTag)) {
-					unset($wpStylesDone[$index]);
-					continue;
-				}
+					// Check if the CSS has any 'data-wpacu-skip' attribute; if it does, do not alter it
+					if ( preg_match( '#data-wpacu-skip([=>/ ])#i', $linkSourceTag ) ) {
+						unset( $wpStylesDone[ $index ] );
+						continue;
+					}
 
-				$cleanLinkHrefFromTagArray = OptimizeCommon::getLocalCleanSourceFromTag($linkSourceTag, 'href');
+					$cleanLinkHrefFromTagArray = OptimizeCommon::getLocalCleanSourceFromTag( $linkSourceTag, 'href' );
 
-				if (isset($cleanLinkHrefFromTagArray['source']) && $cleanLinkHrefFromTagArray['source']) {
-					$allEnqueuedCleanLinkHrefs[] = $cleanLinkHrefFromTagArray['source'];
+					if ( isset( $cleanLinkHrefFromTagArray['source'] ) && $cleanLinkHrefFromTagArray['source'] ) {
+						$allEnqueuedCleanLinkHrefs[] = $cleanLinkHrefFromTagArray['source'];
+					}
 				}
 			}
 		}
 
 		$cssOptimizeList = array();
 
-		foreach ($wpStylesDone as $handle) {
-			if (! isset($wpStylesRegistered[$handle]->src)) {
-				continue;
-			}
+		if (! empty($wpStylesDone) && ! empty($wpStylesRegistered)) {
+			foreach ( $wpStylesDone as $handle ) {
+				if ( ! isset( $wpStylesRegistered[ $handle ]->src ) ) {
+					continue;
+				}
 
-			$value = $wpStylesRegistered[$handle];
+				$value = $wpStylesRegistered[ $handle ];
 
-			$localAssetPath = OptimizeCommon::getLocalAssetPath($value->src, 'css');
-			if (! $localAssetPath || ! is_file($localAssetPath)) {
-				continue; // not a local file
-			}
+				$localAssetPath = OptimizeCommon::getLocalAssetPath( $value->src, 'css' );
+				if ( ! $localAssetPath || ! is_file( $localAssetPath ) ) {
+					continue; // not a local file
+				}
 
-			$optimizeValues = self::maybeOptimizeIt($value);
-			ObjectCache::wpacu_cache_set('wpacu_maybe_optimize_it_css_'.$handle, $optimizeValues);
+				$optimizeValues = self::maybeOptimizeIt( $value );
+				ObjectCache::wpacu_cache_set( 'wpacu_maybe_optimize_it_css_' . $handle, $optimizeValues );
 
-			if (! empty($optimizeValues)) {
-				$cssOptimizeList[] = $optimizeValues;
+				if ( ! empty( $optimizeValues ) ) {
+					$cssOptimizeList[] = $optimizeValues;
+				}
 			}
 		}
 
@@ -197,7 +202,9 @@ class OptimizeCss
 
 		$doFileMinify = true;
 
-		if (! MinifyCss::isMinifyCssEnabled()) {
+		$isMinifyCssFilesEnabled = MinifyCss::isMinifyCssEnabled() && in_array(Main::instance()->settings['minify_loaded_css_for'], array('href', 'all', ''));
+
+		if (! $isMinifyCssFilesEnabled) {
 			$doFileMinify = false;
 		} elseif (MinifyCss::skipMinify($src, $value->handle)) {
 			$doFileMinify = false;
@@ -222,7 +229,7 @@ class OptimizeCss
 
 		$skipCache = false;
 
-		if (isset($_GET['wpacu_no_cache'])) {
+		if (isset($_GET['wpacu_no_cache']) || (defined('WPACU_NO_CACHE') && WPACU_NO_CACHE === true)) {
 			$skipCache = true;
 		}
 
@@ -242,7 +249,7 @@ class OptimizeCss
 				$savedValuesArray = json_decode( $savedValues, ARRAY_A );
 
 				if ( $savedValuesArray['ver'] !== $dbVer ) {
-					// New File Version? Delete transient as it will be re-added to the database with the new version
+					// New File Version? Delete transient as it will be re-created with the new version
 					OptimizeCommon::deleteTransient($transientName);
 				} else {
 					$localPathToCssOptimized = str_replace( '//', '/', ABSPATH . $savedValuesArray['optimize_uri'] );
@@ -362,9 +369,10 @@ class OptimizeCss
 				return false;
 			}
 
+			// Continue, as changes are to be made
 			// Does it have a source map? Strip it
-			if (strpos($cssContent, 'sourceMappingURL') !== false) {
-				$cssContent = OptimizeCommon::stripSourceMap($cssContent);
+			if (strpos($cssContent, '/*# sourceMappingURL=') !== false) {
+				$cssContent = OptimizeCommon::stripSourceMap($cssContent, 'css');
 			}
 
 			$cssContent = self::maybeFixCssContent( $cssContent, $pathToAssetDir . '/' ); // Path
@@ -473,13 +481,20 @@ class OptimizeCss
 
 		$proceedWithCombineOnThisPage = true;
 
+		$isSingularPage = defined('WPACU_CURRENT_PAGE_ID') && WPACU_CURRENT_PAGE_ID > 0 && is_singular();
+
 		// If "Do not combine CSS on this page" is checked in "Asset CleanUp: Options" side meta box
 		// Works for posts, pages and custom post types
-		if (defined('WPACU_CURRENT_PAGE_ID') && WPACU_CURRENT_PAGE_ID > 0) {
-			$pageOptions = MetaBoxes::getPageOptions(WPACU_CURRENT_PAGE_ID);
+		if ($isSingularPage || Misc::isHomePage()) {
+			if ($isSingularPage) {
+				$pageOptions = MetaBoxes::getPageOptions( WPACU_CURRENT_PAGE_ID ); // Singular page
+			} else {
+				$pageOptions = MetaBoxes::getPageOptions(0, 'front_page'); // Home page
+			}
 
 			// 'no_css_optimize' refers to avoid the combination of CSS files
-			if ( isset( $pageOptions['no_css_optimize'] ) && $pageOptions['no_css_optimize'] ) {
+			if ( (isset( $pageOptions['no_css_optimize'] )    && $pageOptions['no_css_optimize'])
+			  || (isset( $pageOptions['no_assets_settings'] ) && $pageOptions['no_assets_settings']) ) {
 				$proceedWithCombineOnThisPage = false;
 			}
 		}
@@ -490,7 +505,7 @@ class OptimizeCss
 			/* [wpacu_timing] */ Misc::scriptExecTimer($wpacuTimingName, 'end'); /* [/wpacu_timing] */
 		}
 
-		if (! Main::instance()->preventAssetsSettings() && Main::instance()->settings['minify_loaded_css'] && Main::instance()->settings['minify_loaded_css_inline']) {
+		if (self::isWorthCheckingForOptimization() && ! Main::instance()->preventAssetsSettings() && (MinifyCss::isMinifyCssEnabled() && in_array(Main::instance()->settings['minify_loaded_css_for'], array('inline', 'all')))) {
 			/* [wpacu_timing] */ $wpacuTimingName = 'alter_html_source_for_minify_inline_style_tags'; Misc::scriptExecTimer($wpacuTimingName); /* [/wpacu_timing] */
 			$htmlSource = MinifyCss::minifyInlineStyleTags($htmlSource);
 			/* [wpacu_timing] */ Misc::scriptExecTimer($wpacuTimingName, 'end'); /* [/wpacu_timing] */
@@ -788,14 +803,29 @@ class OptimizeCss
 			$newLinkSourceTag = str_ireplace('<link ', '<link data-wpacu-link-rel-href-before="'.$sourceUrlRel.'" ', $newLinkSourceTag);
 		}
 
-		// Strip ?ver=
-		$newLinkSourceTag = str_replace('.css&#038;ver', '.css?ver', $newLinkSourceTag);
-		$toStrip = Misc::extractBetween($newLinkSourceTag, '?ver', ' ');
+		preg_match_all( '#\shref=(["\'])(.*?)(["\'])#', $newLinkSourceTag, $outputMatchesSrc );
 
-		if (in_array(substr($toStrip, -1), array('"', "'"))) {
-			$toStrip = '?ver'. trim(trim($toStrip, '"'), "'");
-			$newLinkSourceTag = str_replace($toStrip, '', $newLinkSourceTag);
+		// No space from the matching and ? should be there
+		if (isset( $outputMatchesSrc[2][0] ) && ( strpos( $outputMatchesSrc[2][0], ' ' ) === false )) {
+			if ( strpos( $outputMatchesSrc[2][0], '?' ) !== false ) {
+				// Strip things like ?ver=
+				list( , $toStrip ) = explode( '?', $outputMatchesSrc[2][0] );
+				$toStrip            = '?' . trim( $toStrip );
+				$newLinkSourceTag = str_replace( $toStrip, '', $newLinkSourceTag );
+			}
+
+			if ( strpos( $outputMatchesSrc[2][0], '&#038;ver' ) !== false ) {
+				// Replace any .js&#038;ver with .js
+				$toStrip = strrchr($outputMatchesSrc[2][0], '&#038;ver');
+				$newLinkSourceTag = str_replace( $toStrip, '', $newLinkSourceTag );
+			}
 		}
+
+		global $wp_version;
+		$newLinkSourceTag = str_replace('.css&#038;ver='.$wp_version, '.css', $newLinkSourceTag);
+		$newLinkSourceTag = str_replace('.css&#038;ver=', '.css', $newLinkSourceTag);
+
+		$newLinkSourceTag = preg_replace('!\s+!', ' ', $newLinkSourceTag); // replace multiple spaces with only one space
 
 		return $newLinkSourceTag;
 	}
@@ -854,7 +884,8 @@ class OptimizeCss
 			foreach ($matchesSourcesFromTags as $matchList) {
 				$matchedTag = $matchList[0];
 
-				if ($matchedTag === '') {
+				// Do not inline the admin bar SCRIPT file, saving resources as it's shown for the logged-in user only
+				if (strpos($matchedTag, '/wp-includes/css/admin-bar') !== false) {
 					continue;
 				}
 
@@ -867,11 +898,19 @@ class OptimizeCss
 					continue; // something is funny, don't mess with the HTML alteration, leave it as it was
 				}
 
+				$chosenInlineCssMatches = false;
+
 				// Condition #1: Only chosen (via textarea) CSS get inlined
 				if ( false !== strpos( $matchedTag, ' wpacu-to-be-inlined' ) ) {
 					$chosenInlineCssMatches = true;
-				} else {
-					$chosenInlineCssMatches = ( ! empty( $allPatterns ) && preg_match( '/(' . implode( '|', $allPatterns ) . ')/i', $matchedTag ) );
+				} elseif ( ! empty( $allPatterns ) ) {
+					// Fallback, in case "wpacu-to-be-inlined" was not already added to the tag
+					foreach ($allPatterns as $patternToCheck) {
+						if (preg_match('#'.$patternToCheck.'#si', $matchedTag) || strpos($matchedTag, $patternToCheck) !== false) {
+							$chosenInlineCssMatches = true;
+							break;
+						}
+					}
 				}
 
 				// Is auto inline disabled and the chosen CSS does not match? Continue to the next LINK tag
@@ -917,7 +956,7 @@ class OptimizeCss
 				if ($cssContent && $cssContent !== '/**/') {
 					$htmlSource = str_replace(
 						$matchedTag,
-						'<style type=\'text/css\' '.$mediaAttr.' data-wpacu-inline-css-file=\'1\'>'."\n".$cssContent."\n".'</style>',
+						'<style '.Misc::getStyleTypeAttribute().' '.$mediaAttr.' data-wpacu-inline-css-file=\'1\'>'."\n".$cssContent."\n".'</style>',
 						$htmlSource
 					);
 				} else {
@@ -959,8 +998,8 @@ class OptimizeCss
 		}
 
 		// Does it have a source map? Strip it
-		if (strpos($cssContent, 'sourceMappingURL') !== false) {
-			$cssContent = OptimizeCommon::stripSourceMap($cssContent);
+		if (strpos($cssContent, '/*# sourceMappingURL=') !== false) {
+			$cssContent = OptimizeCommon::stripSourceMap($cssContent, 'css');
 		}
 		/* [END] Change CSS Content */
 
@@ -991,7 +1030,7 @@ class OptimizeCss
 		}
 
 		// For debugging purposes
-		if (isset($_GET['wpacu_no_cache'])) { $useCacheForInlineStyle = false; }
+		if (isset($_GET['wpacu_no_cache']) || (defined('WPACU_NO_CACHE') && WPACU_NO_CACHE === true)) { $useCacheForInlineStyle = false; }
 
 		if ($useCacheForInlineStyle) {
 			// Anything in the cache? Take it from there and don't spend resources with the minification
@@ -1280,7 +1319,7 @@ class OptimizeCss
 					$listWithMatches[] = 'data-wpacu-style-handle=[\'"]'.$styleHandle.'[\'"]';
 
 					if ($styleSrc = Main::instance()->wpAllStyles['registered'][$styleHandle]->src) {
-						$listWithMatches[] = preg_quote(OptimizeCommon::getSourceRelPath($styleSrc), '/');
+						$listWithMatches[] = OptimizeCommon::getSourceRelPath($styleSrc);
 					}
 
 					$htmlSource = CleanUp::cleanLinkTagFromHtmlSource($listWithMatches, $htmlSource);
@@ -1314,7 +1353,7 @@ class OptimizeCss
 			$styleExtraArray = $wpacuRegisteredStyles[$styleHandle]->extra;
 
 			if (isset($styleExtraArray['after']) && ! empty($styleExtraArray['after'])) {
-				$styleExtraAfter .= "<style id='".$styleHandle."-inline-css' type='text/css'>\n";
+				$styleExtraAfter .= "<style id='".$styleHandle."-inline-css' ".Misc::getStyleTypeAttribute().">\n";
 
 				foreach ($styleExtraArray['after'] as $afterData) {
 					if (! is_bool($afterData)) {
@@ -1346,14 +1385,7 @@ class OptimizeCss
 	{
 		global $wp_styles;
 
-		$typeAttr = '';
-
-		if ( function_exists( 'is_admin' ) && ! is_admin()
-			&&
-			function_exists( 'current_theme_supports' ) && ! current_theme_supports( 'html5', 'style' )
-		) {
-			$typeAttr = " type='text/css'";
-		}
+		$typeAttr = Misc::getStyleTypeAttribute();
 
 		$output = '';
 

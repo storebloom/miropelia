@@ -10,8 +10,7 @@ class Sirv_Gallery_MV
     //private $initialized = false;
     private $inline_css = array();
 
-    public function __construct($params = array(), $items = array(), $captions = array())
-    {
+    public function __construct($params = array(), $items = array(), $captions = array()){
         $this->params = array(
             'width'     => 'auto',
             'height'    => 'auto',
@@ -47,37 +46,55 @@ class Sirv_Gallery_MV
         return true;
     }
 
-    public function addCss($rule)
-    {
+
+    public function addCss($rule){
         $this->inline_css[] = $rule;
     }
 
-    public function getInlineCss()
-    {
+
+    public function getInlineCss(){
         return join("\r\n", $this->inline_css);
     }
 
-    public function fixUrl($url)
-    {
+
+    public function fixUrl($url){
         $sirv_cdn_url = get_option('SIRV_CDN_URL');
 
         $p_url = parse_url($url);
         $m_url = 'https://' . $sirv_cdn_url . $p_url['path'];
 
-        $profile = $this->params['profile'] == ''
+        $profile = $this->get_profile();
+        /* $profile = $this->params['profile'] == ''
             ? $this->params['default_profile'] !== ''
                 ? $this->params['default_profile']
                 : ''
-            : $this->params['profile'];
+            : $this->params['profile']; */
 
         if($profile) $m_url .= "?profile=$profile";
 
         return $m_url;
     }
 
+
+    protected function get_profile(){
+        $profile = '';
+
+        if ($this->params['profile'] == '') {
+            if ($this->params['default_profile'] !== '') {
+                $profile = $this->params['default_profile'];
+            }
+        } else {
+            $profile = $this->params['profile'];
+        }
+
+        return $profile;
+    }
+
+
     public function renderOptions($options){
         return 'data-options="' . $this->optionsToString($options) .'" ';
     }
+
 
     public function optionsToString($options){
         $opt_str = '';
@@ -87,6 +104,7 @@ class Sirv_Gallery_MV
         }
         return $opt_str;
     }
+
 
     public function getViewerOptions(){
         $videoAutoplay = isset($this->params['zgallery_data_options']['videoAutoplay']) ? $this->params['zgallery_data_options']['videoAutoplay'] : 'false';
@@ -103,17 +121,20 @@ class Sirv_Gallery_MV
         return $options;
     }
 
+
     public function getSpinOptions(){
         //Spin method
         //Autospin
         //Rotation duration (ms)
+        $autospinEnable = $this->params['spin_options']['autospin'] === 'infinite' ? 'true' : 'false';
         $options = array(
             'autospin.duration' => $this->params['spin_options']['autospinSpeed'],
-
+            'autospin.enable' => $autospinEnable,
         );
 
         return $options;
     }
+
 
     public function getZoomOptions(){
         //mouse wheel zoom options
@@ -125,13 +146,14 @@ class Sirv_Gallery_MV
         return $options;
     }
 
-    function getCaptions(){
+
+    public function getCaptions(){
         $captions = $this->params['show_caption']? $this->captions : array();
 
         return json_encode($captions, JSON_HEX_QUOT | JSON_HEX_APOS);
     }
 
-    function fixCaptionPosition($id){
+    public function fixCaptionPosition($id){
         $thumbsOrientation = $this->params['zgallery_data_options']['thumbnails'];
         $thumbsHeight = (int)$this->params['thumbnails_height'];
         $position = '';
@@ -171,12 +193,16 @@ class Sirv_Gallery_MV
     }
 
 
-    public function render()
-    {
+    public function render(){
         if ($this->params['width'] != '' && intval($this->params['width']) !== 0) {
             $this->addCss('#' . $this->params['id'] . ' { width: ' . ((preg_match('/%/', $this->params['width'])) ? intval($this->params['width']) . '%' : intval($this->params['width']) . 'px') . ' }');
         } else {
             $this->addCss('#' . $this->params['id'] . ' { min-width: 200px; }');
+        }
+
+        $spinHeight = isset($this->params['spin_options']['spinHeight']) ? $this->params['spin_options']['spinHeight'] : '';
+        if( $spinHeight  !== '' && intval($spinHeight) !== 0){
+            $this->addCss('#' . $this->params['id'] . " { height: {$spinHeight}px; }");
         }
 
         $this->fixCaptionPosition($this->params['id']);
@@ -217,6 +243,5 @@ class Sirv_Gallery_MV
         return $html . $captions_html . '<style type="text/css">' . $this->getInlineCss() . '</style>';
     }
 }
-
 
 ?>

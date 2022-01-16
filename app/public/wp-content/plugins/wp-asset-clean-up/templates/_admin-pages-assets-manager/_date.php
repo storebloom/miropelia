@@ -21,6 +21,6 @@ $lockedForPro = str_replace('[wpacu_chosen_page_type]', $baseNamePageType, $data
 
     <strong>How to retrieve the loaded styles &amp; scripts?</strong>
 
-    <p style="margin-bottom: 0;"><span class="dashicons dashicons-yes"></span> If "Manage in the Front-end?" (<em>from "Settings" -&gt; "Plugin Usage Preferences"</em>) is enabled and you're logged in:</p>
+    <p style="margin-bottom: 0;"><span class="dashicons dashicons-yes" style="color: green;"></span> If "Manage in the Front-end?" is enabled and you're logged in:</p>
     <p style="margin-top: 0;">Go to the date archive page (any valid date you wish as the unload rules will apply to all date pages) and scroll to the bottom of the page where you will see the list.</p>
 </div>

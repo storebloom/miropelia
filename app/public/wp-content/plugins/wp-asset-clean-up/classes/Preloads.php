@@ -46,7 +46,7 @@ class Preloads
 	 */
 	public function __construct()
 	{
-	    if (is_admin()) {
+	    if (is_admin() || self::preventPreload()) {
 	        return;
         }
 
@@ -63,6 +63,10 @@ class Preloads
 	 */
 	public function init()
 	{
+	    if (self::preventPreload()) {
+	        return;
+        }
+
 		if (! is_admin()) { // Trigger only in the front-end
 		    add_filter('style_loader_tag', array($this, 'preloadCss'), 10, 2);
 		    add_filter('script_loader_tag', array($this, 'preloadJs'), 10, 2);
@@ -89,6 +93,10 @@ class Preloads
 	 */
 	public function doChanges($htmlSource)
     {
+        if (self::preventPreload()) {
+            return $htmlSource;
+        }
+
 	    $preloads = $this->getPreloads();
 
 	    if (isset($preloads['styles']) && ! empty($preloads['styles'])) {
@@ -104,6 +112,10 @@ class Preloads
 	 */
 	public function enablePreloads($for)
 	{
+	    if (self::preventPreload()) {
+	        return false;
+        }
+
 	    if ($for === 'css' && ! (isset($this->preloads['styles']) && ! empty($this->preloads['styles']))) {
 			return false;
 		}
@@ -208,7 +220,7 @@ class Preloads
 	 */
 	public function preloadCss($htmlTag, $handle)
 	{
-	    if (Plugin::preventAnyChanges()) {
+	    if (Plugin::preventAnyFrontendOptimization() || self::preventPreload()) {
 	        return $htmlTag;
         }
 
@@ -245,7 +257,7 @@ class Preloads
 	 */
 	public function preloadJs($htmlTag, $handle)
 	{
-		if (Plugin::preventAnyChanges()) {
+		if (Plugin::preventAnyFrontendOptimization() || self::preventPreload()) {
 			return $htmlTag;
 		}
 
@@ -282,6 +294,10 @@ class Preloads
 	 */
 	public static function appendPreloadsForStylesToHead($htmlSource, $preloadedHandles)
 	{
+	    if (self::preventPreload()) {
+	        return $htmlSource;
+        }
+
 		// Perhaps it's not applicable in the current page (no LINK tags are loaded that should be preloaded)
 		if (strpos($htmlSource, 'data-wpacu-to-be-preloaded-basic') === false) {
 			return $htmlSource;
@@ -358,6 +374,10 @@ class Preloads
 	 */
 	public static function linkPreloadCssFormat($linkHref)
 	{
+		if (self::preventPreload()) {
+			return $linkHref;
+		}
+
 		if (OptimizeCss::wpfcMinifyCssEnabledOnly()) {
 		    // [wpacu_lite]
 			return '<link rel=\'preload\' data-from-rel=\'stylesheet\' as=\'style\' href=\''.esc_attr($linkHref).'\' data-wpacu-preload-css-basic=\'1\' />' . "\n";
@@ -374,6 +394,10 @@ class Preloads
 	 */
 	public static function appendPreloadsForScriptsToHead($htmlSource)
 	{
+	    if (self::preventPreload()) {
+	        return $htmlSource;
+        }
+
 		$strContainsFormat = preg_quote('data-wpacu-to-be-preloaded-basic=\'1\'', '/');
 
 		preg_match_all('#<script[^>]*'.$strContainsFormat.'[^>]*' . 'src=([\'"])(.*)([\'"])' . '.*(>)#Usmi', $htmlSource, $matchesSourcesFromScriptTags, PREG_SET_ORDER);
@@ -511,4 +535,16 @@ class Preloads
 		</div>
 		<?php
 	}
+
+	/**
+	 * @return bool
+	 */
+	public static function preventPreload()
+    {
+        if (defined('WPACU_ALLOW_ONLY_UNLOAD_RULES') && WPACU_ALLOW_ONLY_UNLOAD_RULES) {
+            return true;
+        }
+
+        return false;
+    }
 }

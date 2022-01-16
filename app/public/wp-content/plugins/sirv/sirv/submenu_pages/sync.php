@@ -1,5 +1,5 @@
 <?php
-  $storageInfo = sirv_getStorageInfo();
+$storageInfo = sirv_getStorageInfo();
 ?>
 
 <h2>Synchronization</h2>
@@ -88,7 +88,7 @@
     <tr class="sync-errors-wrap">
       <th colspan="2">
         <div class="sync-errors">
-          <table class="optiontable form-table sirv-form-table">
+          <table style="width:830px;" class="optiontable form-table sirv-form-table">
             <thead>
               <tr>
                 <td style="width: 65%;"><b>Error message</b></td>
@@ -141,15 +141,12 @@
       </tr>
       <tr class="sirv-resync-block small-padding" style="<?php echo $is_show_resync_block; ?>">
         <td colspan="2">
-          <!-- <label class="sirv-ec-garbage-item <?php echo $g_dis_class; ?>">
-                <input type="radio" name="empty_cache" value="garbage" <?php echo $g_disabled . '' . $g_checked; ?>><b>Optimize</b> - clear cache of <abbr title="Images that no longer exist in your WordPress media library">discontinued</abbr> images (<span class="sirv-old-cache-count"><?php echo $cacheInfo['garbage_count'] ?></span> images).
-              </label><br> -->
           <label class="sirv-ec-failed-item <?php echo $f_dis_class; ?>">
-            <input type="radio" name="empty_cache" value="failed" <?php echo $f_disabled . ' ' . $f_checked; ?>><b>Failed</b> - clear cache of failed images.
+            <input type="radio" name="empty_cache" value="failed" <?php echo $f_disabled . ' ' . $f_checked; ?>>Failed images (<?php echo $cacheInfo['FAILED']['count_s']; ?>)
           </label>
           <br>
           <label class="sirv-ec-all-item">
-            <input type="radio" name="empty_cache" value="all" <?php echo $a_checked; ?>><b>All</b> - clear cache of all images.
+            <input type="radio" name="empty_cache" value="all" <?php echo $a_checked; ?>>All images (<?php echo ($cacheInfo['total_count'] - $cacheInfo['queued']) ?>)
           </label>
         </td>
       </tr>
@@ -166,5 +163,182 @@
               <input type="button" name="tst" class="button-primary tst" value="Test" />
             </td>
           </tr> -->
+  </table>
+</div>
+<?php
+$css_sync_data = json_decode(get_option('SIRV_CSS_BACKGROUND_IMAGES_SYNC_DATA'), true);
+$scan_type = isset($css_sync_data['scan_type']) ? $css_sync_data['scan_type'] : 'theme';
+$custom_path = isset($css_sync_data['custom_path']) ? $css_sync_data['custom_path'] : '';
+$isCustomPathShow = $scan_type == 'custom' ? ' style="display: table-row;"' : '';
+$images_info = sirv_show_css_images_info($css_sync_data);
+$skip_images_str = '';
+$hide_skip_data_block = 'style="display:none;"';
+if (!empty($images_info['skip_data'])) {
+  $skip_images_str = sirv_skipped_images_to_str($css_sync_data);
+  $hide_skip_data_block = '';
+}
+?>
+<div class="sirv-optiontable-holder sirv-sync-css-images-wrapper">
+  <table class="optiontable form-table">
+    <tbody>
+      <tr>
+        <td colspan="2">
+          <h3>Sync CSS images<sup><span style="color: orange;">beta</span></sup></h3>
+          <p class="sirv-options-desc">Use Sirv to deliver any CSS background images located on your domain.</p>
+        </td>
+      </tr>
+      <tr>
+        <th>
+          <label>CSS location</label>
+        </th>
+        <td>
+          <label class="">
+            <input class="sirv-custom-backcss-path-rb" type="radio" name="css_location" value="theme" <?php checked('theme', $scan_type, true) ?>><b>Active theme</b> - your CSS is normally part of your theme.
+          </label>
+          <br>
+          <label class="sirv-ec-all-item">
+            <input class="sirv-custom-backcss-path-rb" type="radio" name="css_location" value="custom" <?php checked('custom', $scan_type, true) ?>><b>Folder</b> - enter path to your CSS, if outside your theme.
+          </label>
+        </td>
+      </tr>
+      <tr class="sirv-custom-backcss-path-text-tr" <?php echo $isCustomPathShow; ?>>
+        <th></th>
+        <td colspan="2">
+          <div class="sirv-custom-backcss-path-text-wrap">
+            <div>
+              <input type="text" name="" id="sirv-custom-backcss-path-text" value="<?php echo $custom_path; ?>" placeholder="Enter path to CSS folder">
+              <span class="sirv-input-const-text"><?php echo wp_normalize_path(ABSPATH); ?></span>
+            </div>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <th></th>
+        <td colspan="2">
+          <input type="button" name="sync_css" class="button-primary sync-css" value="Scan CSS for images" />&nbsp;
+          <span class="sirv-traffic-loading-ico" style="display: none;"></span>
+          <span class="sirv-show-empty-view-result" style="display: none;"></span>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <table class="sirv-css-images-sync-data small-padding" style="width: 100%;">
+            <tbody>
+              <tr>
+                <th>
+                  <label>Scanned theme/folder</label>
+                </th>
+                <td>
+                  <span class="sirv-css-sync-data-theme"><?php echo $css_sync_data['theme']; ?></span>
+                </td>
+              </tr>
+              <tr>
+                <th>
+                  <label>Image domain</label>
+                </th>
+                <td>
+                  <span class="sirv-css-sync-data-domain"><?php echo $css_sync_data['img_domain']; ?></span>
+                </td>
+              </tr>
+              <tr>
+                <th>
+                  <label>Last scan</label>
+                </th>
+                <td>
+                  <span class="sirv-css-sync-data-date"><?php echo $css_sync_data['last_sync_str']; ?></span>
+                </td>
+              </tr>
+              <tr>
+                <th>
+                  <label>Images found</label>
+                </th>
+                <td>
+                  <!-- <span class="sirv-css-sync-data-img-count"><?php echo $css_sync_data['img_count']; ?></span> -->
+                  <span class="sirv-css-sync-data-img-count"><?php echo $images_info['sync_data']; ?></span>
+                  <div class="sirv-skipped-images-wrap" <?php echo $hide_skip_data_block; ?>>
+                    <span class="sirv-css-sync-data-img-count-skipped">
+                      <?php echo $images_info['skip_data']; ?>
+                    </span>
+                    <div class="sirv-tooltip">
+                      <i class="dashicons dashicons-editor-help sirv-tooltip-icon"></i>
+                      <span class="sirv-tooltip-text sirv-no-select-text">Images were either:<br>
+                        - On another domain<br>
+                        - Inaccessible<br>
+                        - Link couldn't be followed</span>
+                    </div>
+                    <a <?php echo $hide_skip_data_block; ?> class="sirv-hide-show-a sirv-show-skip-data-list" data-status="false" data-selector=".sirv-skip-images-list" data-show-msg="Show list" data-hide-msg="Hide list" data-icon-show="dashicons dashicons-arrow-right-alt2" data-icon-hide="dashicons dashicons-arrow-down-alt2">
+                      <span class="dashicons dashicons-arrow-right-alt2"></span>
+                      Show list
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="3">
+                  <textarea class="sirv-font-monospace sirv-skip-images-list" value="<?php echo $skip_images_str; ?>" rows="5" readonly><?php echo $skip_images_str; ?></textarea>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <p style="margin-bottom: 5px;">All images found will be served by Sirv. <a class="sirv-hide-show-a" data-status="false" data-selector=".sirv-css-sync-bg-img-txtarea-wrap" data-show-msg="Show CSS code" data-hide-msg="Hide CSS code" data-icon-show="dashicons dashicons-arrow-right-alt2" data-icon-hide="dashicons dashicons-arrow-down-alt2"><span class="dashicons dashicons-arrow-right-alt2"></span>Show CSS code</a></p>
+          <div class="sirv-css-sync-bg-img-txtarea-wrap">
+            <textarea class="sirv-font-monospace" name="SIRV_CSS_BACKGROUND_IMAGES" rows="10" value="<?php echo htmlspecialchars(get_option('SIRV_CSS_BACKGROUND_IMAGES')); ?>"><?php echo get_option('SIRV_CSS_BACKGROUND_IMAGES'); ?></textarea>
+            <input type="submit" name="submit" class="sirv-save-css-code button-primary sirv-save-settings" value="<?php _e('Save CSS code') ?>" disabled />
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div class="sirv-optiontable-holder sirv-sync-css-images-wrapper">
+  <table class="optiontable form-table">
+    <tbody>
+      <tr>
+        <td colspan="2">
+          <h3>Exclude images from Sirv</h3>
+          <p class="sirv-options-desc">If there are images you don't want Sirv to serve, list them below. They could be specific images or entire pages.</p>
+        </td>
+      </tr>
+      <tr>
+        <th>
+          <label>Exclude files/folders</label>
+        </th>
+        <td>
+          <span>Files that should not served by Sirv:</span>
+          <textarea class="sirv-font-monospace" name="SIRV_EXCLUDE_FILES" value="<?php echo get_option('SIRV_EXCLUDE_FILES'); ?>" rows="5" placeholder="e.g.
+/wp-content/plugins/a-plugin/*.png
+/wp-content/uploads/2021/04/an-image.jpg"><?php echo get_option('SIRV_EXCLUDE_FILES'); ?></textarea>
+          <span class="sirv-option-responsive-text">
+            You can enter full URLs and the domain will be stripped.<br>
+            Use * to specify all files at a certain path.
+          </span>
+        </td>
+      </tr>
+      <tr>
+        <th>
+          <label>Exclude pages</label>
+        </th>
+        <td>
+          <span>Web pages that should not have files served by Sirv:</span>
+          <textarea class="sirv-font-monospace" name="SIRV_EXCLUDE_PAGES" value="<?php echo get_option('SIRV_EXCLUDE_PAGES'); ?>" rows="5" placeholder="e.g.
+/example/particular-page.html
+/a-whole-section/*"><?php echo get_option('SIRV_EXCLUDE_PAGES'); ?></textarea>
+          <span class="sirv-option-responsive-text">
+            You can enter full URLs and the domain will be stripped.<br>
+            Use * to specify all pages at a certain path.
+          </span>
+        </td>
+      </tr>
+      <tr>
+        <th></th>
+        <td>
+          <input type="submit" name="submit" class="button-primary sirv-save-settings" value="<?php _e('Save settings') ?>" />
+        </td>
+      </tr>
+    </tbody>
   </table>
 </div>

@@ -80,7 +80,7 @@ class ObjectCache {
 	/**
 	 * @var string|void
 	 */
-	public $objNotInitErrorMsg;
+	public static $objNotInitErrorMsg;
 
 	/**
 	 * Sets up object properties; PHP 5 style constructor.
@@ -88,7 +88,7 @@ class ObjectCache {
 	 * @since 2.0.8
 	 */
 	public function __construct() {
-		$this->objNotInitErrorMsg = __('Asset CleanUp\'s object cache is not valid.', 'wp-asset-clean-up');
+		self::$objNotInitErrorMsg = __('Asset CleanUp\'s object cache is not valid (from method "[method]").', 'wp-asset-clean-up');
 
 		$this->multisite   = is_multisite();
 		$this->blog_prefix = $this->multisite ? get_current_blog_id() . ':' : '';
@@ -506,7 +506,6 @@ class ObjectCache {
 		 * @return bool True on success, false if cache key and group already exist.
 		 */
 		public static function wpacu_cache_add( $key, $data, $group = '', $expire = 0 ) {
-			if ( ! self::isValidObjectCache() ) { error_log($this->objNotInitErrorMsg); return; }
 			global $wpacu_object_cache;
 
 			return $wpacu_object_cache->add( $key, $data, $group, (int) $expire );
@@ -543,7 +542,7 @@ class ObjectCache {
 		 * @return int|false The item's new value on success, false on failure.
 		 */
 		public static function wpacu_cache_decr( $key, $offset = 1, $group = '' ) {
-			if ( ! self::isValidObjectCache() ) { error_log($this->objNotInitErrorMsg); return; }
+			if ( ! self::isValidObjectCache() ) { error_log(str_replace('[method]', __METHOD__, self::$objNotInitErrorMsg)); return; }
 			global $wpacu_object_cache;
 
 			return $wpacu_object_cache->decr( $key, $offset, $group );
@@ -562,7 +561,7 @@ class ObjectCache {
 		 * @return bool True on successful removal, false on failure.
 		 */
 		public static function wpacu_cache_delete( $key, $group = '' ) {
-			if ( ! self::isValidObjectCache() ) { error_log($this->objNotInitErrorMsg); return; }
+			if ( ! self::isValidObjectCache() ) { error_log(str_replace('[method]', __METHOD__, self::$objNotInitErrorMsg)); return; }
 			global $wpacu_object_cache;
 
 			return $wpacu_object_cache->delete( $key, $group );
@@ -579,7 +578,7 @@ class ObjectCache {
 		 * @return bool True on success, false on failure.
 		 */
 		public static function wpacu_cache_flush() {
-			if ( ! self::isValidObjectCache() ) { error_log($this->objNotInitErrorMsg); return; }
+			if ( ! self::isValidObjectCache() ) { error_log(str_replace('[method]', __METHOD__, self::$objNotInitErrorMsg)); return; }
 			global $wpacu_object_cache;
 
 			return $wpacu_object_cache->flush();
@@ -603,7 +602,7 @@ class ObjectCache {
 		 *                    contents on success
 		 */
 		public static function wpacu_cache_get( $key, $group = '', $force = false, &$found = null ) {
-			if ( ! self::isValidObjectCache() ) { error_log($this->objNotInitErrorMsg); return; }
+			if ( ! self::isValidObjectCache() ) { error_log(str_replace('[method]', __METHOD__, self::$objNotInitErrorMsg)); return; }
 			global $wpacu_object_cache;
 
 			return $wpacu_object_cache->get( $key, $group, $force, $found );
@@ -623,7 +622,7 @@ class ObjectCache {
 		 * @return int|false The item's new value on success, false on failure.
 		 */
 		public static function wpacu_cache_incr( $key, $offset = 1, $group = '' ) {
-			if ( ! self::isValidObjectCache() ) { error_log($this->objNotInitErrorMsg); return; }
+			if ( ! self::isValidObjectCache() ) { error_log(str_replace('[method]', __METHOD__, self::$objNotInitErrorMsg)); return; }
 			global $wpacu_object_cache;
 
 			return $wpacu_object_cache->incr( $key, $offset, $group );
@@ -657,7 +656,7 @@ class ObjectCache {
 		 * @return bool False if original value does not exist, true if contents were replaced
 		 */
 		public static function wpacu_cache_replace( $key, $data, $group = '', $expire = 0 ) {
-			if ( ! self::isValidObjectCache() ) { error_log($this->objNotInitErrorMsg); return; }
+			if ( ! self::isValidObjectCache() ) { error_log(str_replace('[method]', __METHOD__, self::$objNotInitErrorMsg)); return; }
 			global $wpacu_object_cache;
 
 			return $wpacu_object_cache->replace( $key, $data, $group, (int) $expire );
@@ -682,7 +681,6 @@ class ObjectCache {
 		 * @return bool True on success, false on failure.
 		 */
 		public static function wpacu_cache_set( $key, $data, $group = '', $expire = 0 ) {
-			if ( ! self::isValidObjectCache() ) { error_log($this->objNotInitErrorMsg); return; }
 			global $wpacu_object_cache;
 
 			return $wpacu_object_cache->set( $key, $data, $group, (int) $expire );
@@ -701,7 +699,6 @@ class ObjectCache {
 		 * @param int $blog_id Site ID.
 		 */
 		public static function wpacu_cache_switch_to_blog( $blog_id ) {
-			if ( ! self::isValidObjectCache() ) { error_log($this->objNotInitErrorMsg); return; }
 			global $wpacu_object_cache;
 
 			$wpacu_object_cache->switch_to_blog( $blog_id );
@@ -718,7 +715,6 @@ class ObjectCache {
 		 * @param string|array $groups A group or an array of groups to add.
 		 */
 		public static function wpacu_cache_add_global_groups( $groups ) {
-			if ( ! self::isValidObjectCache() ) { error_log($this->objNotInitErrorMsg); return; }
 			global $wpacu_object_cache;
 
 			$wpacu_object_cache->add_global_groups( $groups );
@@ -757,7 +753,7 @@ class ObjectCache {
 		public static function wpacu_cache_reset() {
 			_deprecated_function( __FUNCTION__, '3.5.0', 'ObjectCache::reset()' );
 
-			if ( ! self::isValidObjectCache() ) { error_log($this->objNotInitErrorMsg); return; }
+			if ( ! self::isValidObjectCache() ) { error_log(str_replace('[method]', __METHOD__, self::$objNotInitErrorMsg)); return; }
 			global $wpacu_object_cache;
 
 			$wpacu_object_cache->reset();

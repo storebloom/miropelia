@@ -39,10 +39,13 @@ foreach ($allAssets as $obj) {
 	}
 
 	$isLoadExceptionPerPage = isset( $data['load_exceptions']['styles'] ) && in_array( $row['obj']->handle, $data['load_exceptions']['styles'] );
+	$isLoadExceptionForCurrentPostType = ( isset( $data['load_exceptions_post_type'] ['styles'] [$row['obj']->handle] )
+	                                       && $data['load_exceptions_post_type'] ['styles'] [$row['obj']->handle] );
 
-	$row['is_load_exception_per_page'] = $isLoadExceptionPerPage;
+	$row['is_load_exception_per_page']  = $isLoadExceptionPerPage;
+	$row['is_load_exception_post_type'] = $isLoadExceptionForCurrentPostType;
 
-	$isLoadException = $isLoadExceptionPerPage;
+	$isLoadException = $isLoadExceptionPerPage || $isLoadExceptionForCurrentPostType;
 
 	if ( ! $isLoadException && $row['is_group_unloaded'] ) {
 		$row['class'] .= ' wpacu_not_load';

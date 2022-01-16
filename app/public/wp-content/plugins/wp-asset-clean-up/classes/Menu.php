@@ -49,6 +49,9 @@ class Menu
         	exit();
         }
 
+	    add_filter( 'post_row_actions', array($this, 'editPostRowActions'), 10, 2 );
+	    add_filter( 'page_row_actions', array($this, 'editPostRowActions'), 10, 2 );
+
 	    add_action('admin_page_access_denied', array($this, 'pluginPagesAccessDenied'));
     }
 
@@ -86,7 +89,7 @@ class Menu
 		    __('CSS/JS Manager', 'wp-asset-clean-up'),
 		    self::getAccessCapability(),
 		    WPACU_PLUGIN_ID . '_assets_manager',
-		    array(new AssetsPagesManager, 'page')
+		    array(new AssetsPagesManager, 'renderPage')
 	    );
 
 	    add_submenu_page(
@@ -173,13 +176,17 @@ class Menu
 	 */
 	public static function userCanManageAssets()
 	{
+		if (is_super_admin()) {
+			return true; // For security reasons, super admins will always be able to access the plugin's settings
+		}
+
 		// Has self::$_capability been changed? Just user current_user_can()
 		if (self::getAccessCapability() !== self::$_capability) {
 			return current_user_can(self::getAccessCapability());
 		}
 
-		// self::$_capability default value; also check if the user can activate plugins
-		return current_user_can(self::getAccessCapability()) && current_user_can('activate_plugins');
+		// self::$_capability default value: "administrator"
+		return current_user_can(self::getAccessCapability());
 	}
 
 	/**
@@ -190,6 +197,59 @@ class Menu
 	public static function getAccessCapability()
 	{
 		return apply_filters('wpacu_access_role', self::$_capability);
+	}
+
+	/**
+	 * @param $actions
+	 * @param $post
+	 *
+	 * @return mixed
+	 */
+	public function editPostRowActions($actions, $post)
+	{
+		// Check for your post type.
+		if ( $post->post_type === 'post' ) {
+			$wpacuFor = 'posts';
+		} elseif ( $post->post_type === 'page' ) {
+			$wpacuFor = 'pages';
+		} elseif ( $post->post_type === 'attachment' ) {
+			$wpacuFor = 'media-attachment';
+		} else {
+			$wpacuFor = 'custom-post-types';
+		}
+
+		$postTypeObject = get_post_type_object($post->post_type);
+
+		if ( ! (isset($postTypeObject->public) && $postTypeObject->public == 1) ) {
+			return $actions;
+		}
+
+		// Build your links URL.
+		$url = admin_url( 'admin.php?page=wpassetcleanup_assets_manager' );
+
+		// Maybe put in some extra arguments based on the post status.
+		$edit_link = add_query_arg(
+			array(
+				'wpacu_for'     => $wpacuFor,
+				'wpacu_post_id' => $post->ID
+			), $url
+		);
+
+		// Only show it to the user that has "administrator" access and it's in the following list (if a certain list of admins is provided)
+		// "Settings" -> "Plugin Usage Preferences" -> "Allow managing assets to:"
+		if (self::userCanManageAssets() && Main::currentUserCanViewAssetsList()) {
+			/*
+			 * You can reset the default $actions with your own array, or simply merge them
+			 * here I want to rewrite my Edit link, remove the Quick-link, and introduce a
+			 * new link 'Copy'
+			 */
+			$actions['wpacu_manage_assets'] = sprintf( '<a href="%1$s">%2$s</a>',
+				esc_url( $edit_link ),
+				esc_html( __( 'Manage CSS &amp; JS', 'wp-asset-clean-up' ) )
+			);
+		}
+
+		return $actions;
 	}
 
 	/**

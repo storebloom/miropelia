@@ -97,12 +97,14 @@ class Settings
 
 		// Minify each loaded CSS (remaining ones after unloading the useless ones)
 		'minify_loaded_css',
-		'minify_loaded_css_inline',
+		'minify_loaded_css_for',
+		'minify_loaded_css_inline', // deprecated ("minify_loaded_css_for" is used instead)
 		'minify_loaded_css_exceptions',
 
 		// Minify each loaded JS (remaining ones after unloading the useless ones)
 		'minify_loaded_js',
-		'minify_loaded_js_inline',
+		'minify_loaded_js_for',
+		'minify_loaded_js_inline', // deprecated ("minify_loaded_js_for" is used instead)
 		'minify_loaded_js_exceptions',
 
         'cdn_rewrite_enable',
@@ -226,8 +228,11 @@ class Settings
 	        // "contracted" since 1.1.0.8 (Pro)
 	        'assets_list_inline_code_status' => 'contracted', // takes less space overall
 
-	        'minify_loaded_css_exceptions' => '(.*?)\.min.css'. "\n". '/plugins/wd-instagram-feed/(.*?).css',
-	        'minify_loaded_js_exceptions'  => '(.*?)\.min.js' . "\n". '/plugins/wd-instagram-feed/(.*?).js',
+	        'minify_loaded_css_for' => 'href',
+            'minify_loaded_js_for'  => 'src',
+
+	        'minify_loaded_css_exceptions' => '(.*?)\.min.css'. "\n". '/wd-instagram-feed/(.*?).css',
+	        'minify_loaded_js_exceptions'  => '(.*?)\.min.js' . "\n". '/wd-instagram-feed/(.*?).js',
 
 	        'inline_css_files_below_size' => '1', // Enabled by default
 	        'inline_css_files_below_size_input' => '3', // Size in KB
@@ -243,8 +248,8 @@ class Settings
             'combine_loaded_css_for' => 'guests',
 	        'combine_loaded_js_for'  => 'guests',
 
-	        'combine_loaded_css_exceptions' => '/plugins/wd-instagram-feed/(.*?).css',
-	        'combine_loaded_js_exceptions'  => '/plugins/wd-instagram-feed/(.*?).js',
+	        'combine_loaded_css_exceptions' => '/wd-instagram-feed/(.*?).css',
+	        'combine_loaded_js_exceptions'  => '/wd-instagram-feed/(.*?).js',
 
 	        // [wpacu_pro]
             'defer_css_loaded_body' => 'moved',
@@ -519,6 +524,28 @@ class Settings
 		    $settings['test_mode'] = false;
         }
 
+		// Oxygen Builder is triggered and some users might want to trigger unload rules there to make the editor faster, especially plugin unload rules
+        // We will prevent minify/combine and other functions that will requires caching any files to avoid any errors
+		if (defined('WPACU_ALLOW_ONLY_UNLOAD_RULES') && WPACU_ALLOW_ONLY_UNLOAD_RULES) {
+		    $settings['minify_loaded_css']
+                = $settings['minify_loaded_js']
+                = $settings['combine_loaded_css']
+                = $settings['combine_loaded_js']
+                = $settings['inline_css_files']
+                = $settings['inline_js_files']
+                = $settings['google_fonts_combine']
+                = $settings['google_fonts_remove']
+                = false;
+		}
+
+		if ($settings['minify_loaded_css_inline']) {
+			$settings['minify_loaded_css_for'] = 'all';
+		}
+
+		if ($settings['minify_loaded_js_inline']) {
+		    $settings['minify_loaded_js_for'] = 'all';
+		}
+
 		// /?wpacu_skip_inline_css
         if (array_key_exists('wpacu_skip_inline_css_files', $_GET)) {
 	        $settings['inline_css_files'] = false;
@@ -656,11 +683,12 @@ class Settings
 
 	/**
 	 * @param $settings
-	 * @param false $doSettingUpdate (e.g. if called from a WP Cron)
-	 *
+	 * @param false $doSettingUpdate (e.g. 'true' if called from a WP Cron)
+	 * @param false $isDebug (e.g. 'true' if requested via a query string such as 'wpacu_toggle_inline_code_to_combine_js' for debugging purposes)
+     *
 	 * @return mixed
 	 */
-	public static function toggleAppendInlineAssocCodeHiddenSettings($settings, $doSettingUpdate = false)
+	public static function toggleAppendInlineAssocCodeHiddenSettings($settings, $doSettingUpdate = false, $isDebug = false)
     {
 	    // Are there too many files in WP_CONTENT_DIR . WpAssetCleanUp\OptimiseAssets\OptimizeCommon::getRelPathPluginCacheDir() . '(css|js)/' directory?
 	    // Deactivate the appending of the inline CSS/JS code (extra, before or after)
@@ -678,6 +706,9 @@ class Settings
 	        $isCombineAssetsEnabled = isset($settings[$combineSettingsKey]) && $settings[$combineSettingsKey];
 
 		    if ( ! $isCombineAssetsEnabled ) {
+		        if ($isDebug) {
+			        echo 'Combine '.strtoupper($assetType).' is not enabled.<br />';
+		        }
 			    continue; // Only do the checking if combine CSS/JS is enabled
 		    }
 
@@ -689,10 +720,20 @@ class Settings
 			    '.' . $assetType
 		    );
 
-		    if ( isset( $wpacuPathToCombineDirSize['total_size_mb'] ) && $wpacuPathToCombineDirSize['total_size_mb'] > $mbLimit ) {
+		    $preventAddingInlineCodeToCombinedAssets = isset( $wpacuPathToCombineDirSize['total_size_mb'] ) && $wpacuPathToCombineDirSize['total_size_mb'] > $mbLimit;
+
+		    if ( $preventAddingInlineCodeToCombinedAssets ) {
 			    $settings['_combine_loaded_'.$assetType.'_append_handle_extra'] = '';
 		    } else {
 			    $settings['_combine_loaded_'.$assetType.'_append_handle_extra'] = 1;
+		    }
+
+		    if ($isDebug) {
+		        if ($preventAddingInlineCodeToCombinedAssets) {
+		            echo 'Adding inline code to combined '.strtoupper($assetType).' has been deactivated as the total size of combined assets is '.$wpacuPathToCombineDirSize['total_size_mb'].' MB.<br />';
+		        } else {
+			        echo 'Adding inline code to combined '.strtoupper($assetType).' has been (re)activated as the total size of combined assets is '.$wpacuPathToCombineDirSize['total_size_mb'].' MB.<br />';
+		        }
 		    }
 
 		    if ($doSettingUpdate) {
