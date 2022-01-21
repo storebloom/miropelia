@@ -108,6 +108,8 @@ class Sirv_Gallery_MV
 
     public function getViewerOptions(){
         $videoAutoplay = isset($this->params['zgallery_data_options']['videoAutoplay']) ? $this->params['zgallery_data_options']['videoAutoplay'] : 'false';
+        $videoLoop = isset($this->params['zgallery_data_options']['videoLoop']) ? $this->params['zgallery_data_options']['videoLoop'] : 'false';
+        $videoControls = isset($this->params['zgallery_data_options']['videoControls']) ? $this->params['zgallery_data_options']['videoControls'] : 'false';
 
         $options = array(
             'thumbnails.position' => $this->params['zgallery_data_options']['thumbnails'],
@@ -115,7 +117,9 @@ class Sirv_Gallery_MV
             'thumbnails.size' => (int) $this->params['thumbnails_height'],
             'fullscreen.always' => $this->params['zgallery_data_options']['fullscreen-only'],
             'contextmenu.enable' => $this->params['zgallery_data_options']['contextmenu'],
-            'video.autoplay' => $videoAutoplay
+            'video.autoplay' => $videoAutoplay,
+            'video.loop' => $videoLoop,
+            'video.controls.enable' => $videoControls
         );
 
         return $options;
@@ -126,7 +130,7 @@ class Sirv_Gallery_MV
         //Spin method
         //Autospin
         //Rotation duration (ms)
-        $autospinEnable = $this->params['spin_options']['autospin'] === 'infinite' ? 'true' : 'false';
+        $autospinEnable = $this->params['spin_options']['autospin'] === 'on' ? 'true' : 'false';
         $options = array(
             'autospin.duration' => $this->params['spin_options']['autospinSpeed'],
             'autospin.enable' => $autospinEnable,

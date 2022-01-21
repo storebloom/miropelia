@@ -18,10 +18,19 @@ footer {
       margin-top: 0;
       width: 300px;
 
+      @media only screen and (max-width: $small) {
+        flex-direction: column;
+        width: 80px;
+      }
+
       li {
         a {
           color: #000;
           text-decoration: none;
+        }
+
+        @media only screen and (max-width: $small) {
+          margin-bottom: .5rem;
         }
       }
     }

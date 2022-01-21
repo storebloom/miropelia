@@ -41,7 +41,9 @@
                 }
                 ?>
 			</div>
+            <button class="menu-toggle">
+                <span></span><span></span><span></span>
+            </button>
 		</div>
-
 		<?php echo wp_nav_menu(['menu' => 'main']); ?>
 	</header>

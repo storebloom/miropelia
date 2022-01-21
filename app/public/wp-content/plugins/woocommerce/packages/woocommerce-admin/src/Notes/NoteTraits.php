@@ -29,10 +29,11 @@ trait NoteTraits {
 	 * Test if WooCommerce Admin has been active within a pre-defined range.
 	 *
 	 * @param string $range range available in WC_ADMIN_STORE_AGE_RANGES.
+	 * @param int    $custom_start custom start in range.
 	 * @return bool Whether or not WooCommerce admin has been active within the range.
 	 */
-	private static function is_wc_admin_active_in_date_range( $range ) {
-		return WCAdminHelper::is_wc_admin_active_in_date_range( $range );
+	private static function is_wc_admin_active_in_date_range( $range, $custom_start = null ) {
+		return WCAdminHelper::is_wc_admin_active_in_date_range( $range, $custom_start );
 	}
 
 	/**
@@ -95,6 +96,31 @@ trait NoteTraits {
 	 */
 	public static function add_note() {
 		self::possibly_add_note();
+	}
+
+	/**
+	 * Should this note exist? (Default implementation is generous. Override as needed.)
+	 */
+	public static function is_applicable() {
+		return true;
+	}
+
+	/**
+	 * Delete this note if it is not applicable, unless has been soft-deleted or actioned already.
+	 */
+	public static function delete_if_not_applicable() {
+		if ( ! self::is_applicable() ) {
+			$data_store = Notes::load_data_store();
+			$note_ids   = $data_store->get_notes_with_name( self::NOTE_NAME );
+
+			if ( ! empty( $note_ids ) ) {
+				$note = Notes::get_note( $note_ids[0] );
+
+				if ( ! $note->get_is_deleted() && ( Note::E_WC_ADMIN_NOTE_ACTIONED !== $note->get_status() ) ) {
+					return self::possibly_delete_note();
+				}
+			}
+		}
 	}
 
 	/**

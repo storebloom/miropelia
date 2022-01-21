@@ -81,7 +81,7 @@ li.sirv-block-gallery-item{
     overflow: auto;
     padding: 40px 10px 5px;
     text-align: center;
-    width: 100%;
+    /* width: 100%; */
 }
 
 .sirv-g-icon {

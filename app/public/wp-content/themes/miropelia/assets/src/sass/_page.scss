@@ -37,6 +37,10 @@
 
     .home & {
       margin-top: 20px;
+
+      @media only screen and (max-width: $small) {
+        margin-top: 0;
+      }
     }
   }
 }

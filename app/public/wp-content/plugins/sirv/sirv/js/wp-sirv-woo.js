@@ -2,6 +2,7 @@ jQuery(function ($) {
 
   let ids = {};
   let $instance = null;
+  let galleryId;
 
 
   function filterItems(id=''){
@@ -113,7 +114,14 @@ jQuery(function ($) {
 
 
   function getSlideCaption(id){
-    let $caption = $($('#sirv-woo-gallery_' + id + ' .smv-slide.smv-shown .smv-content div')[0]);
+    let $caption;
+
+    if(!!galleryId){
+      $caption = $($('#'+ galleryId +' .smv-slide.smv-shown .smv-content div')[0]);
+    }else{
+      $caption = $($('#sirv-woo-gallery_' + id + ' .smv-slide.smv-shown .smv-content div')[0]);
+    }
+
     return $caption.attr('data-slide-caption') || '';
   }
 
@@ -146,7 +154,7 @@ jQuery(function ($) {
     Sirv.on('viewer:ready', function (viewer) {
       $('.sirv-skeleton').removeClass('sirv-skeleton');
       $instance = Sirv.viewer.getInstance('#sirv-woo-gallery_' + sirv_woo_product.mainID);
-      window.textsmvinst = $instance;
+      galleryId = $('#sirv-woo-gallery_' + sirv_woo_product.mainID + ' div.smv').attr('id');
       initializeCaption();
     });
 

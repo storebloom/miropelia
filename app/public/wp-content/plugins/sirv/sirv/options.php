@@ -6,23 +6,50 @@ require_once(dirname(__FILE__) . '/classes/options/options.helper.class.php');
 
 $error = '';
 
-$base_options = ['SIRV_FOLDER', 'SIRV_CDN_URL', 'SIRV_ENABLE_CDN', 'SIRV_SHORTCODES_PROFILES', 'SIRV_CDN_PROFILES', 'SIRV_USE_SIRV_RESPONSIVE', 'SIRV_CROP_SIZES', 'SIRV_JS', 'SIRV_JS_FILE', 'SIRV_CUSTOM_CSS', 'SIRV_RESPONSIVE_PLACEHOLDER, SIRV_PARSE_STATIC_IMAGES', 'SIRV_CSS_BACKGROUND_IMAGES', 'SIRV_EXCLUDE_FILES', 'SIRV_EXCLUDE_PAGES'];
+$base_options = ['SIRV_FOLDER', 'SIRV_CDN_URL', 'SIRV_ENABLE_CDN', 'SIRV_SHORTCODES_PROFILES', 'SIRV_CDN_PROFILES', 'SIRV_USE_SIRV_RESPONSIVE', 'SIRV_CROP_SIZES', 'SIRV_JS', 'SIRV_CUSTOM_CSS', 'SIRV_RESPONSIVE_PLACEHOLDER, SIRV_PARSE_STATIC_IMAGES', 'SIRV_CSS_BACKGROUND_IMAGES', 'SIRV_EXCLUDE_FILES', 'SIRV_EXCLUDE_PAGES', 'SIRV_DELETE_FILE_ON_SIRV'];
 OptionsHelper::prepareOptionsData();
 $options_names = array_merge($base_options, OptionsHelper::get_options_names_list());
 
-function isWoocommerce()
-{
+function isWoocommerce(){
   return is_plugin_active('woocommerce/woocommerce.php');
 }
 
 
-function sirv_getStatus()
-{
+function sirv_getStatus(){
   $status = get_option('SIRV_ENABLE_CDN');
 
   $class = $status == '1' ? 'sirv-status--enabled' : 'sirv-status--disabled';
 
   return $class;
+}
+
+
+function sirv_get_cache_count($isGarbage, $cacheInfo){
+  $q = (int) $cacheInfo['total_count'];
+  if ($isGarbage) {
+    if ((int) $cacheInfo['q'] - (int) $cacheInfo['garbage_count'] > (int) $cacheInfo['total_count']) {
+      $q = (int) $cacheInfo['total_count'];
+    } else {
+      $q = (int) $cacheInfo['q'] - (int) $cacheInfo['garbage_count'];
+    }
+  }
+
+  return $q;
+}
+
+
+function sirv_get_sync_button_text($isSynced, $cacheInfo){
+  $sync_button_text = 'Sync images';
+
+  if ($isSynced) {
+    if ((int) $cacheInfo['FAILED']['count'] == 0 && (int) $cacheInfo['PROCESSING']['count'] == 0) {
+      $sync_button_text = '100% synced';
+    } else {
+      $sync_button_text = 'Synced';
+    }
+  }
+
+  return $sync_button_text;
 }
 
 
@@ -38,44 +65,57 @@ $sirvStatus = $sirvAPIClient->preOperationCheck();
 
 if ($sirvStatus) {
   $isWoocommerce = isWoocommerce();
-  $isMultiCDN = false;
-  $customCDNs = array();
-  $is_direct = get_option('SIRV_NETWORK_TYPE') == "2" ? true : false;
+  /* $isMultiCDN = false; */
+  $domains = array();
+  /* $is_direct = get_option('SIRV_NETWORK_TYPE') == "2" ? true : false; */
   $sirvCDNurl = get_option('SIRV_CDN_URL');
 
   $accountInfo = $sirvAPIClient->getAccountInfo();
 
   if (!empty($accountInfo)) {
 
-    $isMultiCDN = count((array) $accountInfo->aliases) > 1 ? true : false;
-    $is_direct = (isset($accountInfo->aliases->{$accountInfo->alias}->cdn) && $accountInfo->aliases->{$accountInfo->alias}->cdn) ? false : true;
+    /* $isMultiCDN = count((array) $accountInfo->aliases) > 1 ? true : false;
+    $is_direct = (isset($accountInfo->aliases->{$accountInfo->alias}->cdn) && $accountInfo->aliases->{$accountInfo->alias}->cdn) ? false : true; */
 
-    if ($isMultiCDN) {
-      foreach ($accountInfo->aliases as $alias) {
-        $customCDNs[] = $alias->customDomain;
+    if (!empty($accountInfo->cdnTempURL)) {
+      $domains[$accountInfo->cdnTempURL] = $accountInfo->cdnTempURL;
+    }
+
+    if (!empty($accountInfo->alias)) {
+      $domains[$accountInfo->alias . '.sirv.com'] = $accountInfo->alias . '.sirv.com';
+    }
+
+    if (!empty($accountInfo->aliases)) {
+      foreach ($accountInfo->aliases as $a => $alias) {
+        $domain = !empty($alias->customDomain) ? $alias->customDomain : $a . '.sirv.com';
+        $domains[$domain] = $domain;
       }
     }
+
+    /* if ($isMultiCDN) {
+        foreach ($accountInfo->aliases as $a =>$alias) {
+        $customCDN = !empty($alias->customDomain) ? $alias->customDomain : $a . '.sirv.com';
+        $domains[$customCDN] = $customCDN;
+      }
+    } */
   }
 
   $cacheInfo = sirv_getCacheInfo();
   $profiles = sirv_getProfilesList();
+  $storageInfo = sirv_getStorageInfo();
 
 
   $isOverCache = (int) $cacheInfo['q'] > (int) $cacheInfo['total_count'] ? true : false;
   $isFailed = (int) $cacheInfo['FAILED']['count'] > 0 ? true : false;
   $isGarbage = (int) $cacheInfo['garbage_count'] > 0 ? true : false;
 
-  if ($isOverCache) {
-    $cacheInfo['q'] = $isGarbage
-      ? (int) $cacheInfo['q'] - (int) $cacheInfo['garbage_count'] > (int) $cacheInfo['total_count']
-      ? (int) $cacheInfo['total_count']
-      : (int) $cacheInfo['q'] - (int) $cacheInfo['garbage_count']
-      : (int) $cacheInfo['total_count'];
-  }
+  if ($isOverCache) $cacheInfo['q'] = sirv_get_cache_count($isGarbage, $cacheInfo);
 
-  $isSynced = ((int) $cacheInfo['q'] + (int) $cacheInfo['FAILED']['count']) == (int) $cacheInfo['total_count'];
+
+  $isSynced = ((int) $cacheInfo['q'] + (int) $cacheInfo['FAILED']['count'] + (int) $cacheInfo['PROCESSING']['count']) == (int) $cacheInfo['total_count'];
   $is_sync_button_disabled = $isSynced ? 'disabled' : '';
-  $sync_button_text = $isSynced ? (int) $cacheInfo['FAILED']['count'] == 0 ? '100% synced' : 'Synced' : 'Sync images';
+  //$sync_button_text = $isSynced ? ( (int) $cacheInfo['FAILED']['count'] == 0 && (int) $cacheInfo['PROCESSING']['count'] == 0 ) ? '100% synced' : 'Synced' : 'Sync images';
+  $sync_button_text = sirv_get_sync_button_text($isSynced, $cacheInfo);
   $is_show_resync_block = (int) $cacheInfo['q'] > 0 || $cacheInfo['FAILED']['count'] > 0 ? '' : 'display: none';
   $is_show_failed_block = (int) $cacheInfo['FAILED']['count'] > 0 ? '' : 'display: none';
 } else {
@@ -92,7 +132,6 @@ if ($sirvStatus) {
     background-repeat: no-repeat;
     background-size: 68px 68px;
     min-height: 60px;
-    margin: 0 !important;
   }
 
   a[href*="page=sirv/sirv/options.php"] img {

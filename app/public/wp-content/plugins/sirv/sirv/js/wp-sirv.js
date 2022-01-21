@@ -927,7 +927,7 @@ jQuery(function($){
                 { id: 'copylink', class: 'sirv-menu-item-copy-link', icon: "fa fa-clipboard", group: 1, type: ['image', 'video', 'spin'], text: "Copy link"},
                 { id: 'upload', class: 'sirv-menu-item-upload-files', icon: "fa fa-upload", group: 2, type: ["global"], text: "Upload files"},
                 { id: 'duplicate', class: 'sirv-menu-item-duplicate', icon: "fa fa-copy", group: 2, type: ['image', 'video', 'spin'], text: "Duplicate"},
-                { id: 'rename', class: 'sirv-menu-item-rename', icon: "fa fa-pencil", group: 2, type: ['image', 'video', 'spin'], text: "Rename"},
+                { id: 'rename', class: 'sirv-menu-item-rename', icon: "fa fa-pencil", group: 2, type: ['image', 'video', 'spin', 'dir'], text: "Rename"},
                 { id: 'delete', class: 'sirv-menu-item-delete', icon: "fa fa-trash-o", group: 2, type: ['image', 'video', 'spin', 'dir'], text: "Delete"},
                 { id: 'download', class: 'sirv-menu-item-download', icon: "fa fa-download", group: 3, type: ['image', 'video', 'spin'], text: "Download"},
             ];
@@ -1127,7 +1127,7 @@ jQuery(function($){
         }
 
 
-        function menuRenameFile(e){
+        function menuRenameItem(e){
             e.preventDefault();
             e.stopPropagation();
 
@@ -1137,10 +1137,11 @@ jQuery(function($){
 
             if (!!newFileName) {
                 let filePath = $menu.attr('data-delete-link');
+                let itemType = $menu.attr('data-type');
                 filePath = encodeURI(basepath(filePath)) + basename(filePath);
                 let basePath = basepath(filePath);
-                let ext = getExt(filePath);
-                let newFilePath = basePath + newFileName + '.' + ext;
+                let ext = itemType == 'dir' ? '' : '.' + getExt(filePath);
+                let newFilePath = basePath + newFileName + ext;
 
                 renameFile(filePath, newFilePath);
             }
@@ -1248,7 +1249,7 @@ jQuery(function($){
             $('.sirv-menu-item-new-folder').on('click', menuNewFolder);
             $('.sirv-menu-item-upload-files').on('click', menuUploadFiles);
             $('.sirv-menu-item-duplicate').on('click', menuDuplicateFile);
-            $('.sirv-menu-item-rename').on('click', menuRenameFile);
+            $('.sirv-menu-item-rename').on('click', menuRenameItem);
         }
 
 
@@ -1260,7 +1261,7 @@ jQuery(function($){
             $('.sirv-menu-item-new-folder').off('click', menuNewFolder);
             $('.sirv-menu-item-upload-files').off('click', menuUploadFiles);
             $('.sirv-menu-item-duplicate').off('click', menuDuplicateFile);
-            $('.sirv-menu-item-rename').off('click', menuRenameFile);
+            $('.sirv-menu-item-rename').off('click', menuRenameItem);
         }
 
 
@@ -1291,6 +1292,7 @@ jQuery(function($){
             $('.sirv-woo-add-images').on('click', addWooSirvImages);
             $('.nav-tab-wrapper > a').on('click', function(e){changeTab(e, $(this));});
             $('input[id=gallery-width]').on('input', onChangeWidthInputRI);
+            $("input[name=sirv-image-link-type]").on("click", manageOptionLink);
 
             bindDrugEvents(true);
             //bindActionMenuEvents();
@@ -1324,6 +1326,7 @@ jQuery(function($){
             $('.set-featured-image').off('click');
             $('.sirv-woo-add-images').off('click', addWooSirvImages);
             $('input[id=gallery-width]').off('input');
+            $("input[name=sirv-image-link-type]").off("click", manageOptionLink);
 
             bindDrugEvents(false);
             //unBindActionMenuEvents();
@@ -1409,19 +1412,24 @@ jQuery(function($){
             let newFolderName = window.prompt("Enter folder name:", "");
 
             if (!!newFolderName) {
-
-                let data = {
-                            action:  'sirv_add_folder',
-                            current_dir:  $('#filesToUpload').attr('data-current-folder'),
-                            new_dir:  encodeURI(newFolderName)
-                }
                 let ajaxData = {
                                 url: sirv_ajax_object.ajaxurl,
                                 type: 'POST',
-                                data: data
+                                dataType: "json",
+                                data: {
+                                    action:  'sirv_add_folder',
+                                    current_dir:  $('#filesToUpload').attr('data-current-folder'),
+                                    new_dir:  newFolderName
+                                },
                 }
                 sendAjaxRequest(ajaxData, processingOverlay='.loading-ajax', showingArea=false, isdebug=false, function(response){
-                    getContentFromSirv(window.sirvGetPath);
+                    if(!!response){
+                        if(!!response.isNewDirCreated){
+                            getContentFromSirv(window.sirvGetPath);
+                        }else{
+                            console.log('Folder did not create.');
+                        }
+                    }
                 });
             }
         }
@@ -2082,13 +2090,16 @@ jQuery(function($){
                 }else{
 
                     let isLazyLoading = $('#responsive-lazy-loading').is(":checked");
+                    let linkType = $('input[name=sirv-image-link-type]:checked').val();
 
                     let imagesObj = {
                         srcs: $('.gallery-img'),
                         align: $('#gallery-align').val() == '' ? '' : 'align' + $('#gallery-align').val().replace('sirv-', ''),
                         profile: $('#gallery-profile').val() == false ? '' : $('#gallery-profile').val(),
                         width: isNaN(Number($('#gallery-width').val())) ? '' : Math.abs(Number($('#gallery-width').val())),
-                        isLink: $('#gallery-link-img').is(":checked"),
+                        linkType: linkType,
+                        customLink: linkType == 'url' ? $('#sirv-image-custom-link').val() :  '',
+                        isBlankWindow: (linkType == 'large' || linkType == 'url') ? $('#sirv-image-link-blank-window').is(':checked') : false,
                         isLazyLoading: isLazyLoading,
                         //networkType: $('input[name=sirv-cdn]:checked').val(),
                         isAltCaption: $('#responsive-static-caption-as-alt').is(":checked"),
@@ -2103,9 +2114,9 @@ jQuery(function($){
                 }
             if(window.isSirvGutenberg && window.isSirvGutenberg == true){
                 window.sirvHTML = html;
-                generateGutenbergData(getShortcodeData(), id, srImagesAttr);
+                generateGutenbergData(getShortcodeData(true), id, srImagesAttr);
             }else if(window.isSirvElementor && window.isSirvElementor == true){
-                let jsonStr = JSON.stringify(getElementorData(getShortcodeData(), id, srImagesAttr));
+                let jsonStr = JSON.stringify(getElementorData(getShortcodeData(true), id, srImagesAttr));
                 //getElementorData(getShortcodeData(), id, srImagesAttr);
 
                 let ifr = $('iframe#elementor-preview-iframe')[0];
@@ -2189,10 +2200,23 @@ jQuery(function($){
                         imgTag.alt = title;
                         //imgTag.title = title;
 
-                        if(data.isLink){
+                        /* linkType: linkType,
+                        customLink: linkType == 'url' ? $('#sirv-image-custom-link').val() :  '',
+                        isBlankWindow: */
+
+                        if(data.linkType == 'large' || data.linkType == 'url'){
                             linkTag = document.createElement('a');
                             linkTag.classList.add('sirv-img-container__link');
-                            linkTag.href = data.profile == '' ? imgSrc : imgSrc + generateOptionsUriStr({'profile': data.profile});
+                            if(data.linkType == 'large'){
+                                linkTag.href = data.profile == '' ? imgSrc : imgSrc + generateOptionsUriStr({'profile': data.profile});
+                            }else{
+                                linkTag.href = data.customLink;
+                            }
+
+                            if(data.isBlankWindow){
+                                linkTag.setAttribute('target', '_blank');
+                            }
+
                             linkTag.appendChild(imgTag);
                             figure.appendChild(linkTag);
                         }else{
@@ -2268,7 +2292,9 @@ jQuery(function($){
                 tmpObj.images.thumbs = thumbImages;
                 tmpObj.images.full.width = width;
                 tmpObj.images.full.align = align;
-                tmpObj.images.full.linkToBigImage = data.link_image;
+                tmpObj.images.full.linkType = data.link_type;
+                tmpObj.images.full.customLink = data.custom_link;
+                tmpObj.images.full.isBlankWindow = data.is_blank_window;
                 tmpObj.images.full.profile = data.profile;
                 tmpObj.images.full.type = type;
                 tmpObj.images.full.count = count;
@@ -2359,7 +2385,10 @@ jQuery(function($){
                 sirvWidth: width,
                 sirvIsResponsive: '' + srImagesAttr.isResponsive,
                 sirvIsLazyLoading: '' + srImagesAttr.isLazyLoading,
-                sirvIsLink: '' + data.link_image,
+                sirvIsLink: '' + data.custom_link == 'large',
+                sirvLinkType: '' + data.link_type,
+                sirvCustomLink: '' + data.custom_link,
+                sirvIsBlankWindow: '' + data.is_blank_window,
                 sirvIsAltCaption: '' + data.isAltCaption,
                 sirvProfile: data.profile,
                 sirvProfiles: JSON.stringify(getProfilesNames()),
@@ -2539,7 +2568,7 @@ jQuery(function($){
 
 
 
-        function getShortcodeData(){
+        function getShortcodeData(isHTMLBuilder=false){
 
             function getEmbededAsValue(value){
                 let $gallery = $('.sirv-gallery-type[value=gallery-flag]'),
@@ -2564,6 +2593,7 @@ jQuery(function($){
             /* let isResponsive = $('.sirv-gallery-type[value=responsive-image]').is(':checked');
             let isStatic = $('.sirv-gallery-type[value=static-image]').is(':checked'); */
 
+            //base DB params
             shortcode_data['width'] = $('#gallery-width').val();
             shortcode_data['thumbs_height'] = $('#gallery-thumbs-height').val();
             shortcode_data['gallery_styles'] = $('#gallery-styles').val();
@@ -2571,9 +2601,16 @@ jQuery(function($){
             shortcode_data['profile'] = $('#gallery-profile').val();
             shortcode_data['use_as_gallery'] = getEmbededAsValue('gallery-flag');
             shortcode_data['use_sirv_zoom'] = getEmbededAsValue('gallery-zoom-flag');
-            shortcode_data['link_image'] = $('#gallery-link-img').is(":checked");
             shortcode_data['show_caption'] = $('#gallery-show-caption').is(":checked");
             shortcode_data['isAltCaption'] = ($('input[name=sirv-alt-caption]:checked').val() == 'true');
+            //backward compability, param do not use anymore v6.6.1
+            shortcode_data['link_image'] = false;
+
+            if(isHTMLBuilder){
+                shortcode_data['link_type'] = $('input[name=sirv-image-link-type]:checked').val();
+                shortcode_data["custom_link"] = $("#sirv-image-custom-link").val();
+                shortcode_data['is_blank_window'] = $('#sirv-image-link-blank-window').is(":checked");
+            }
 
             setDataOptionPair(tmp_data_options['zgallery_data_options'], $('#gallery-thumbs-position').attr('data-option-name'), $('#gallery-thumbs-position').val());
             setDataOptionPair(tmp_data_options['zgallery_data_options'], $('input[name=sirv-thumb-shape]:checked').attr('data-option-name'), $('input[name=sirv-thumb-shape]:checked').val());
@@ -2581,12 +2618,13 @@ jQuery(function($){
             setDataOptionPair(tmp_data_options['zgallery_data_options'], $('input[name=sirv-fullscreen-only]:checked').attr('data-option-name'), $('input[name=sirv-fullscreen-only]:checked').val());
             setDataOptionPair(tmp_data_options['zgallery_data_options'], $('input[name=sirv-context-menu]:checked').attr('data-option-name'), $('input[name=sirv-context-menu]:checked').val());
             setDataOptionPair(tmp_data_options['zgallery_data_options'], $('input[name=sirv-video-autoplay]:checked').attr('data-option-name'), $('input[name=sirv-video-autoplay]:checked').val());
+            setDataOptionPair(tmp_data_options['zgallery_data_options'], $('input[name=sirv-video-loop]:checked').attr('data-option-name'), $('input[name=sirv-video-loop]:checked').val());
+            setDataOptionPair(tmp_data_options['zgallery_data_options'], $('input[name=sirv-video-controls]:checked').attr('data-option-name'), $('input[name=sirv-video-controls]:checked').val());
 
             //spin options
             //spinHeight
             setDataOptionPair(tmp_data_options['spin_options'], $('input#spin-height').attr('data-option-name'), $('input#spin-height').val());
-            setDataOptionPair(tmp_data_options['spin_options'], $('input[name=sirv-spin-spinmethod]:checked').attr('data-option-name'), $('input[name=sirv-spin-spinmethod]:checked').val());
-            setDataOptionPair(tmp_data_options['spin_options'], $('#sirv-spin-autospin').attr('data-option-name'), $('#sirv-spin-autospin').val());
+            setDataOptionPair(tmp_data_options['spin_options'], $('input[name=sirv-spin-autospin]:checked').attr('data-option-name'), $('input[name=sirv-spin-autospin]:checked').val());;
             setDataOptionPair(tmp_data_options['spin_options'], $('#sirv-spinrotation-duration').attr('data-option-name'), $('#sirv-spinrotation-duration').val());
 
             //global options
@@ -2714,14 +2752,17 @@ jQuery(function($){
                     let videoAutoplay = response['shortcode_options']['zgallery_data_options']['videoAutoplay'];
                     $('input[name=sirv-video-autoplay][value=' + videoAutoplay + ']').prop('checked', true);
 
+                    let videoLoop = response['shortcode_options']['zgallery_data_options']['videoLoop'];
+                    $('input[name=sirv-video-loop][value=' + videoLoop + ']').prop('checked', true);
+
+                    let videoControls = response['shortcode_options']['zgallery_data_options']['videoControls'];
+                    $('input[name=sirv-video-controls][value=' + videoControls + ']').prop('checked', true);
+
                     let spinHeight = response['shortcode_options']['spin_options']['spinHeight'];
                     $('input#spin-height').val(spinHeight);
 
-                    let spin = response['shortcode_options']['spin_options']['spin'];
-                    $('input[name=sirv-spin-spinmethod][value=' + spin + ']').prop('checked', true);
-
                     let autospin = response['shortcode_options']['spin_options']['autospin'];
-                    $('select[data-option-name=autospin]').val(autospin);
+                    $('input[name=sirv-spin-autospin][value=' + autospin + ']').prop('checked', true);
 
                     let autospinSpeed = response['shortcode_options']['spin_options']['autospinSpeed'];
                     $('input[data-option-name=autospinSpeed]').val(autospinSpeed);
@@ -2960,14 +3001,14 @@ jQuery(function($){
                 $('#gallery-zoom-flag').attr('checked', false); */
                 $('#gallery-align').removeAttr('disabled');
 
-                manageOptionsByType('static');
+                manageOptionsByType('static', galleryLength);
 
             }else if($('.sirv-gallery-type[value=responsive-image]').is(':checked')){
                 /* $('#gallery-zoom-flag').attr('disabled', false)
                 $('#gallery-zoom-flag').attr('checked', false); */
                 if($('#gallery-width').val() == '') $('#gallery-align').attr('disabled', true);
 
-                manageOptionsByType('responsive');
+                manageOptionsByType('responsive', galleryLength);
 
             }else if($('.sirv-gallery-type[value=360-spin]').is(':checked')){
                 /* $('#gallery-zoom-flag').attr('disabled', true)
@@ -2993,11 +3034,21 @@ jQuery(function($){
         }
 
         //hide or show options by type
-        function manageOptionsByType(type){
+        function manageOptionsByType(type, galleryLength=null){
             $('[data-option-type]').filter(function(){
                 //change text on width field depends on type
                 if(type == 'static'){$('#gallery-width').attr('placeholder', 'original');}else{$('#gallery-width').attr('placeholder', 'auto');}
                 if(type == 'responsive'){$('.sirv-label-width').html("Max width (px)");}else{$('.sirv-label-width').html("Width (px)");};
+
+                if(type == 'responsive' || type == 'static'){
+                    if(!!galleryLength && galleryLength > 1){
+                        $("input[name=sirv-image-link-type][value=url]").prop('disabled', true);
+                        $("input[name=sirv-image-link-type][value=none]").prop('checked', true);
+                        manageOptionLink();
+                    }else{
+                        $("input[name=sirv-image-link-type][value=url]").prop('disabled', false);
+                    }
+                }
 
                 let attrText = $(this).attr('data-option-type');
                 let pattern = new RegExp(type, "i");
@@ -3021,6 +3072,25 @@ jQuery(function($){
                 case 'show':
                     $selector.show();
                     break;
+            }
+        }
+
+
+        function manageOptionLink(){
+            //let state = $(this).val();
+            let state = $('input[name=sirv-image-link-type]:checked').val();
+            let $customUrl = $('#sirv-image-custom-link');
+            let $blankWindowWrap = $('#sirv-image-link-blank-window').parent();
+            if(state == 'url' || state == 'large'){
+                $blankWindowWrap.show();
+                if(state == 'url'){
+                    $customUrl.show();
+                }else{
+                    $customUrl.hide();
+                }
+            }else{
+                $blankWindowWrap.hide();
+                $customUrl.hide();
             }
         }
 

@@ -829,14 +829,14 @@ class Ga_Admin {
         );
         $sources = ! empty( $sources_data ) ? Ga_Stats::get_sources( $sources_data->getData() ) : array();
 
-        // Add gender/age data for 30 days.
+        // Add gender/age data for default period (1 week ago vs 2 weeks ago).
         if ($update_data) {
-            $gender_params = Ga_Stats::get_query( 'gender', $selected['view_id'], '30daysAgo' );
+            $gender_params = Ga_Stats::get_query( 'gender', $selected['view_id'] );
             $gender_data = self::api_client()->call(
                 'ga_api_data',
                 [$gender_params]
             );
-            $age_params = Ga_Stats::get_query( 'age', $selected['view_id'], '30daysAgo' );
+            $age_params = Ga_Stats::get_query( 'age', $selected['view_id'] );
             $age_data = self::api_client()->call(
                 'ga_api_data',
                 [$age_params]

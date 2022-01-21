@@ -5,9 +5,10 @@ Tags: social buttons, sharethis, share this, social sharing, share buttons, soci
 Author URI: https://sharethis.com/
 Author: ShareThis
 Requires at least: 4.5
-Tested up to: 5.7.2
-Stable tag: 1.5.2
-Version: 1.5.2
+Tested up to: 5.8
+Stable tag: 1.5.4
+Version: 1.5.4
+
 License: GPLv2 or later
 
 Grow your website traffic with share buttons for 40+ social channels including Facebook, LinkedIn, Twitter, WhatsApp, and more.
@@ -63,6 +64,13 @@ Included in those terms is our ability to keep track of user interactions with o
 We cache your ShareThis platform button configurations (social networks, button size, labels etc.) to optimize their performance. Sometimes changes you make on the ShareThis platform take a couple minutes to update on your site. Also, if you activate a new button type from the settings page you may experience a similar lag.
 
 == Changelog ==
+
+= 1.5.4 =
+* Fix markup for data-url output.
+
+= 1.5.3 =
+* Fix jquery attr call and php warning.
+* Remove GDPR global scope.
 
 = 1.5.2 =
 * Add Snapchat, BLM and Live Journal network options.

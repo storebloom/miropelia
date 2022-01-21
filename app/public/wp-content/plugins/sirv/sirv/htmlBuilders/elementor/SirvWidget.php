@@ -19,7 +19,9 @@ class SirvWidget extends \Elementor\Widget_Base {
 
 
 	public function get_icon() {
-		return 'fa fa-picture-o';
+		//return 'fa fa-picture-o';
+		//return 'eicon-image-box';
+		return 'eicon-image';
 	}
 
 
@@ -111,10 +113,16 @@ class SirvWidget extends \Elementor\Widget_Base {
 		$isLazyLoading = (Boolean) $data['images']['full']['isLazyLoading'];
 		$width = $data['images']['full']['width'];
 		$align = $data['images']['full']['align'];
-		$isLinkToBigImage = (Boolean) $data['images']['full']['linkToBigImage'];
+		$linkType = isset($data['images']['full']['linkType']) ? $data['images']['full']['linkType'] : 'none';
+		$customLink = isset($data['images']['full']['customLink']) ? $data['images']['full']['customLink'] : '';
+		$isBlankWindow = isset($data['images']['full']['isBlankWindow']) ? (bool) $data['images']['full']['isBlankWindow'] : false;
 		$isAltCaption = (Boolean) $data['images']['full']['isAltCaption'];
 
 		$sirvClass = $isResponsive ? 'Sirv' : '';
+
+		//backward compatibility for old isLinkToBigImage
+		$isLinkToBigImage = isset($data['images']['full']['linkToBigImage']) ? (bool) $data['images']['full']['linkToBigImage'] : false;
+		if($isLinkToBigImage) $linkType == 'large';
 
 		$this->add_render_attribute('figure', [
 			'class' => ['sirv-flx', 'sirv-img-container', $align]
@@ -170,7 +178,14 @@ class SirvWidget extends \Elementor\Widget_Base {
 
 			$imgTag = '<img '. $this->get_render_attribute_string( 'figure__img' ) . ' ' . $srcAttr . $dataSrcAttr .'>';
 			$build = '<figure '. $this->get_render_attribute_string( 'figure' ) .'>';
-			if($isLinkToBigImage) $build .= '<a class="sirv-img-container__link" href="'. $imageData['origUrl'] .'">' . $imgTag . '</a>'; else $build .= $imgTag;
+			if($linkType !== 'none'){
+				$linkTo = $linkType == 'url' ? $customLink : $imageData['origUrl'];
+				$blankAttr =  $isBlankWindow ? ' target="_blank" ' : '';
+
+				$build .= '<a class="sirv-img-container__link"'. $blankAttr .'href="'. $linkTo .'">' . $imgTag . '</a>';
+			}else{
+				$build .= $imgTag;
+			}
 			$build .= $fcaption .'</figure>' . PHP_EOL;
 
 			$images .= $build;

@@ -4,11 +4,7 @@
 
     class getValue{
 
-        protected static $jsFile = [
-                        'https://scripts.sirv.com/sirv.js',
-                        'https://scripts.sirv.com/sirv.nospin.js',
-                        'https://scripts.sirv.com/sirvjs/v3/sirv.js',
-                        ];
+        protected static $jsFile = 'https://scripts.sirv.com/sirvjs/v3/sirv.js';
 
         public static function getOption($optionName){
             $value = '';
@@ -17,8 +13,7 @@
                     $value = 'http://' . get_option($optionName);
                     break;
                 case 'SIRV_JS_FILE':
-                    $index = ((int)get_option($optionName)) - 1;
-                    $value = self::$jsFile[$index];
+                    $value = self::$jsFile;
                     break;
                 default:
                     $value = get_option($optionName);
@@ -26,11 +21,6 @@
             }
 
             return $value;
-
-        }
-
-        protected static function getJSPath($index){
-            return self::$jsFile[$index];
         }
     }
 ?>

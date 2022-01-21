@@ -293,6 +293,15 @@
             top: 955px;
             width: 200px;
           }
+
+          &.froshile-map-item {
+            background: url('../../src/images/froshile-avatar.gif');
+            background-size: contain;
+            height: 100px;
+            left: 1000px;
+            top: 600px;
+            width: 100px;
+          }
         }
       }
     }

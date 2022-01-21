@@ -7,7 +7,7 @@ import { SearchListControl, SearchListItem } from '@woocommerce/components';
 import { SelectControl } from '@wordpress/components';
 import { withInstanceId } from '@wordpress/compose';
 import { withAttributes } from '@woocommerce/block-hocs';
-import ErrorMessage from '@woocommerce/editor-components/error-placeholder/error-message.js';
+import ErrorMessage from '@woocommerce/editor-components/error-placeholder/error-message';
 import classNames from 'classnames';
 import ExpandableSearchListItem from '@woocommerce/editor-components/expandable-search-list-item/expandable-search-list-item.tsx';
 
@@ -176,11 +176,7 @@ const ProductAttributeTermControl = ( {
 				isHierarchical
 			/>
 			{ !! onOperatorChange && (
-				<div
-					className={
-						selected.length < 2 ? 'screen-reader-text' : ''
-					}
-				>
+				<div hidden={ selected.length < 2 }>
 					<SelectControl
 						className="woocommerce-product-attributes__operator"
 						label={ __(

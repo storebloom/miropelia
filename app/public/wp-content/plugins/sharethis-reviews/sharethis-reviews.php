@@ -2,7 +2,7 @@
 /**
  * Plugin Name: ShareThis Reviews
  * Description: Simple and functional reviews plugin including ratings and impressions.
- * Version: 1.2.0
+ * Version: 1.2.1
  * Author: ShareThis
  * Author URI: https://sharethis.com/
  * Text Domain: sharethis-reviews

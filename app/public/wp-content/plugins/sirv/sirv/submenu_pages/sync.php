@@ -53,7 +53,7 @@ $storageInfo = sirv_getStorageInfo();
               <td>
                 <div class="sirv-progress-data__label sirv-complited"></div>
               </td>
-              <td>Synced images</td>
+              <td>Synced</td>
               <td>
                 <div class="sirv-progress-data__complited--text"><?php echo $cacheInfo['q_s']; ?></div>&nbsp;&nbsp;&nbsp;
                 <div class="sirv-progress-data__complited--size"><?php echo $cacheInfo['size_s']; ?></div>
@@ -63,7 +63,7 @@ $storageInfo = sirv_getStorageInfo();
               <td>
                 <div class="sirv-progress-data__label sirv-queued"></div>
               </td>
-              <td>Queued images</td>
+              <td>Queued</td>
               <td>
                 <div class="sirv-progress-data__queued--text"><?php echo $cacheInfo['queued_s']; ?></div>
               </td>
@@ -73,7 +73,7 @@ $storageInfo = sirv_getStorageInfo();
               <td>
                 <div class="sirv-progress-data__label sirv-failed"></div>
               </td>
-              <td>Failed images</td>
+              <td>Failed</td>
               <td>
                 <div class="sirv-progress-data__failed--text"><?php echo $cacheInfo['FAILED']['count_s']; ?></div>&nbsp;&nbsp;&nbsp;
                 <div class="failed-images-block" style="<?php echo $is_show_failed_block; ?>">
@@ -163,6 +163,39 @@ $storageInfo = sirv_getStorageInfo();
               <input type="button" name="tst" class="button-primary tst" value="Test" />
             </td>
           </tr> -->
+  </table>
+</div>
+<!-- Diff settings block -->
+<div class="sirv-optiontable-holder sirv-sync-diff-settings-wrapper">
+  <table class="optiontable form-table">
+    <tbody>
+      <tr>
+        <td colspan="2">
+          <h3>Image deletion</h3>
+          <!-- <p class="sirv-options-desc">Some description here</p> -->
+        </td>
+      </tr>
+      <tr>
+        <th>
+          <label>Auto-delete from Sirv</label>
+        </th>
+        <td>
+          <label>
+            <input type="radio" name="SIRV_DELETE_FILE_ON_SIRV" value='1' "<?php checked('1', get_option('SIRV_DELETE_FILE_ON_SIRV'), true);  ?>">Enable
+          </label><br>
+          <label>
+            <input type="radio" name="SIRV_DELETE_FILE_ON_SIRV" value='2' "<?php checked('2', get_option('SIRV_DELETE_FILE_ON_SIRV'), true);  ?>">Disable
+          </label><br>
+          <span class="sirv-option-responsive-text">If image deleted from WordPress Media Library, delete from Sirv.</span>
+        </td>
+      </tr>
+      <tr>
+        <th></th>
+        <td>
+          <input type="submit" name="submit" class="button-primary sirv-save-settings" value="<?php _e('Save settings') ?>" />
+        </td>
+      </tr>
+    </tbody>
   </table>
 </div>
 <?php
@@ -294,7 +327,7 @@ if (!empty($images_info['skip_data'])) {
     </tbody>
   </table>
 </div>
-<div class="sirv-optiontable-holder sirv-sync-css-images-wrapper">
+<div class="sirv-optiontable-holder sirv-sync-exclude-images-wrapper">
   <table class="optiontable form-table">
     <tbody>
       <tr>

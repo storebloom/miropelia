@@ -114,68 +114,56 @@ class Reviews {
 		return $option;
 	}
 
-	/**
-	 * AJAX call back function to add review to post.
-	 *
-	 * @action wp_ajax_add_review
-	 * @action wp_ajax_nopriv_add_review
-	 */
-	public function add_review() {
-		check_ajax_referer( $this->plugin->meta_prefix, 'nonce' );
+    /**
+     * AJAX call back function to add review to post.
+     *
+     * @action wp_ajax_add_review
+     * @action wp_ajax_nopriv_add_review
+     */
+    public function add_review()
+    {
+        check_ajax_referer($this->plugin->meta_prefix, 'nonce');
 
-		if ( ! isset( $_POST['postid'], $_POST['review'], $_POST['title'] ) || '' === $_POST['review'] ) { // WPCS: input var ok.
-			wp_send_json_error( 'Add Review Failed.' );
-		}
+        $postid  = intval(filter_input(INPUT_POST, 'postid', FILTER_SANITIZE_STRING));
+        $title   = filter_input(INPUT_POST, 'title', FILTER_SANITIZE_STRING);
+        $name    = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_STRING);
+        $message = filter_input(INPUT_POST, 'review', FILTER_SANITIZE_STRING);
+        $rating  = intval(filter_input(INPUT_POST, 'rating', FILTER_SANITIZE_STRING));
 
-		$postid  = intval( $_POST['postid'] ); // WPCS: input var ok.
-		$title   = sanitize_text_field( wp_unslash( $_POST['title'] ) ); // WPCS: input var ok.
-		$name    = sanitize_text_field( wp_unslash( $_POST['name'] ) ); // WPCS: input var ok.
-		$message = sanitize_text_field( wp_unslash( $_POST['review'] ) ); // WPCS: input var ok.
-		$rating  = '' !== $_POST['rating'] ? (string) intval( $_POST['rating'] ) : ''; // WPCS: input var ok.
-		$date    = date( 'Y-m-d' );
+        if (true === empty($postid) || true === empty($title) || true === empty($message)) {
+            wp_send_json_error('Add Review Failed.');
+        }
 
-		if ( '' !== $rating ) {
-			$review = array(
-				'title'    => $title,
-				'message'  => $message,
-				'date'     => $date,
-				'postid'   => (string) $postid,
-				'rating'   => $rating,
-				'name'     => $name,
-				'approved' => 'false',
-			);
-		} else {
-			$review = array(
-				'title'    => $title,
-				'message'  => $message,
-				'date'     => $date,
-				'postid'   => (string) $postid,
-				'name'     => $name,
-				'approved' => 'false',
-			);
-		}
+        $approved = false;
+        $date     = date('Y-m-d');
 
-		$current_reviews = get_post_meta( $postid, 'sharethisreview_review', true );
+        $review = compact('title', 'message', 'date', 'postid', 'name', 'approved');
 
-		if ( is_array( $current_reviews ) ) {
-			array_push( $current_reviews, $review );
-		} else {
-			$current_reviews = array( $review );
-		}
+        if (false === empty($rating)) {
+            $review['rating'] = $rating;
+        }
 
-		$current_postids = get_option( 'sharethisreview_posts', true );
+        $current_reviews = get_post_meta($postid, 'sharethisreview_review', true);
 
-		if ( is_array( $current_postids ) && ! in_array( $postid, $current_postids, true ) ) {
-			array_push( $current_postids, $postid );
-		} elseif ( is_array( $current_postids ) && in_array( $postid, $current_postids, true ) ) {
-			$current_postids = $current_postids;
-		} else {
-			$current_postids = array( $postid );
-		}
+        if (is_array($current_reviews)) {
+            array_push($current_reviews, $review);
+        } else {
+            $current_reviews = [$review];
+        }
 
-		update_post_meta( $postid, 'sharethisreview_review', $current_reviews );
-		update_option( 'sharethisreview_posts', $current_postids );
-	}
+        $current_postids = get_option('sharethisreview_posts', true);
+
+        if (is_array($current_postids) && !in_array($postid, $current_postids, true)) {
+            array_push($current_postids, $postid);
+        } elseif (is_array($current_postids) && in_array($postid, $current_postids, true)) {
+            $current_postids = $current_postids;
+        } else {
+            $current_postids = [$postid];
+        }
+
+        update_post_meta($postid, 'sharethisreview_review', $current_reviews);
+        update_option('sharethisreview_posts', $current_postids);
+    }
 
 	/**
 	 * AJAX call back function to add rating to post.
@@ -356,7 +344,7 @@ class Reviews {
 				}
 			}
 
-			$overall_rating = (int) ceil( $overall_rating / $count );
+			$overall_rating = (int)ceil($overall_rating / max($count, 1));
 
 			// drop review seo data on page.
 			$seo = $this->get_seo_markup( get_the_title( $post ), intval( $overall_rating ) + 1, $count );

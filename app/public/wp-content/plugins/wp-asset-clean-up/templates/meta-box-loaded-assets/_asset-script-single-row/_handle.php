@@ -38,11 +38,10 @@ if ( ! isset($data, $isCoreFile, $hideCoreFiles, $jqueryIconHtmlHandle, $childHa
     }
 	?>
 </div>
-    <!-- Clear on form submit it if the dependency is not there anymore -->
-    <input type="hidden" name="wpacu_ignore_child[scripts][<?php echo $data['row']['obj']->handle; ?>]" value="" />
 <?php
+$ignoreChild = (isset($data['ignore_child']['scripts'][$data['row']['obj']->handle]) && $data['ignore_child']['scripts'][$data['row']['obj']->handle]);
+
 if (! empty($childHandles)) {
-	$ignoreChild = (isset($data['ignore_child']['scripts'][$data['row']['obj']->handle]) && $data['ignore_child']['scripts'][$data['row']['obj']->handle]);
 	?>
 	<div class="wpacu_dependency_notice_area">
         <?php
@@ -83,7 +82,7 @@ if (! empty($childHandles)) {
                     &#10230; <input id="script_<?php echo $data['row']['obj']->handle; ?>_ignore_children"
                                     type="checkbox"
                                     <?php if ($ignoreChild) { ?>checked="checked"<?php } ?>
-                                    name="wpacu_ignore_child[scripts][<?php echo $data['row']['obj']->handle; ?>]"
+                                    name="<?php echo WPACU_FORM_ASSETS_POST_KEY; ?>[scripts][<?php echo $data['row']['obj']->handle; ?>][ignore_child]"
                                     value="1" /> <small><?php _e('Ignore dependency rule and keep the "children" loaded', 'wp-asset-clean-up'); ?>
                     <?php if (in_array($data['row']['obj']->handle, \WpAssetCleanUp\Main::instance()->keepChildrenLoadedForHandles['js'])) { echo '(recommended)'; } ?>
                     </small>
@@ -94,4 +93,9 @@ if (! empty($childHandles)) {
         ?>
 	</div>
 <?php
+} elseif ($ignoreChild) {
+	// Keep the option enabled in case ignoring other dependencies was already chosen in a different page (e.g. in some pages a handle can have a dependency, in others it might not have any)
+	?>
+    <input type="hidden" name="<?php echo WPACU_FORM_ASSETS_POST_KEY; ?>[scripts][<?php echo $data['row']['obj']->handle; ?>][ignore_child]" value="1" />
+	<?php
 }

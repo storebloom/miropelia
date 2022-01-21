@@ -27,12 +27,19 @@ class HTML_form_components{
   }
 
 
+  protected static function render_hidden_component($option){
+    return self::render_input_component($option['attrs']);
+  }
+
+
   protected static function render_radio_component($option){
     $html = '';
 
+    $br = isset($option['is_new_line']) ? '<br />' : '';
+
     foreach ($option['values'] as $radio_item) {
       $label = isset($radio_item['desc']) ? '<b>' . $radio_item['label'] . '</b> - ' . $radio_item['desc'] : $radio_item['label'];
-      $html .= '<label>'. self::render_input_component($radio_item['attrs']) . $label . '</label><br />' . PHP_EOL;
+      $html .= '<label>'. self::render_input_component($radio_item['attrs']) . $label . '</label>' . $br . PHP_EOL;
     }
 
     return $html;
@@ -69,7 +76,7 @@ class HTML_form_components{
 
 
   protected static function render_above_text($above_text){
-    $html = '<span class="sirv-option-above-text">' . $above_text . '</span>';
+    $html = '<span class="sirv-option-responsive-text">' . $above_text . '</span>';
 
     return $html;
   }
@@ -130,6 +137,11 @@ class HTML_form_components{
 
   protected static function isAttr($attr){
     return (isset($attr) && $attr);
+  }
+
+
+  protected static function checked($value, $current){
+    return (string) $value === (string) $current;
   }
 
 }

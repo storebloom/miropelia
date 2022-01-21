@@ -835,18 +835,6 @@ class Share_Buttons
                 'always' => esc_html__('All visitors globally', 'sharethis-custom'),
             );
 
-            // Consent type options.
-            $consent_types = array(
-                'global'    => esc_html__(
-                    'Global: Publisher consent = 1st party cookie; Vendors consent = 3rd party cookie',
-                    'sharethis-custom'
-                ),
-                'publisher' => esc_html__(
-                    'Service: publisher consent = 1st party cookie; Vendors consent = 1st party cookie',
-                    'sharethis-custom'
-                ),
-            );
-
             $vendor_data = $this->getVendors();
 
             if ( $vendor_data ) {

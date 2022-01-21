@@ -4,7 +4,7 @@
  * Plugin Name: Sirv
  * Plugin URI: http://sirv.com
  * Description: Fully-automatic image optimization, next-gen formats (WebP), responsive resizing, lazy loading and CDN delivery. Every best-practice your website needs. Use "Add Sirv Media" button to embed images, galleries, zooms, 360 spins and streaming videos in posts / pages. Stunning media viewer for WooCommerce. Watermarks, text titles... every WordPress site deserves this plugin! <a href="admin.php?page=sirv/sirv/options.php">Settings</a>
- * Version:           6.3.2
+ * Version:           6.6.1
  * Requires PHP:      5.6
  * Requires at least: 3.0.1
  * Author:            sirv.com
@@ -14,7 +14,7 @@
 
 defined('ABSPATH') or die('No script kiddies please!');
 
-define('SIRV_PLUGIN_VERSION', '6.3.2');
+define('SIRV_PLUGIN_VERSION', '6.6.1');
 
 global $isLogger;
 global $startTime;
@@ -192,6 +192,33 @@ function sirv_on_woo_product_load(){
 }
 /*-------------------------------WooCommerce END--------------------------------*/
 
+/*-------------------------------Fusion Builder---------------------------------*/
+add_action('fusion_builder_before_init', 'sirv_avada_element');
+function sirv_avada_element()
+{
+
+  fusion_builder_map(
+    array(
+      'name'            => esc_attr__('Sirv shortcode', 'sirv-shortcode-element'),
+      'shortcode'       => 'sirv-gallery',
+      'icon'            => 'fusiona-images',
+      //'preview'         => PLUGIN_DIR . 'js/previews/fusion-text-preview.php',
+      //'preview_id'      => 'sirv-test-element',
+      'allow_generator' => true,
+      'params'          => array(
+        array(
+          'type'        => 'textfield',
+          'heading'     => esc_attr__('Shortcode ID', 'sirv-shortcode-element'),
+          'description' => __('Enter Sirv shortcode ID.<br><a target="blank" href="admin.php?page='. SIRV_PLUGIN_PATH . '/sirv/shortcodes-view.php">Browse or create Sirv shortcodes <i class="fusion-module-icon fusiona-external-link"></i></a>', 'sirv-shortcode-element'),
+          'param_name'  => 'id',
+          'value'       => '',
+        ),
+      ),
+    )
+  );
+}
+/*---------------------------Fusion Builder END---------------------------------*/
+
 
 function sirv_is_local_host(){
   return (in_array($_SERVER['REMOTE_ADDR'], array('127.0.0.1', '::1')) || $_SERVER['SERVER_NAME'] == 'localhost' || preg_match('/\/\/(localhost|127.0.0.1)/ims', get_site_url()));
@@ -353,6 +380,9 @@ function sirv_upgrade_plugin(){
     //5.7.1
     sirv_remove_autoload();
 
+    //6.5.0
+    if (empty(get_option('SIRV_USE_SIRV_RESPONSIVE'))) update_option('SIRV_USE_SIRV_RESPONSIVE', '2');
+
   }
 }
 
@@ -399,7 +429,6 @@ function sirv_update_options(){
   if (get_option('WP_SIRV_CDN_PROFILES') && !get_option('SIRV_CDN_PROFILES')) update_option('SIRV_CDN_PROFILES', get_option('WP_SIRV_CDN_PROFILES'));
   if (get_option('WP_USE_SIRV_RESPONSIVE') && !get_option('SIRV_USE_SIRV_RESPONSIVE')) update_option('SIRV_USE_SIRV_RESPONSIVE', get_option('WP_USE_SIRV_RESPONSIVE'));
   if (get_option('WP_SIRV_JS') && !get_option('SIRV_JS')) update_option('SIRV_JS', get_option('WP_SIRV_JS'));
-  if (get_option('WP_SIRV_JS_FILE') && !get_option('SIRV_JS_FILE')) update_option('SIRV_JS_FILE', get_option('WP_SIRV_JS_FILE'));
   if (get_option('WP_FOLDER_ON_SIRV')) {
     update_option('SIRV_FOLDER', get_option('WP_FOLDER_ON_SIRV'));
     delete_option('WP_FOLDER_ON_SIRV');
@@ -439,20 +468,21 @@ function sirv_fill_empty_options(){
     'skipped_images'    => array(),
   )), 'no');
 
+  if (!get_option('SIRV_DELETE_FILE_ON_SIRV')) update_option('SIRV_DELETE_FILE_ON_SIRV', '2');
+
   if (!get_option('SIRV_EXCLUDE_FILES')) update_option('SIRV_EXCLUDE_FILES', '');
   if (!get_option('SIRV_EXCLUDE_PAGES')) update_option('SIRV_EXCLUDE_PAGES', '');
 
   if (get_option('SIRV_AWS_HOST') !== 's3.sirv.com' || !get_option('SIRV_AWS_HOST')) update_option('SIRV_AWS_HOST', 's3.sirv.com');
   if (!get_option('SIRV_NETWORK_TYPE')) update_option('SIRV_NETWORK_TYPE', '2');
   if (!get_option('SIRV_PARSE_STATIC_IMAGES')) update_option('SIRV_PARSE_STATIC_IMAGES', '1');
-  if (!get_option('SIRV_USE_SIRV_RESPONSIVE')) update_option('SIRV_USE_SIRV_RESPONSIVE', '0');
+  if (!get_option('SIRV_USE_SIRV_RESPONSIVE') || empty(get_option('SIRV_USE_SIRV_RESPONSIVE'))) update_option('SIRV_USE_SIRV_RESPONSIVE', '2');
   if (!get_option('SIRV_ENABLE_CDN')) update_option('SIRV_ENABLE_CDN', '2');
   if (!get_option('SIRV_JS')) update_option('SIRV_JS', '2');
-  if (!get_option('SIRV_JS_FILE')) update_option('SIRV_JS_FILE', '3');
   if (!get_option('SIRV_CUSTOM_CSS')) update_option('SIRV_CUSTOM_CSS', '');
 
   if (!get_option('SIRV_CROP_SIZES')) update_option('SIRV_CROP_SIZES', sirv_get_default_crop());
-  if (!get_option('SIRV_RESPONSIVE_PLACEHOLDER')) update_option('SIRV_RESPONSIVE_PLACEHOLDER', '2');
+  if (!get_option('SIRV_RESPONSIVE_PLACEHOLDER')) update_option('SIRV_RESPONSIVE_PLACEHOLDER', '3');
 
 
   $domain = empty($_SERVER['HTTP_HOST']) ? 'MediaLibrary' : $_SERVER['HTTP_HOST'];
@@ -639,7 +669,6 @@ function sirv_admin_notices(){
 
   sirv_review_notice();
   sirv_empty_logins_notice();
-  sirv_depreceted_v2_notice();
 }
 
 
@@ -652,7 +681,7 @@ function sirv_congrat_notice(){
 
 
 function sirv_depreceted_v2_notice(){
-  $use_version = get_option('SIRV_JS_FILE');
+  $use_version = '3';
 
   if( $use_version === '3' ) return;
 
@@ -807,22 +836,23 @@ add_action('media_buttons', 'sirv_button', 11);
 
 function sirv_button($editor_id = 'content')
 {
+  wp_enqueue_style('fontAwesome', "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css", array());
   wp_register_style('sirv_style', plugins_url('/sirv/css/wp-sirv.css', __FILE__));
   wp_enqueue_style('sirv_style');
   wp_register_style('sirv_mce_style', plugins_url('/sirv/css/wp-sirv-shortcode-view.css', __FILE__));
   wp_enqueue_style('sirv_mce_style');
-  wp_register_script('sirv_logic', plugins_url('/sirv/js/wp-sirv.js', __FILE__), array('jquery', 'jquery-ui-sortable'), '1.1.0');
+  wp_register_script('sirv_logic', plugins_url('/sirv/js/wp-sirv.js', __FILE__), array('jquery', 'jquery-ui-sortable'), false);
   wp_localize_script('sirv_logic', 'sirv_ajax_object', array('ajaxurl' => admin_url('admin-ajax.php'), 'assets_path' => plugins_url('/sirv/assets', __FILE__), 'plugin_path' => SIRV_PLUGIN_PATH));
   wp_enqueue_script('sirv_logic');
-  wp_enqueue_script('sirv_logic-md5', plugins_url('/sirv/js/wp-sirv-md5.min.js', __FILE__), array(), '1.0.0');
-  wp_enqueue_script('sirv_modal', plugins_url('/sirv/js/wp-sirv-bpopup.min.js', __FILE__), array('jquery'), '1.0.0');
-  wp_enqueue_script('sirv_modal-logic', plugins_url('/sirv/js/wp-sirv-modal.js', __FILE__), array('jquery'), '1.0.0');
+  wp_enqueue_script('sirv_logic-md5', plugins_url('/sirv/js/wp-sirv-md5.min.js', __FILE__), array(), false);
+  wp_enqueue_script('sirv_modal', plugins_url('/sirv/js/wp-sirv-bpopup.min.js', __FILE__), array('jquery'), false);
+  wp_enqueue_script('sirv_modal-logic', plugins_url('/sirv/js/wp-sirv-modal.js', __FILE__), array('jquery'), false);
 
   $isNotEmptySirvOptions = sirv_check_empty_options_on_backend();
   wp_localize_script('sirv_modal-logic', 'modal_object', array(
     'media_add_url' =>  plugins_url('/sirv/templates/media_add.html', __FILE__), 'login_error_url' => plugins_url('/sirv/templates/login_error.html', __FILE__), 'featured_image_url' => plugins_url('/sirv/templates/featured_image.html', __FILE__), 'isNotEmptySirvOptions' => $isNotEmptySirvOptions
   ));
-  wp_enqueue_script('sirv-shortcodes-page', plugins_url('/sirv/js/wp-sirv-shortcodes-page.js', __FILE__), array('jquery'), '1.0.0');
+  wp_enqueue_script('sirv-shortcodes-page', plugins_url('/sirv/js/wp-sirv-shortcodes-page.js', __FILE__), array('jquery'), false);
 
   echo '<a href="#" class="button sirv-modal-click" title="Sirv add/insert images"><span class="dashicons dashicons-format-gallery" style="padding-top: 2px;"></span> Add Sirv Media</a><div class="sirv-modal"><div class="modal-content"></div></div>';
 }
@@ -894,7 +924,7 @@ function sirv_admin_scripts(){
       wp_enqueue_script('sirv_logic');
       wp_enqueue_script('sirv_logic-md5', plugins_url('/sirv/js/wp-sirv-md5.min.js', __FILE__), array(), '1.0.0');
       wp_enqueue_script('sirv_modal', plugins_url('/sirv/js/wp-sirv-bpopup.min.js', __FILE__), array('jquery'), '1.0.0');
-      wp_enqueue_script('sirv_modal-logic', plugins_url('/sirv/js/wp-sirv-modal.js', __FILE__), array('jquery'), '1.0.0');
+      wp_enqueue_script('sirv_modal-logic', plugins_url('/sirv/js/wp-sirv-modal.js', __FILE__), array('jquery'), false);
 
       $isNotEmptySirvOptions = sirv_check_empty_options_on_backend();
       wp_localize_script(
@@ -908,7 +938,7 @@ function sirv_admin_scripts(){
           'isNotEmptySirvOptions' => $isNotEmptySirvOptions
         )
       );
-      wp_enqueue_script('sirv-shortcodes-page', plugins_url('/sirv/js/wp-sirv-shortcodes-page.js', __FILE__), array('jquery'), '1.0.0');
+      wp_enqueue_script('sirv-shortcodes-page', plugins_url('/sirv/js/wp-sirv-shortcodes-page.js', __FILE__), array('jquery'), false);
     }
   }
 
@@ -916,27 +946,27 @@ function sirv_admin_scripts(){
     wp_register_style('sirv_options_style', plugins_url('/sirv/css/wp-options.css', __FILE__));
     wp_enqueue_style('sirv_options_style');
     wp_enqueue_script('sirv_scrollspy', plugins_url('/sirv/js/scrollspy.js', __FILE__), array('jquery'), '1.0.0');
-    wp_enqueue_script('sirv_options', plugins_url('/sirv/js/wp-options.js', __FILE__), array('jquery'), '1.0.0', true);
+    wp_enqueue_script('sirv_options', plugins_url('/sirv/js/wp-options.js', __FILE__), array('jquery'), false, true);
   }
 
   if (isset($_GET['page']) && ( $_GET['page'] == $feedback_page || $_GET['page'] == $account_page ||  $_GET['page'] == $stats_page) ) {
     wp_register_style('sirv_options_style', plugins_url('/sirv/css/wp-options.css', __FILE__));
     wp_enqueue_style('sirv_options_style');
-    wp_enqueue_script('sirv_options', plugins_url('/sirv/js/wp-options.js', __FILE__), array('jquery'), '1.0.0', true);
+    wp_enqueue_script('sirv_options', plugins_url('/sirv/js/wp-options.js', __FILE__), array('jquery'), false, true);
   }
 
   if (isset($_GET['page']) && $_GET['page'] == SIRV_PLUGIN_PATH . '/sirv/shortcodes-view.php') {
     wp_enqueue_style('fontAwesome', "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css", array());
     wp_register_style('sirv_style', plugins_url('/sirv/css/wp-sirv.css', __FILE__));
     wp_enqueue_style('sirv_style');
-    wp_enqueue_script('sirv_logic', plugins_url('/sirv/js/wp-sirv.js', __FILE__), array('jquery', 'jquery-ui-sortable'), '1.0.0');
+    wp_enqueue_script('sirv_logic', plugins_url('/sirv/js/wp-sirv.js', __FILE__), array('jquery', 'jquery-ui-sortable'), false);
     wp_localize_script('sirv_logic', 'sirv_ajax_object', array('ajaxurl' => admin_url('admin-ajax.php'), 'assets_path' => plugins_url('/sirv/assets', __FILE__)));
     wp_enqueue_script('sirv_logic-md5', plugins_url('/sirv/js/wp-sirv-md5.min.js', __FILE__), array(), '1.0.0');
     wp_enqueue_script('sirv_modal', plugins_url('/sirv/js/wp-sirv-bpopup.min.js', __FILE__), array('jquery'), '1.0.0');
 
     wp_localize_script('sirv_modal', 'modal_object', array('media_add_url' =>  plugins_url('/sirv/templates/media_add.html', __FILE__), 'login_error_url' => plugins_url('/sirv/templates/login_error.html', __FILE__), 'featured_image_url' => plugins_url('/sirv/templates/featured_image.html', __FILE__)));
 
-    wp_register_script('sirv-shortcodes-page', plugins_url('/sirv/js/wp-sirv-shortcodes-page.js', __FILE__), array('jquery'), '1.0.0');
+    wp_register_script('sirv-shortcodes-page', plugins_url('/sirv/js/wp-sirv-shortcodes-page.js', __FILE__), array('jquery'), false);
     wp_enqueue_script('sirv-shortcodes-page');
     wp_localize_script('sirv-shortcodes-page', 'sirvShortcodeObject', array('isShortcodesPage' => true));
   }
@@ -1039,6 +1069,8 @@ function sirv_register_settings(){
   register_setting('sirv-settings-group', 'SIRV_CSS_BACKGROUND_IMAGES');
   register_setting('sirv-settings-group', 'SIRV_CSS_BACKGROUND_IMAGES_SYNC_DATA');
 
+  register_setting('sirv-settings-group', 'SIRV_DELETE_FILE_ON_SIRV');
+
   register_setting('sirv-settings-group', 'SIRV_EXCLUDE_FILES');
   register_setting('sirv-settings-group', 'SIRV_EXCLUDE_PAGES');
 
@@ -1048,7 +1080,6 @@ function sirv_register_settings(){
 
   register_setting('sirv-settings-group', 'SIRV_VERSION_PLUGIN_INSTALLED');
   register_setting('sirv-settings-group', 'SIRV_JS');
-  register_setting('sirv-settings-group', 'SIRV_JS_FILE');
   register_setting('sirv-settings-group', 'SIRV_CUSTOM_CSS');
 
   register_setting('sirv-settings-group', 'SIRV_CROP_SIZES');
@@ -1077,12 +1108,23 @@ function sirv_set_network_type_config($old_value, $new_value)
 add_action('update_option_SIRV_FOLDER', 'sirv_set_folder_config', 10, 2);
 function sirv_set_folder_config($old_value, $new_value){
   if ($old_value !== $new_value) {
-
-    $s3object = sirv_getS3Client();
-    $s3object->createFolder($new_value . '/');
+    $isCreated = false;
 
     $sirvAPIClient = sirv_getAPIClient();
-    $sirvAPIClient->setFolderOptions($new_value, array('scanSpins' => false));
+    $isRenamed = $sirvAPIClient->renameFile('/' . $old_value, '/' . $new_value);
+
+    if(!$isRenamed){
+      $isCreated = $sirvAPIClient->createFolder($new_value . '/');
+    }
+
+
+    if($isRenamed || $isCreated){
+      $sirvAPIClient->setFolderOptions($new_value, array('scanSpins' => false));
+
+      global $wpdb;
+      $images_t = $wpdb->prefix . 'sirv_images';
+      $delete = $wpdb->query("TRUNCATE TABLE $images_t");
+    }
   }
 }
 
@@ -1100,14 +1142,6 @@ function sirv_set_woo_mv_custom_css($old_value, $new_value)
 {
   if ($old_value !== $new_value) {
     update_option('SIRV_WOO_MV_CUSTOM_CSS', sirv_remove_tag($new_value, 'style'));
-  }
-}
-
-
-add_action('update_option_SIRV_WOO_IS_ENABLE', 'sirv_set_mv_js', 10, 2);
-function sirv_set_mv_js($old_value, $new_value){
-  if ($old_value !== $new_value && $new_value == '2') {
-    update_option('SIRV_JS_FILE', '3');
   }
 }
 
@@ -1200,7 +1234,6 @@ if (get_option('SIRV_JS') === '1') {
 
 
 function sirv_add_sirv_js(){
-  //$sirv_js_path = getValue::getOption('SIRV_JS_FILE');
   $sirv_js_path = getValue::getOption('SIRV_JS_FILE');
 
   wp_register_script('sirv-js', $sirv_js_path, array(), false, false);
@@ -1338,7 +1371,7 @@ function sirv_init(){
   add_action('wp_footer', 'sirv_buffer_end', PHP_INT_MAX - 100);
   //}
 
-  add_action('wp_enqueue_scripts', 'sirv_enqueue_frontend_scripts', 30);
+  add_action('wp_enqueue_scripts', 'sirv_enqueue_frontend_scripts', PHP_INT_MAX - 100);
 }
 
 
@@ -1446,16 +1479,45 @@ function sirv_crop_direction($type){
 
 function sirv_enqueue_frontend_scripts(){
   global $isLoggedInAccount;
-  wp_enqueue_style('sirv_frontend_style', plugins_url('/sirv/css/sirv-responsive-frontend.css', __FILE__));
+  //wp_enqueue_style('sirv_frontend_style', plugins_url('/sirv/css/sirv-responsive-frontend.css', __FILE__));
+
+  add_action('wp_print_styles', 'sirv_print_front_styles');
+  add_action('wp_print_footer_scripts', 'sirv_print_front_scripts', PHP_INT_MAX - 1000);
 
   if (get_option('SIRV_ENABLE_CDN') === '1' && $isLoggedInAccount){
-    $css_images_styles = get_option('SIRV_CSS_BACKGROUND_IMAGES');
-    if (isset($css_images_styles) && !empty($css_images_styles)) {
-      wp_add_inline_style('sirv_frontend_style', $css_images_styles);
-    }
-
+      //wp_add_inline_style('sirv_frontend_style', $css_images_styles);
+      add_action('wp_print_styles', 'sirv_print_css_images');
   }
-  wp_enqueue_script('sirv_miscellaneous', plugins_url('/sirv/js/wp-sirv-diff.js', __FILE__), array('jquery'), '1.0.0', true);
+  //wp_enqueue_script('sirv_miscellaneous', plugins_url('/sirv/js/wp-sirv-diff.js', __FILE__), array('jquery'), '1.0.0', true);
+}
+
+
+function sirv_print_front_styles(){
+  sirv_add_file_to_inline_code('/sirv/css/sirv-responsive-frontend.css', false, 'style');
+}
+
+
+function sirv_print_css_images(){
+  $css_images_styles = get_option('SIRV_CSS_BACKGROUND_IMAGES');
+  if (isset($css_images_styles) && !empty($css_images_styles)) {
+    sirv_add_file_to_inline_code(false, $css_images_styles, 'style');
+  }
+}
+
+
+function sirv_print_front_scripts(){
+  sirv_add_file_to_inline_code('/sirv/js/wp-sirv-diff.js', false, 'script');
+}
+
+
+function sirv_add_file_to_inline_code($path, $data, $tag){
+  echo "<{$tag}>" . PHP_EOL;
+  if( $path ){
+    include(dirname(__FILE__) . $path);
+  }else{
+    echo $data;
+  }
+  echo "</{$tag}>"  . PHP_EOL;
 }
 
 
@@ -1479,18 +1541,19 @@ function sirv_do_responsive_images($attr, $attachment, $size){
 
   if (empty($sirv_cdn_url) || stripos($attr['src'], $sirv_cdn_url) === false) return $attr;
 
+  $placeholder_type = get_option('SIRV_RESPONSIVE_PLACEHOLDER');
+
   $url = sirv_prepareResponsiveImage($attr['src']);
-  $plchldr_data  = sirv_prepare_placeholder_data($url, $size);
-  //$classes = $plchldr_data['url'] ? 'Sirv placeholder-blurred': 'Sirv';
-  //$classes = 'Sirv';
+  $plchldr_data  = sirv_prepare_placeholder_data($url, $size, $placeholder_type);
 
   $attr['class'] = isset($attr['class']) ? $attr['class'] . ' ' . $plchldr_data['classes'] : $plchldr_data['classes'];
   $attr['data-src'] = $url;
+
   if ($plchldr_data['url']) {
     $attr['src'] = $plchldr_data['url'];
     $attr['width'] = $plchldr_data['width'];
-  } else {
-    unset($attr['src']);
+  }else{
+    //unset($attr['src']);
   }
 
   unset($attr['srcset']);
@@ -1510,9 +1573,8 @@ function sirv_prepareResponsiveImage($url){
 }
 
 
-function sirv_prepare_placeholder_data($url, $size){
-  $placeholder_type = get_option('SIRV_RESPONSIVE_PLACEHOLDER');
-  $wp_sizes = sirv_get_image_sizes();
+function sirv_prepare_placeholder_data($url, $size, $placeholder_type){
+  $wp_sizes = sirv_get_image_sizes(false);
   $tmp_arr = array('url' => '', 'width' => '', 'classes' => 'Sirv');
   $svg_placehodler = "data:image/gif;base64, R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
   $svg_placehodler_grey = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAKSURBVAgdY3gPAADxAPAXl1qaAAAAAElFTkSuQmCC";
@@ -1529,14 +1591,15 @@ function sirv_prepare_placeholder_data($url, $size){
       } catch (Exception $e) {
       }
     } */
-    if (isset($wp_sizes[$size])) {
+    if (isset($wp_sizes[$size]) && $wp_sizes[$size]['width'] != 0) {
       $tmp_arr['width'] = $wp_sizes[$size]['width'];
     }
   }
 
   if ($tmp_arr['width']) {
-    //if (pathinfo(preg_replace('/\?.*/is', '', $url), PATHINFO_EXTENSION) == 'svg' || $placeholder_type == '2') {
-    if ( $placeholder_type == '2' ) {
+    if ( $placeholder_type == '3' ) {
+      $tmp_arr['url'] = stripos($url, '?') === false ? $url . '?w=' . $tmp_arr['width'] : $url . '&w=' . $tmp_arr['width'];
+    }else if ( $placeholder_type == '2' ) {
       $tmp_arr['url'] = $url . $placeholder_grey_params;
     } else {
       $size = intval($tmp_arr['width'] / 10);
@@ -1811,7 +1874,7 @@ function sirv_get_image_size($size){
   $sizes['crop'] = (bool)get_option("{$size}_crop'");
 }
 
-function sirv_get_image_sizes()
+function sirv_get_image_sizes($isRemoveZeroSizes = true)
 {
   global $_wp_additional_image_sizes;
 
@@ -1833,7 +1896,10 @@ function sirv_get_image_sizes()
     }
 
     //if( ($sizes[ $_size ]['width'] == 0) && ($sizes[ $_size ]['height'] == 0) ) unset( $sizes[ $_size ] );
-    if (($sizes[$_size]['width'] == 0) || ($sizes[$_size]['height'] == 0)) unset($sizes[$_size]);
+    if($isRemoveZeroSizes){
+      if (($sizes[$_size]['width'] == 0) || ($sizes[$_size]['height'] == 0)) unset($sizes[$_size]);
+    }
+
   }
 
   return $sizes;
@@ -1981,15 +2047,14 @@ function sirv_test_orientation($sizes){
 
 
 function sirv_get_sirv_path($path = ''){
-  $network_type = get_option('SIRV_NETWORK_TYPE');
   $sirv_path = '';
+  $cdn_url = get_option('SIRV_CDN_URL');
 
-  if ($network_type === '2') {
+  if(!empty($cdn_url)){
+    $sirv_path = "https://{$cdn_url}/{$path}";
+  }else{
     $bucket = get_option('SIRV_AWS_BUCKET');
     $sirv_path = "https://{$bucket}.sirv.com/{$path}";
-  } else {
-    $cdn_url = get_option('SIRV_CDN_URL');
-    $sirv_path = "https://{$cdn_url}/{$path}";
   }
 
   return $sirv_path;
@@ -2203,8 +2268,8 @@ function sirv_get_cdn_image($attachment_id, $wait = false){
   }
 
   if ($image && $image['status'] == 'PROCESSING') {
-    if ((int)$image['checks'] <= 5 && ($image['timestamp_checks'] == 'NULL' ||  time() - (int) $image['timestamp_checks'] >= 10)) {
-      //if(sirv_checkIfImageExists($paths['sirv_full_path'])){
+    //if ((int)$image['checks'] <= 5 && ($image['timestamp_checks'] == 'NULL' ||  time() - (int) $image['timestamp_checks'] >= 10)) {
+    if (sirv_time_checks($image, 5)) {
       if (sirv_checkIfImageExists($sirv_folder . $image['sirv_path'])) {
         $wpdb->update($table_name, array(
           'timestamp_synced' => date("Y-m-d H:i:s"),
@@ -2226,12 +2291,20 @@ function sirv_get_cdn_image($attachment_id, $wait = false){
     } else if ((int) $image['checks'] >= 5) {
       $wpdb->update($table_name, array(
         'status' => 'FAILED',
-        'error_type' => 4
+        'error_type' => 7
       ), array('attachment_id' => $attachment_id));
 
       return '';
     }
   }
+}
+
+
+function sirv_time_checks($image, $count = 5){
+  $times_ckecks = array(10, 30, 70, 150, 310, 630, 1270, 2550, 5110);
+  $check_num = (int) $image['checks'];
+
+  return ($check_num <= $count && ($image['timestamp_checks'] == 'NULL' ||  time() - (int) $image['timestamp_checks'] >= $times_ckecks[$check_num]));
 }
 
 
@@ -2856,10 +2929,12 @@ function sirv_getCacheInfo(){
 
     $stat['garbage_count'] = $oldCache;
     $stat['garbage_count_s'] = sirv_get_formated_number($oldCache);
-    $stat['queued'] = $stat['total_count'] - $stat['q'] - $stat['garbage_count'] - $stat['FAILED']['count'];
+    //$stat['queued'] = $stat['total_count'] - $stat['q'] - $stat['garbage_count'] - $stat['FAILED']['count'];
+    $stat['queued'] = $stat['total_count'] - $stat['q'] - $stat['FAILED']['count'];
     $stat['queued_s'] = sirv_get_formated_number($stat['queued']);
 
-    $progress_complited = $stat['total_count'] != 0 ? ($stat['q'] - $stat['garbage_count']) / $stat['total_count'] * 100 : 0;
+    //$progress_complited = $stat['total_count'] != 0 ? ($stat['q'] - $stat['garbage_count']) / $stat['total_count'] * 100 : 0;
+    $progress_complited = $stat['total_count'] != 0 ? ($stat['q']) / $stat['total_count'] * 100 : 0;
     $progress_queued = $stat['total_count'] != 0 ? $stat['queued'] / $stat['total_count'] * 100 : 0;
     $progress_failed = $stat['total_count'] != 0 ? $stat['FAILED']['count'] / $stat['total_count'] * 100 : 0;
 
@@ -3720,15 +3795,12 @@ function sirv_add_folder(){
     return;
   }
 
-  $current_dir = stripslashes($_POST['current_dir']);
-  $current_dir = $current_dir == '/' ? '' : $current_dir;
-  $new_dir = stripslashes($_POST['new_dir']);
+  $path = $_POST['current_dir'] . $_POST['new_dir'];
 
-  $path = rawurlencode($current_dir) . $new_dir . '/';
-  $path = str_replace('%2F', '/', $path);
+  $APIClient = sirv_getAPIClient();
+  $res = $APIClient->createFolder($path);
 
-  $s3object = sirv_getS3Client();
-  $s3object->createFolder($path);
+  echo json_encode(array('isNewDirCreated' => $res));
 
   wp_die();
 }
@@ -3872,7 +3944,7 @@ function sirv_getProfilesList(){
       $profiles = $profilesList;
       return $profiles;
     }
-    return false;
+    return array();
   }else{
     return $profiles;
   }
@@ -4020,12 +4092,9 @@ function sirv_setup_credentials(){
       $res = $sirvAPIClient->setupS3Credentials($email);
       if ($res) {
         $sirv_folder = get_option('SIRV_FOLDER');
-        $s3object = sirv_getS3Client();
-        $s3object->createFolder($sirv_folder . '/');
 
+        $sirvAPIClient->createFolder('/' . $sirv_folder);
         $sirvAPIClient->setFolderOptions($sirv_folder, array('scanSpins' => false));
-
-        sirv_getStorageInfo(true);
 
         echo json_encode(
           array('connected' => '1')
@@ -4193,9 +4262,9 @@ function sirv_rename_file(){
   $file_path = $_POST['filePath'];
   $new_file_path = $_POST['newFilePath'];
 
+  $sirvAPIClient = sirv_getAPIClient();
+  $result = $sirvAPIClient->renameFile($file_path, $new_file_path);
 
-  $s3client = sirv_getS3Client();
-  $result = $s3client->renameFile($file_path, $new_file_path);
 
   echo json_encode(array('renamed' => $result));
 
@@ -4499,7 +4568,7 @@ function sirv_search_css_files($css_path, $css_sync_data){
 
 
 function sirv_parse_css_images($data){
-  $pattern = '/}([^}]*?){(?:[^{])*?(background(?:-image)?:\s?url\([\'\"]?(.*?)[\'\"]?\).*?\;)/is';
+  $pattern = '/}([^}]*?){(?:[^{])*?(background(?:-image)?:\s?url\([\'\"]?(.*?)[\'\"]?\).*?)\;/is';
   $parsed_items = array();
 
   $css_sync_data = $data['css_sync_data'];
@@ -4721,7 +4790,10 @@ function sirv_isRelativePath($image_url, $pattern){
 
 
 function sirv_render_sirv_class($css_item, $sirv_url){
-  return trim($css_item['class']) . "{" . str_replace($css_item['img_url'], $sirv_url, $css_item['style']) . "}";
+  $end_brace = stripos($css_item['class'], '@media') !== false ? '}}' : '}';
+  $important = ' !important;';
+
+  return trim($css_item['class']) . "{" . str_replace($css_item['img_url'], $sirv_url, $css_item['style']) . $important . $end_brace;
 }
 
 
@@ -4735,14 +4807,36 @@ function sirv_flatten_css_files_array($arr){
 
 add_action('admin_init', 'sirv_monitoring_nopriv_ajax');
 function sirv_monitoring_nopriv_ajax(){
+  //if (is_admin() || $isAdmin) return;
+
   if (defined('DOING_AJAX') && DOING_AJAX) {
-    if(isset($_POST['action']) && sirv_is_frontend_ajax($_POST['action'])){
+    $action = '';
+    $post_action = isset($_POST['action']) ? $_POST['action'] : '';
+    if (!empty($post_action)) {
+      $action = $post_action;
+    } else {
+      $action = isset($_GET['action']) ? $_GET['action'] : '';
+    }
+
+    if (!empty($action) && sirv_is_frontend_ajax($action)) {
+      //global $isAdmin;
+      global $isLoggedInAccount;
       global $isAjax;
       $isAjax = true;
-      add_filter('wp_get_attachment_image_src', 'sirv_wp_get_attachment_image_src', 10000, 4);
-      add_filter('wp_get_attachment_url', 'sirv_wp_get_attachment_url', 10000, 2);
-      add_filter('wp_calculate_image_srcset', 'sirv_add_custom_image_srcset', 10000, 5);
-      add_filter('wp_get_attachment_image_attributes', 'sirv_do_responsive_images', 99, 3);
+
+      if (get_option('SIRV_ENABLE_CDN') === '1' && $isLoggedInAccount) {
+        add_filter('wp_get_attachment_image_src', 'sirv_wp_get_attachment_image_src', 10000, 4);
+        add_filter('image_downsize', "sirv_image_downsize", 10000, 3);
+        add_filter('wp_get_attachment_url', 'sirv_wp_get_attachment_url', 10000, 2);
+        add_filter('wp_calculate_image_srcset', 'sirv_add_custom_image_srcset', 10, 5);
+        //add_filter('vc_wpb_getimagesize', 'sirv_vc_wpb_filter', 10000, 3);
+        //add_filter('envira_gallery_image_src', 'sirv_envira_crop', 10000, 4);
+        //add_filter('wp_prepare_attachment_for_js', 'sirv_wp_prepare_attachment_for_js', 10000, 3);
+
+        if (get_option('SIRV_USE_SIRV_RESPONSIVE') === '1') {
+          add_filter('wp_get_attachment_image_attributes', 'sirv_do_responsive_images', 99, 3);
+        }
+      }
     }
   }
 }
@@ -4775,6 +4869,29 @@ function sirv_update_smv_cache_data(){
 
   echo json_encode(array('status' => 'updated'));
   wp_die();
+}
+
+
+add_action('delete_attachment', 'sirv_delete_image_from_sirv', 10 , 2);
+function sirv_delete_image_from_sirv($post_id, $post){
+
+  if(get_option('SIRV_DELETE_FILE_ON_SIRV') == '2') return;
+
+  if(isset($post_id) && isset($post) && sirv_isImage($post->guid)){
+    global $wpdb;
+    $images_t = $wpdb->prefix . 'sirv_images';
+    //$sirv_img_data_from_cache = $wpdb->get_row($wpdb->prepare("SELECT * FROM $images_t WHERE attachment_id = $post_id"), ARRAY_A);
+    $sirv_img_data_from_cache = $wpdb->get_row($wpdb->prepare("SELECT * FROM $images_t WHERE attachment_id = %d", $post_id), ARRAY_A);
+
+    if(!$sirv_img_data_from_cache) return;
+
+    $result = $wpdb->delete($images_t, ['id' => $sirv_img_data_from_cache['id']]);
+    if($result){
+      $sirv_folder = get_option('SIRV_FOLDER');
+      $sirvAPIClient = sirv_getAPIClient();
+      $r_result = $sirvAPIClient->deleteFile($sirv_folder . $sirv_img_data_from_cache['sirv_path']);
+    }
+  }
 }
 
 ?>

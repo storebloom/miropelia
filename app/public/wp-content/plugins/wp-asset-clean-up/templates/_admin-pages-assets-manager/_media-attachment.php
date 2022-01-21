@@ -16,7 +16,7 @@ if ( ! \WpAssetCleanUp\Main::instance()->currentUserCanViewAssetsList() ) {
 	return;
 }
 
-$data['post_id'] = (isset($_GET['wpacu_post_id']) && $_GET['wpacu_post_id']) ? $_GET['wpacu_post_id'] : false;
+$data['post_id'] = (isset($_GET['wpacu_post_id']) && $_GET['wpacu_post_id']) ? (int)$_GET['wpacu_post_id'] : false;
 ?>
 <p>Post Type: 'attachment' (e.g. files from <a target="_blank" href="https://wordpress.org/support/article/media-library-screen/">"Media" &#187; "Library"</a>, the page loaded usually prints the image or other media type) &#10230; <a target="_blank" href="https://wordpress.org/support/article/edit-media/"><?php _e('read more', 'wp-asset-clean-up'); ?></a></p>
 <?php

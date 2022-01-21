@@ -28,12 +28,14 @@ class Ga_Stats {
 	 * @param int $id_view The Analytics view ID from which to retrieve data.
 	 * @param string $date_range The start date for the query in the format YYYY-MM-DD or '7daysAgo'
 	 * @param string $metric A metric expression
+	 * @param bool $old Use old query style.
 	 *
 	 * @return array Request query
 	 */
-	public static function get_query( $query, $id_view, $date_range = null, $metric = null ) {
+	public static function get_query( $query, $id_view, $date_range = null, $metric = null, $old = false ) {
 		if ( $query == 'main_chart' ) {
-			return self::main_chart_query( $id_view, $date_range, $metric );
+			return $old ? self::main_chart_query_old($id_view, $date_range, $metric) : self::main_chart_query($id_view,
+				$date_range, $metric);
 		} elseif ( $query == 'gender' ) {
 			return self::gender_chart_query($id_view, $date_range, $metric);
 		} elseif ( $query == 'device' ) {
@@ -43,7 +45,8 @@ class Ga_Stats {
 		} elseif ( $query == 'boxes' ) {
 			return self::boxes_query( $id_view );
 		} elseif ( $query == 'dashboard_boxes' ) {
-			return self::dashboard_boxes_query( $id_view, $date_range );
+			return $old ? self::dashboard_boxes_query_old( $id_view, $date_range ) :
+				self::dashboard_boxes_query( $id_view, $date_range );
 		} elseif ( $query == 'sources' ) {
 			return self::sources_query( $id_view, $date_range );
 		} else {
@@ -98,7 +101,7 @@ class Ga_Stats {
 	}
 
 	/**
-	 * Preparing query for dashbord boxes
+	 * Preparing query for dashboard boxes
 	 *
 	 * @param int $id_view The Analytics view ID from which to retrieve data.
 	 * @param array $date_ranges An array representing the date ranges that will be passed to chart query.
@@ -139,6 +142,56 @@ class Ga_Stats {
 		$query				 = array(
 			'reportRequests' => $reports_requests
 		);
+
+		return $query;
+	}
+
+	/**
+	 * Preparing query for dashboard boxes
+	 *
+	 * @param int $id_view       The Analytics view ID from which to retrieve data.
+	 * @param string $date_range The start date for the query in the format YYYY-MM-DD or '7daysAgo'
+	 *
+	 * @return array Dashboard boxes query
+	 * @deprecated
+	 *
+	 */
+	public static function dashboard_boxes_query_old($id_view, $date_range)
+	{
+		$reports_requests = [];
+		$daysAgo          = isset($_GET['th']) ? '30daysAgo' : '7daysAgo';
+
+		if (isset($_GET['ts'])) {
+			$reports_requests[] = [
+				'viewId'           => $id_view,
+				'dateRanges'       => self::set_date_ranges($daysAgo, 'yesterday'),
+				'metrics'          => self::set_metrics(['ga:pageviews']),
+				'includeEmptyRows' => true,
+				'pageSize'         => 10,
+				'dimensions'       => self::set_dimensions('ga:sourceMedium'),
+				'orderBys'         => self::set_order_bys('ga:pageviews', 'DESCENDING'),
+			];
+		} else {
+			$reports_requests[] = [
+				'viewId'           => $id_view,
+				'dateRanges'       => self::set_date_ranges($daysAgo, 'yesterday'),
+				'metrics'          => self::set_metrics([
+					'ga:pageviews',
+					'ga:uniquePageviews',
+					'ga:timeOnPage',
+					'ga:bounces',
+					'ga:entrances',
+					'ga:exits',
+				]),
+				'includeEmptyRows' => true,
+				'pageSize'         => 10,
+				'dimensions'       => self::set_dimensions('ga:pagePath'),
+				'orderBys'         => self::set_order_bys('ga:pageviews', 'DESCENDING'),
+			];
+		}
+		$query = [
+			'reportRequests' => $reports_requests,
+		];
 
 		return $query;
 	}
@@ -206,6 +259,46 @@ class Ga_Stats {
 	}
 
 	/**
+	 * Preparing query for chart
+	 *
+	 * @param int $id_view       The Analytics view ID from which to retrieve data.
+	 * @param string $date_range The start date for the query in the format YYYY-MM-DD or '7daysAgo'
+	 * @param string $metric     A metric expression
+	 *
+	 * @return array Chart query
+	 * @deprecated
+	 *
+	 */
+	public static function main_chart_query_old($id_view, $date_range = null, $metric = null)
+	{
+		if (empty($date_range)) {
+			$date_ranges = self::set_date_ranges('7daysAgo', 'yesterday', '14daysAgo', '8daysAgo');
+		} else {
+			$date_ranges = self::set_date_ranges($date_range, 'yesterday', '14daysAgo', '8daysAgo');
+		}
+
+		if (empty($metric)) {
+			$metric = 'ga:pageviews';
+		} else {
+			$metric = 'ga:' . $metric;
+		}
+
+		$reports_requests   = [];
+		$reports_requests[] = [
+			'viewId'           => $id_view,
+			'dateRanges'       => $date_ranges,
+			'metrics'          => self::set_metrics($metric),
+			'includeEmptyRows' => true,
+			'dimensions'       => self::set_dimensions('ga:date'),
+		];
+		$query              = [
+			'reportRequests' => $reports_requests,
+		];
+
+		return $query;
+	}
+
+	/**
 	 * Preparing query for gender chart
 	 *
 	 * @param int $id_view The Analytics view ID from which to retrieve data.
@@ -215,6 +308,10 @@ class Ga_Stats {
 	 * @return array Chart query
 	 */
 	public static function gender_chart_query( $id_view, $date_ranges = null, $metric = null ) {
+		if ( true === empty( $date_ranges ) ) {
+			$date_ranges = self::set_date_ranges( '7daysAgo', 'yesterday', '14daysAgo', '8daysAgo' );
+		}
+
 		$reports_requests	 = array();
 		$reports_requests[]	 = array(
 			'viewId'			 => $id_view,
@@ -264,6 +361,10 @@ class Ga_Stats {
 	 * @return array Chart query
 	 */
 	public static function age_chart_query( $id_view, $date_ranges = null, $metric = null ) {
+		if ( true === empty( $date_ranges ) ) {
+			$date_ranges = self::set_date_ranges( '7daysAgo', 'yesterday', '14daysAgo', '8daysAgo' );
+		}
+
 		$reports_requests	 = array();
 		$reports_requests[]	 = array(
 			'viewId'			 => $id_view,

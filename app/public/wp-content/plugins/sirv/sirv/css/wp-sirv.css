@@ -777,6 +777,7 @@ background: #fff !important; color:#1E8CBE !important;
 .sirv-drop-wrapper .sirv-drop-area .sirv-cover-text span {
     display: block;
     height: 50px;
+    margin-top: 20px;
 }
 
 .sirv-drop-to-folder{

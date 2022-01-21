@@ -1,13 +1,13 @@
 === ShareThis Follow Buttons ===
 Plugin Name: ShareThis Follow Buttons
-Contributors: sharethis, scottstorebloom
+Contributors: sharethis, scottstorebloom, scottmweaver
 Tags: sharethis, share this, follow buttons, social buttons
 Author URI: https://sharethis.com/
 Author: ShareThis
 Requires at least: 4.5
-Tested up to: 5.6.0
-Stable tag: 1.2.0
-Version: 1.2.0
+Tested up to: 5.8
+Stable tag: 1.2.1
+Version: 1.2.1
 License: GPLv2 or later
 
 Integrate ShareThis Follow Buttons seamlessly into your WordPress site.
@@ -60,6 +60,9 @@ By creating an account with ShareThis you agree to our [terms of use](https://sh
 Included in those terms is our ability to keep track of user interactions with our buttons. You can read all about our privacy policy here: [https://sharethis.com/privacy/](https://sharethis.com/privacy/).
 
 == Changelog ==
+
+= 1.2.1 =
+* Tested with WordPress 5.8.
 
 = 1.2.0 =
 * Fix config functionality in register and admin.

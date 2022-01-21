@@ -2,10 +2,10 @@
 Contributors: sharethis, scottstorebloom, scottmweaver
 Tags: analytics, google analytics, google analytics plugin, google analytics widget, google analytics dashboard
 Requires at least: 5.2
-Tested up to: 5.8
-Stable tag: 2.5.2
+Tested up to: 5.8.3
+Stable tag: 2.5.4
 
-Use Google Analytics on your Wordpress site without touching any code, and view visitor reports right in your Wordpress admin dashboard!
+Use Google Analytics on your WordPress site without touching any code, and view visitor reports right in your WordPress admin dashboard!
 
 == Description ==
 
@@ -87,7 +87,7 @@ While some publishers prefer the manual option, installing the Google Analytics 
 
 = Do I Need to Put Google Analytics Tracking Code on Every Page? =
 Google Analytics tracking code is a block of JavaScript code that executes Google Analytics tracking when a visitor loads a page on your website. The script that triggers these events must be loaded on every page in order for Google Analytics tracking to work.
-That doesn’t mean you need to become an expert in JavaScript code or spend hours manually inserting Google Analytics tracking code on every page of your WordPress website. You can insert the tracking code in your header.php file so that it automatically loads on every page, or you can install the Google Analytics Dashboard for WordPress plugin and follow a few simple steps to get Google Analytics tracking setup in minutes by authenticating with Google.
+That doesn't mean you need to become an expert in JavaScript code or spend hours manually inserting Google Analytics tracking code on every page of your WordPress website. You can insert the tracking code in your header.php file so that it automatically loads on every page, or you can install the Google Analytics Dashboard for WordPress plugin and follow a few simple steps to get Google Analytics tracking setup in minutes by authenticating with Google.
 Even if you prefer the traditional manual option of adding the UA tracking code to every page, the Google Analytics Dashboard for WordPress plugin makes that process easier, too. Simply click “Manually enter Tracking ID” and paste your Google Tracking code into the box that appears. Then, just click “Save Changes,” and your code will instantly be live on all your pages.  Click here for more details on this process. However, keep in mind that using this option means your dashboards won’t appear, so to get the most from the Google Analytics Dashboard for WordPress plugin, we recommend using the authenticate with Google setup option from our latest update.
 
 = How Do I Use Google Analytics for SEO? =
@@ -113,6 +113,14 @@ If you’re using Google Analytics on your WordPress website or a plugin like th
 4. Just click to authenticate, then copy the API key and add it to the plugin
 
 == Changelog ==
+
+= 2.5.4
+* Fix dashboard widget.
+* Test plugin with WordPress 5.8.3.
+
+= 2.5.3
+* Fix sending of demographic data once per month.
+* Test plugin with WordPress 5.8.1.
 
 = 2.5.2
 * Add custom date range selector instead of 7/30-day selector.
@@ -219,7 +227,7 @@ If you’re using Google Analytics on your WordPress website or a plugin like th
 * No need to find your GA property ID and copy it over, just sign in with Google and choose your site
 * See analytics right inside the plugin, the past 7 days vs your previous 7 days
 * Shows pageviews, users, pages per session and bounce rate + top 5 traffic referrals
-* Wordpress Dashboard widget for 7, 30 or 90 days graph and top site usage stats
+* WordPress Dashboard widget for 7, 30 or 90 days graph and top site usage stats
 * Disable tracking for logged in users like admins or editors for more reliable analytics
 
 = 1.0.7 =

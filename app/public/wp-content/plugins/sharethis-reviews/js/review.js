@@ -17,10 +17,10 @@ var Review = ( function( $, wp ) {
 		/**
 		 * Boot plugin.
 		 */
-		boot: function ( data ) {
+		boot: function( data ) {
 			this.data = data;
 
-			$( document ).ready( function () {
+			$( document ).ready( function() {
 				this.init();
 			}.bind( this ) );
 		},
@@ -28,7 +28,7 @@ var Review = ( function( $, wp ) {
 		/**
 		 * Initialize plugin.
 		 */
-		init: function () {
+		init: function() {
 			this.$container = $( '.review-section-wrap' );
 			this.$impContainer = $( '.impression-wrap' );
 			this.listen();
@@ -37,19 +37,18 @@ var Review = ( function( $, wp ) {
 		/**
 		 * Initiate listeners.
 		 */
-		listen: function () { console.log('log');
+		listen: function() {
 			var self = this,
 				timer = '';
 
-			this.$container.one( 'click', '#submit-user-review', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
+			this.$container.one( 'click', '#submit-user-review', function( e ) {
+				e.preventDefault();
+				e.stopPropagation();
 
 				var review = $( this ).siblings( 'textarea' ).val(),
 					title = $( this ).siblings( '#title' ).val(),
 					name = 0 !== $( '#name' ).length ? $( this ).siblings( '#name' ).val() : '',
 					rating = 0 !== $( 'input[name="st-review-rating"]' ).length ? $( 'input[name="st-review-rating"]:checked' ).val() : '';
-console.log('hey');
 				self.addReview( review, title, rating, name );
 			} );
 
@@ -89,9 +88,9 @@ console.log('hey');
 			this.$container.on( 'click', '#open-review-form', function() {
 				$( this ).fadeOut();
 
-				setTimeout(function() {
+				setTimeout( function() {
 					$( '.review-hidden-wrap' ).fadeIn();
-				}, 500);
+				}, 500 );
 			} );
 		},
 
@@ -110,7 +109,7 @@ console.log('hey');
 				review: review,
 				title: title,
 				name: name,
-				nonce: this.data.nonce
+				nonce: this.data.nonce,
 			} ).always( function( results ) {
 				$( 'input[name="st-review-rating"]' ).prop( 'checked', false );
 				$( '.review-section-wrap textarea' ).val( '' );
@@ -130,7 +129,7 @@ console.log('hey');
 				postid: this.data.postid,
 				name: name,
 				rating: rating,
-				nonce: this.data.nonce
+				nonce: this.data.nonce,
 			} ).always( function() {
 				$( 'input[name="st-review-rating"]' ).prop( 'checked', false );
 				$( '.review-section-wrap input' ).val( '' );
@@ -147,13 +146,13 @@ console.log('hey');
 			var d = new Date(),
 				expires;
 
-			d.setTime(d.getTime() + (30*24*60*60*1000));
-			expires = "expires="+ d.toUTCString();
+			d.setTime( d.getTime() + ( 30 * 24 * 60 * 60 * 1000 ) );
+			expires = "expires=" + d.toUTCString();
 
 			wp.ajax.post( 'add_impression', {
 				postid: this.data.postid,
 				impression: impression,
-				nonce: this.data.nonce
+				nonce: this.data.nonce,
 			} ).always( function() {
 				document.cookie = 'st-impression=true; ' + expires + '; path=/';
 			} );
@@ -170,16 +169,16 @@ console.log('hey');
 				c,
 				i;
 
-			for( i = 0; i < ca.length; i++ ) {
-				c = ca[ i ];
-				while ( c.charAt(0) === ' ' ) {
-					c = c.substring(1);
+			for ( i = 0; i < ca.length; i++ ) {
+				c = ca[i];
+				while ( c.charAt( 0 ) === ' ' ) {
+					c = c.substring( 1 );
 				}
 				if ( c.indexOf( name ) === 0 ) {
 					return c.substring( name.length, c.length );
 				}
 			}
 			return '';
-		}
+		},
 	};
 } )( window.jQuery, window.wp );

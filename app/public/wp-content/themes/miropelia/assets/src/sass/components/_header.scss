@@ -1,6 +1,10 @@
 header {
   margin-top: 8px;
 
+  @media only screen and (max-width: $small) {
+    margin-top: 0;
+  }
+
   .logo {
     border-bottom: 2px solid black;
     margin: auto;
@@ -9,6 +13,74 @@ header {
     position: relative;
     text-align: center;
     width: 100%;
+
+    .menu-toggle {
+      display: none;
+    }
+
+    @media only screen and (max-width: $small) {
+      align-items: center;
+      display: flex;
+      justify-content: space-between;
+      padding: 1rem 0;
+
+      button.menu-toggle {
+        align-items: flex-end;
+        background: none;
+        border: none;
+        display: flex;
+        flex-direction: column;
+        order: 3;
+        padding: 0 1rem;
+        width: 78px;
+
+        span {
+          border-bottom: 3px solid #222222;
+          width: 37.5px;
+          border-radius: 4px;
+          display: inline-block;
+          margin-bottom: 6px;
+          transition: all 0.5s ease;
+          transform: rotate(0);
+
+          &:last-child {
+            width: 26.3px;
+          }
+        }
+
+        &:focus {
+          outline: none;
+        }
+
+        &.engage {
+          height: 30px;
+          margin-right: 1rem;
+          padding: 0;
+          width: 36px;
+
+          span {
+            width: 37.5px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 0;
+            position: absolute;
+            top: 30px;
+
+            &:last-child {
+              display: none;
+            }
+
+            &:first-child {
+              transform: rotate(45deg);
+            }
+
+            &:nth-child(2) {
+              transform: rotate(-45deg);
+            }
+          }
+        }
+      }
+    }
 
     &:before {
       border-bottom: 1px solid transparent;
@@ -31,6 +103,10 @@ header {
     .logo-icon {
       display: block;
 
+      @media only screen and (max-width: $small) {
+        order: 2;
+      }
+
       &.engage {
         -webkit-animation:spin .6s linear 1;
         -moz-animation:spin .6s linear 1;
@@ -44,12 +120,19 @@ header {
 
     svg {
       max-width: 80px;
+      width: 80px;
     }
 
     .login {
       position: absolute;
       right: 0;
       top: 30px;
+
+      @media only screen and (max-width: $small) {
+        margin-left: 1rem;
+        order: 1;
+        position: unset;
+      }
 
       .login-modal {
         background: rgba(0, 0, 0, 0.71);
@@ -92,13 +175,36 @@ header {
   .menu-main-container{
     margin: auto;
     max-width: 1200px;
+
+    @media only screen and (max-width: $small) {
+      &:not(.engage) {
+        display: none;
+      }
+    }
+
     #menu-main {
       display: flex;
       justify-content: space-between;
       padding: 0;
 
+      @media only screen and (max-width: $small) {
+        align-items: flex-end;
+        background: white;
+        box-shadow: 5px 5px 5px 0 #cdcdcd;
+        flex-direction: column;
+        margin-left: auto;
+        padding: 0 2rem 1rem;
+        right: 0;
+        width: 85vw;
+        z-index: 2;
+      }
+
       li {
         list-style: none;
+
+        @media only screen and (max-width: $small) {
+          margin-bottom: .5rem;
+        }
 
         a {
           border-bottom: 0;
@@ -146,6 +252,12 @@ header {
       .engage + .sub-menu {
         opacity: 1;
 
+        @media only screen and (max-width: $small) {
+          top: 0.5rem;
+          left: 3rem;
+          transform: scaleX(-1);
+        }
+
         li {
           border-bottom: 2px solid transparent;
           margin-bottom: 10px;
@@ -153,6 +265,11 @@ header {
 
           &:hover {
             border-bottom: 2px solid $light_blue;
+          }
+
+          @media only screen and (max-width: $small) {
+            text-align: right;
+            transform: scaleX(-1);
           }
         }
 

@@ -50,6 +50,10 @@ input:not([type="checkbox"]):not([type="submit"]) {
   text-align: center;
   width: 100%;
 
+  @media only screen and (max-width: $small) {
+    width: 75vw;
+  }
+
   form {
     width: 100%;
   }

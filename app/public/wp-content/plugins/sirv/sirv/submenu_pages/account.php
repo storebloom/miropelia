@@ -38,15 +38,15 @@ if ($sirvStatus) {
   if (!empty($accountInfo)) {
 
     $isMultiCDN = count((array) $accountInfo->aliases) > 1 ? true : false;
-    $is_direct = (isset($accountInfo->aliases->{$accountInfo->alias}->cdn) && $accountInfo->aliases->{$accountInfo->alias}->cdn) ? false : true;
+    //$is_direct = (isset($accountInfo->aliases->{$accountInfo->alias}->cdn) && $accountInfo->aliases->{$accountInfo->alias}->cdn) ? false : true;
     $sirvCDNurl = get_option('SIRV_CDN_URL');
 
 
     update_option('SIRV_AWS_BUCKET', $accountInfo->alias);
     //update_option('SIRV_NETWORK_TYPE', (isset($accountInfo->aliases->{$accountInfo->alias}->cdn) && $accountInfo->aliases->{$accountInfo->alias}->cdn) ? 1 : 2);
-    update_option( 'SIRV_NETWORK_TYPE', (isset($accountInfo->cdnURL) ? 1 : 2) );
+    //update_option( 'SIRV_NETWORK_TYPE', (isset($accountInfo->cdnURL) ? 1 : 2) );
     update_option('SIRV_FETCH_MAX_FILE_SIZE', $accountInfo->fetching->maxFilesize);
-    if (empty($sirvCDNurl) || !$isMultiCDN || $is_direct) {
+    if (empty($sirvCDNurl) || !$isMultiCDN) {
       update_option('SIRV_CDN_URL', isset($accountInfo->cdnURL) ? $accountInfo->cdnURL : $accountInfo->alias . '.sirv.com');
     }
 

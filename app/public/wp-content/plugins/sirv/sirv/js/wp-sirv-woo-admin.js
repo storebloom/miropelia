@@ -30,11 +30,12 @@ jQuery( function($){
         '</ul >\n';
 
       $.each(data.items, function (index, item) {
-        let liItem = '<li class="sirv-woo-gallery-item" data-order="' + item.order + '" data-type="' + item.type + '"data-provider="'+ item.provider +'" data-url-orig="' + item.url + '" data-view-id="'+ id +'" data-caption="'+ (item.caption || '') +'">\n' +
+        let caption = !!item.caption ? decodeURI(item.caption) : '';
+        let liItem = '<li class="sirv-woo-gallery-item" data-order="' + item.order + '" data-type="' + item.type + '"data-provider="'+ item.provider +'" data-url-orig="' + item.url + '" data-view-id="'+ id +'" data-caption="'+ caption +'">\n' +
           '<div class="sirv-woo-gallery-item-img-wrap">\n' +
             '<img class="sirv-woo-gallery-item-img" src="' + item.url + imgPattern + '">\n' +
           '</div>\n' +
-          '<input type="text" class="sirv-woo-gallery-item-caption" placeholder="Caption" value="'+ (item.caption || '') +'">'+
+          '<input type="text" class="sirv-woo-gallery-item-caption" placeholder="Caption" value="'+ caption +'">'+
           action_tpl +
           '</li>\n';
 

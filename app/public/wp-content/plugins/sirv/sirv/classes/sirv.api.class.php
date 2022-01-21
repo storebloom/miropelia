@@ -129,6 +129,7 @@ class SirvAPIClient
         $str = str_replace('%24', '$', $str);
         $str = str_replace('%3D', '=', $str);
         $str = str_replace('%2B', '+', $str);
+        $str = str_replace('%27', "'", $str);
         $str = str_replace('%28', '(', $str);
         $str = str_replace('%29', ')', $str);
 
@@ -179,7 +180,42 @@ class SirvAPIClient
         }
 
         $res = $this->sendRequest(
-            'v2/files/delete?filename=/'. $filename,
+            'v2/files/delete?filename=/'. rawurlencode(rawurldecode($filename)),
+            array(),
+            'POST'
+        );
+
+        return ($res && $res->http_code == 200);
+    }
+
+
+    public function createFolder($folderPath){
+        $preCheck = $this->preOperationCheck();
+        if (!$preCheck) {
+            return false;
+        }
+
+        $res = $this->sendRequest(
+            'v2/files/mkdir?dirname=/' . rawurlencode(rawurldecode(stripcslashes($folderPath))),
+            array(),
+            'POST'
+        );
+
+        return ($res && $res->http_code == 200);
+    }
+
+
+    public function renameFile($oldFilePath, $newFilePath){
+        $preCheck = $this->preOperationCheck();
+        if (!$preCheck) {
+            return false;
+        }
+
+        $oldFilePath = rawurlencode(rawurldecode(stripcslashes($oldFilePath)));
+        $newFilePath = rawurlencode(rawurldecode(stripcslashes($newFilePath)));
+
+        $res = $this->sendRequest(
+            "v2/files/rename?from={$oldFilePath}&to={$newFilePath}",
             array(),
             'POST'
         );

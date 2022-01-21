@@ -231,12 +231,12 @@ class Ga_Helper {
 	private static function get_dashboard_widget_data( $date_range, $metric = null ) {
 		$selected = self::get_selected_account_data( true );
 		if ( self::is_authorized() && self::is_account_selected() ) {
-			$query_params	 = Ga_Stats::get_query( 'main_chart', $selected[ 'view_id' ], $date_range, $metric );
+			$query_params	 = Ga_Stats::get_query( 'main_chart', $selected[ 'view_id' ], $date_range, $metric, true );
 			$stats_data		 = Ga_Admin::api_client()->call( 'ga_api_data', array(
 				$query_params
 			) );
 
-			$boxes_query = Ga_Stats::get_query( 'dashboard_boxes', $selected[ 'view_id' ], $date_range );
+			$boxes_query = Ga_Stats::get_query( 'dashboard_boxes', $selected[ 'view_id' ], $date_range, null, true );
 			$boxes_data	 = Ga_Admin::api_client()->call( 'ga_api_data', array(
 				$boxes_query
 			) );

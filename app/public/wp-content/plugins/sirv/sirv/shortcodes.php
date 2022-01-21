@@ -61,7 +61,6 @@ function sirv_gallery($atts){
     );
 
     $gallery = null;
-    $js_type = (int) get_option('SIRV_JS_FILE');
     $dependencies = array('jquery');
 
     /*global $pagenow;
@@ -69,20 +68,11 @@ function sirv_gallery($atts){
         $dependencies[] = 'sirv-js';
     } */
 
-    if($js_type == 3){
-        wp_enqueue_script('sirv-gallery-mv-viewer', plugins_url('/js/wp-sirv-mv-gallery.js', __FILE__), $dependencies, false, true);
-        require_once 'sirv-gallery-mv.php';
-        $gallery = new Sirv_Gallery_MV($options, $images, $captions);
-    }else{
-        wp_enqueue_script('sirv-gallery-viewer', plugins_url('/js/wp-sirv-gallery.js', __FILE__), $dependencies, false, true);
-        require_once 'sirv-gallery.php';
-        $gallery = new Sirv_Gallery($options, $images, $captions);
-    }
+    wp_enqueue_script('sirv-gallery-mv-viewer', plugins_url('/js/wp-sirv-mv-gallery.js', __FILE__), $dependencies, false, true);
+    require_once 'sirv-gallery-mv.php';
+    $gallery = new Sirv_Gallery_MV($options, $images, $captions);
 
-
-
-return $gallery->render();
-
+    return $gallery->render();
 }
 
 add_shortcode( 'sirv-gallery', 'sirv_gallery' );

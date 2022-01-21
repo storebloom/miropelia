@@ -4,7 +4,7 @@ Donate link: https://sirv.com/
 Tags: compress, optimize, image, resize, CDN
 Requires PHP: 5.6
 Requires at least: 3.0.1
-Tested up to: 5.7.2
+Tested up to: 5.8
 Stable tag: 4.7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -234,6 +234,37 @@ The official [Sirv Help Center](https://sirv.com/help/) is full of easy advice, 
 18. To upload images to your Sirv library, go to the Media Library page within the Sirv sub-menu (in the left navigation column).
 
 == Changelog ==
+
+== 6.6.1 ==
+* Added option to link image to a page URL or big image.
+* Improved custom domain option.
+* Improved CSS images parsing.
+* Improved Gutenberg support.
+* Small fixes and optimizations.
+
+== 6.6.0 ==
+* Added option to autodelete image from Sirv, if deleted from WP media library.
+* Improved user feedback during bulk synchronization.
+* Added new video options to the Add Sirv Media window.
+* Show text caption under WooCommerce images in fullscreen.
+* Improved sync error categorization.
+* Small improvements to Settings page.
+* Small fixes and optimizations.
+
+== 6.5.1 ==
+* Fixed issue with Class 'SirvElementorWidget\getValue' not found.
+
+== 6.5.0 ==
+* Plugin tested with the latest WordPress version - 5.8.
+* Added ability to rename folders within the Sirv Media Library (right-click).
+* Improved logic when renaming the primary Sirv synchronization folder, to avoid duplication.
+* Added Sirv shortcode to Avada builder.
+* Improved code when working with images requesting by frontend Ajax.
+* Added "pinned thumbnail" option in WooCommerce media gallery.
+* Added ability to order thumbnails in the WooCommerce media gallery.
+* Reworked lazy loading placeholder for better PageSpeed score.
+* Moved frontend styles and scripts inline, to improve PageSpeed score.
+* Many small fixes and improvements.
 
 == 6.3.2 ==
 * Fixed small issue with plugin folder.

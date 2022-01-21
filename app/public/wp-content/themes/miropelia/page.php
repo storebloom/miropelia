@@ -16,8 +16,9 @@ get_header();
 ?>
     <main id="primary" class="site-main">
 	    <div class="container">
-		    <h1><?php if (!is_front_page()) {the_title();} ?></h1>
-	        <?php
+            <?php if (!is_front_page()) : ?>
+                <h1><?php the_title(); ?></h1>
+            <?php endif;
 	        if ( have_posts() ) :
 	            /* Start the Loop */
 	            while ( have_posts() ) :

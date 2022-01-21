@@ -315,7 +315,7 @@
     .sub-toolbar--fixed{
         top: 10%;
         left: 5%;
-        right: 7.4%;
+        right: 9.5%;
         padding-top: 0 !important;
         padding-left: 0 !important;
     }
@@ -613,9 +613,23 @@ jQuery(document).ready(function(){
 
                         <!--video autoplay-->
                         <label data-option-type="video" class="sirv-video-autoplay">
-                            Video autoplay<br>
+                            Autoplay<br>
                             <label class="sirv-flat-radio-buttons"><input data-option-name="videoAutoplay" type="radio"name="sirv-video-autoplay" value="true">On</label>
                             <label class="sirv-flat-radio-buttons"><input data-option-name="videoAutoplay" type="radio"name="sirv-video-autoplay" checked value="false">Off</label>
+                        </label>
+
+                        <!--video loop-->
+                        <label data-option-type="video" class="sirv-video-loop">
+                            Loop<br>
+                            <label class="sirv-flat-radio-buttons"><input data-option-name="videoLoop" type="radio"name="sirv-video-loop" value="true">On</label>
+                            <label class="sirv-flat-radio-buttons"><input data-option-name="videoLoop" type="radio"name="sirv-video-loop" checked value="false">Off</label>
+                        </label>
+
+                        <!--video controls-->
+                        <label data-option-type="video" class="sirv-video-controls">
+                            Controls<br>
+                            <label class="sirv-flat-radio-buttons"><input data-option-name="videoControls" type="radio"name="sirv-video-controls" checked value="true">On</label>
+                            <label class="sirv-flat-radio-buttons"><input data-option-name="videoControls" type="radio"name="sirv-video-controls" value="false">Off</label>
                         </label>
 
                         <!--Square thumbs radio-->
@@ -646,30 +660,31 @@ jQuery(document).ready(function(){
                             <label class="sirv-flat-radio-buttons"><input data-option-name="contextmenu" type="radio" name="sirv-context-menu" value="false">Disabled</label>
                         </label>
 
-                        <!--Spin method radio -->
-                        <label data-option-type="spin" class="sirv-spin-spinmethod">
-                            Spin method<br>
-                            <span style="font-size: 10px; color: #a5a2a2; line-height: 21px;">Always drag in Sirv JS v3</span><br>
-                            <label class="sirv-flat-radio-buttons"><input data-option-name="spin" type="radio" name="sirv-spin-spinmethod" checked value="drag">Drag</label>
-                            <label class="sirv-flat-radio-buttons"><input data-option-name="spin" type="radio" name="sirv-spin-spinmethod" value="hover">Hover</label>
+                        <!--Autospin radio-->
+                        <label data-option-type="spin">
+                            Autospin<br>
+                            <label class="sirv-flat-radio-buttons"><input data-option-name="autospin" type="radio" name="sirv-spin-autospin" checked value="on">On</label>
+                            <label class="sirv-flat-radio-buttons"><input data-option-name="autospin" type="radio" name="sirv-spin-autospin" value="off">Off</label>
                         </label>
-
-                        <!--Autospin select-->
-                        <label data-option-type="spin">Autospin
-                        <select id="sirv-spin-autospin" data-option-name="autospin">
-                            <option value="once">Once</option>
-                            <option value="twice">Twice</option>
-                            <option value="infinite">Infinite</option>
-                            <option value="none">None</option>
-                        </select></label>
 
                         <!--Rotation duration text-->
                         <label data-option-type="spin"><span class="sirv-spinrotation-duration">Rotation duration (ms)</span>
                         <input id="sirv-spinrotation-duration" data-option-name="autospinSpeed" type="text" value="3600" size="5" /></label>
 
                         <!--spin options END-->
-                        <!--Link to big image checkbox-->
-                        <label data-option-type="responsive static gallery"><input id="gallery-link-img" type="checkbox" />Link to big image</label>
+
+                        <!--image link-->
+                        <label data-option-type="responsive static" class="sirv-image-link-type">
+                            Link<br>
+                            <label class="sirv-flat-radio-buttons"><input data-option-name="link" type="radio" name="sirv-image-link-type" checked
+                                    value="none">None</label>
+                            <label class="sirv-flat-radio-buttons"><input data-option-name="link" type="radio" name="sirv-image-link-type"
+                                    value="large">Big image</label>
+                            <label class="sirv-flat-radio-buttons"><input data-option-name="link" type="radio" name="sirv-image-link-type"
+                                    value="url">URL</label>
+                            <input id="sirv-image-custom-link" type="text" size="5" value="" placeholder="https://example.com" style="display: none;" />
+                            <label style="display: none; margin-top: 5px;"><input id="sirv-image-link-blank-window" type="checkbox" />Open in new tab</label>
+                        </label>
                     </div>
                     <div class="gallery-controls">
                         <div class="btn btn-success btn-transparent select-images">

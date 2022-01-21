@@ -10,6 +10,12 @@ if (! defined('WPACU_USE_MODAL_BOX')) {
 	define('WPACU_USE_MODAL_BOX', true);
 }
 
+$possibleWpacuFor = array('everywhere', 'post_types', 'taxonomies', 'authors', 'search_results', 'dates', '404_not_found');
+
+if ( ! in_array($data['for'], $possibleWpacuFor) ) {
+    exit('Invalid request');
+}
+
 // [wpacu_lite]
 $availableForPro = '<span class="wpacu-tooltip">'.__('Available for Pro users', 'wp-asset-clean-up').'<br />'.__('Click to upgrade!', 'wp-asset-clean-up').'</span> <img style="opacity: 0.4;" width="20" height="20" src="'.WPACU_PLUGIN_URL.'/assets/icons/icon-lock.svg" valign="top" alt="" />';
 // [/wpacu_lite]
@@ -281,7 +287,7 @@ if ($data['for'] === 'post_types') {
     <div class="wpacu-modal-content">
         <span class="wpacu-close">&times;</span>
         <h2><?php _e('Unloading CSS/JS site-wide or for a group of pages', 'wp-asset-clean-up'); ?></h2>
-        <p>This is an overview of all the assets that have bulk changes applied. Anything you see on this page is filled the moment you go to edit a page via the "CSS/JS Load Manager" (e.g. homepage or a post) and use the options such as:</p>
+        <p>This is an overview of all the assets that have bulk changes applied. Anything you see on this page is filled the moment you go to edit a page via the "CSS/JS Load Manager" (e.g. homepage or a post) and use options such as:</p>
 
         <ul style="list-style: disc; margin-left: 20px;">
             <li>Unload site-wide (everywhere)</strong></li>

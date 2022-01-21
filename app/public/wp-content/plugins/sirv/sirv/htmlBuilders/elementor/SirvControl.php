@@ -18,12 +18,12 @@ class SirvControl extends \Elementor\Base_Data_Control{
 		wp_enqueue_style('sirv_style');
 		wp_register_style( 'sirv_mce_style', SIRV_PLUGIN_URL_PATH . 'sirv/css/wp-sirv-shortcode-view.css' );
 		wp_enqueue_style('sirv_mce_style');
-		wp_register_script( 'sirv_logic', SIRV_PLUGIN_URL_PATH . 'sirv/js/wp-sirv.js', array( 'jquery', 'jquery-ui-sortable' ), '1.1.0');
+		wp_register_script( 'sirv_logic', SIRV_PLUGIN_URL_PATH . 'sirv/js/wp-sirv.js', array( 'jquery', 'jquery-ui-sortable' ), false);
 		wp_localize_script( 'sirv_logic', 'sirv_ajax_object', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ), 'assets_path' => SIRV_PLUGIN_URL_PATH . 'sirv/assets', 'plugin_path' => SIRV_PLUGIN_PATH, 'sirv_cdn_url' => get_option('SIRV_CDN_URL') ));
 		wp_enqueue_script('sirv_logic');
 		wp_enqueue_script( 'sirv_logic-md5', SIRV_PLUGIN_URL_PATH . 'sirv/js/wp-sirv-md5.min.js', array(), '1.0.0');
 		wp_enqueue_script( 'sirv_modal', SIRV_PLUGIN_URL_PATH . 'sirv/js/wp-sirv-bpopup.min.js', array('jquery'), '1.0.0');
-		wp_enqueue_script( 'sirv_modal-logic', SIRV_PLUGIN_URL_PATH . 'sirv/js/wp-sirv-modal.js', array('jquery'), '1.0.0');
+		wp_enqueue_script( 'sirv_modal-logic', SIRV_PLUGIN_URL_PATH . 'sirv/js/wp-sirv-modal.js', array('jquery'), false);
 
 		wp_register_style('sirv_frontend_style', SIRV_PLUGIN_URL_PATH . '/sirv/css/sirv-responsive-frontend.css');
 		wp_enqueue_style('sirv_frontend_style');
@@ -35,9 +35,9 @@ class SirvControl extends \Elementor\Base_Data_Control{
 			'featured_image_url' => SIRV_PLUGIN_URL_PATH . 'sirv/templates/featured_image.html',
 			'woo_media_add_url' => SIRV_PLUGIN_URL_PATH . 'sirv/templates/woo_media_add.html',
 			'isNotEmptySirvOptions' => $isNotEmptySirvOptions, 'sirv_cdn_url' => get_option('SIRV_CDN_URL')));
-		wp_enqueue_script('sirv-shortcodes-page', SIRV_PLUGIN_URL_PATH . 'sirv/js/wp-sirv-shortcodes-page.js', array( 'jquery'), '1.0.0');
+		wp_enqueue_script('sirv-shortcodes-page', SIRV_PLUGIN_URL_PATH . 'sirv/js/wp-sirv-shortcodes-page.js', array( 'jquery'), false);
 
-		wp_enqueue_script( 'sirv_control_manager', plugins_url('/assets/js/sirvControlManager.js', __FILE__), array('jquery'), '1.0.0', true);
+		wp_enqueue_script( 'sirv_control_manager', plugins_url('/assets/js/sirvControlManager.js', __FILE__), array('jquery'), false, true);
 
 		wp_register_style('wp-standard-styles', get_admin_url() . "load-styles.php?c=0&dir=ltr&load[]=dashicons,buttons,media-views,common,forms,dashboard,list-tables,edit,media,nav-menu");
 		wp_enqueue_style('wp-standard-styles');

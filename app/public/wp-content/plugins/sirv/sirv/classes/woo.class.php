@@ -58,7 +58,7 @@ class Woo
     //wp_register_style('sirv-woo-style', plugins_url('css/wp-sirv-woo.css', __FILE__), array(), '1.0.0');
     //wp_enqueue_style('sirv-woo-style');
 
-    wp_register_script( 'sirv-woo-js', plugins_url('../js/wp-sirv-woo.js', __FILE__), array('jquery'), '1.0.0');
+    wp_register_script( 'sirv-woo-js', plugins_url('../js/wp-sirv-woo.js', __FILE__), array('jquery'), false);
     wp_localize_script('sirv-woo-js', 'sirv_woo_product', array(
       'ajaxurl' => admin_url('admin-ajax.php'),
       'mainID' => $this->product_id,
@@ -70,7 +70,7 @@ class Woo
 
   public function add_sirv_metabox(){
     if (get_post_type() === 'product'){
-        wp_enqueue_script( 'sirv-woo-admin-js', plugins_url('../js/wp-sirv-woo-admin.js', __FILE__), array('jquery', 'sirv-shortcodes-page'), '1.0.0');
+        wp_enqueue_script( 'sirv-woo-admin-js', plugins_url('../js/wp-sirv-woo-admin.js', __FILE__), array('jquery', 'sirv-shortcodes-page'), false);
         wp_enqueue_style('sirv-woo-admin-style', plugins_url('../css/wp-sirv-woo-admin.css', __FILE__));
 
         add_meta_box(
@@ -744,7 +744,14 @@ protected function convert_view_data($product_id, $asset, $index, $path){
 
     $is_all_items_disabled = $this->is_all_items_disabled($items);
 
+    $viewer_options = array();
+    $smv_order_content = get_option('SIRV_WOO_SMV_CONTENT_ORDER');
+    if(!empty(json_decode($smv_order_content))) $viewer_options['itemsOrder'] = '[\'' . implode("','", json_decode($smv_order_content)) . '\']';
+
+
     $ids_data = array();
+
+    $pin_data = json_decode(get_option('SIRV_WOO_PIN'), true);
 
     foreach ($items as $item) {
       $is_item_disabled = $this->is_disable_item_str($item, $is_all_items_disabled);
@@ -754,7 +761,7 @@ protected function convert_view_data($product_id, $asset, $index, $path){
       if($caption) $isCaption = true;
 
       if($item->provider !=='woocommerce'){
-        $items_html .= '<div data-src="'. $this->add_profile($src, $item->type) .'"'. $zoom .' data-view-id="'. $item->viewId .'" data-order="'. $item->order .'" data-slide-caption="'. $caption .'" '. $is_item_disabled .'></div>'. PHP_EOL;
+        $items_html .= '<div '. $this->pin_item($pin_data, $item->type, $src) .' data-src="'. $this->add_profile($src, $item->type) .'"'. $zoom .' data-view-id="'. $item->viewId .'" data-order="'. $item->order .'" data-slide-caption="'. $caption .'" '. $is_item_disabled .'></div>'. PHP_EOL;
       }else{
         $items_html .= '<img data-src="'. $src .'" data-type="static" data-view-id="'. $item->viewId .'" data-order="'. $item->order . '" data-slide-caption="' . $caption . '" '. $is_item_disabled .' />'. PHP_EOL;
       }
@@ -764,7 +771,52 @@ protected function convert_view_data($product_id, $asset, $index, $path){
 
     $json_data_block = '<div style="display: none;" id="sirv-woo-gallery_data_' . $this->product_id . '" data-gallery-json=\''. json_encode($ids_data, JSON_HEX_QUOT | JSON_HEX_APOS) .'\' data-is-caption="'. $isCaption .'"></div>'. PHP_EOL;
 
-    return $json_data_block .'<div class="Sirv" id="sirv-woo-gallery_'. $this->product_id .'">'. PHP_EOL . $items_html .'</div>'. PHP_EOL . $mv_custom_options_block . $mv_custom_css . $max_height_style;
+    return $json_data_block .'<div class="Sirv" id="sirv-woo-gallery_'. $this->product_id .'"'. $this->render_viewer_options($viewer_options) .'>'. PHP_EOL . $items_html .'</div>'. PHP_EOL . $mv_custom_options_block . $mv_custom_css . $max_height_style;
+  }
+
+
+  protected function render_viewer_options($options){
+    if(empty($options)) return '';
+    $options_html = ' data-options="';
+    foreach ($options as $key => $value) {
+      $options_html .= "{$key}:{$value}";
+    }
+    $options_html .= '"';
+
+    return $options_html;
+  }
+
+
+  protected function pin_item($pin_data, $item_type, $src){
+    $start = ' data-pinned="start" ';
+    $end = ' data-pinned="end" ';
+
+    $pin = '';
+    $pin_var = isset($pin_data[$item_type]) ? $pin_data[$item_type] : 'no';
+
+    if($pin_var !== 'no'){
+      if($item_type == 'image'){
+        $expression = $this->convert_img_pattern_to_regex($pin_data['image_template']);
+        if($this->check($src, $expression)){
+          $pin = ($pin_var == 'left') ? $start : $end;
+        }
+
+      }else{
+        $pin = ($pin_var == 'left') ? $start : $end;
+      }
+    }
+
+    return $pin;
+  }
+
+
+  protected function convert_img_pattern_to_regex($img_pattern){
+    return str_replace('\*', '.*', preg_quote($img_pattern, '/'));
+  }
+
+
+  protected function check($src, $expression){
+    return preg_match('/' . $expression . '/', $src) != false;
   }
 
 

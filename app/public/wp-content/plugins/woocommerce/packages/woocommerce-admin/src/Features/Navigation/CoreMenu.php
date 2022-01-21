@@ -74,15 +74,27 @@ class CoreMenu {
 	}
 
 	/**
+	 * Get unfulfilled order count
+	 *
+	 * @return array
+	 */
+	public static function get_shop_order_count() {
+		$status_counts = array_map( 'wc_orders_count', array( 'processing', 'on-hold' ) );
+		return array_sum( $status_counts );
+	}
+
+	/**
 	 * Get all menu categories.
 	 *
 	 * @return array
 	 */
 	public static function get_categories() {
+		$analytics_enabled = Features::is_enabled( 'analytics' );
 		return array(
 			array(
 				'title' => __( 'Orders', 'woocommerce' ),
 				'id'    => 'woocommerce-orders',
+				'badge' => self::get_shop_order_count(),
 				'order' => 10,
 			),
 			array(
@@ -90,17 +102,19 @@ class CoreMenu {
 				'id'    => 'woocommerce-products',
 				'order' => 20,
 			),
+			$analytics_enabled ?
 			array(
 				'title' => __( 'Analytics', 'woocommerce' ),
 				'id'    => 'woocommerce-analytics',
 				'order' => 30,
-			),
+			) : null,
+			$analytics_enabled ?
 			array(
 				'title'  => __( 'Reports', 'woocommerce' ),
 				'id'     => 'woocommerce-reports',
 				'parent' => 'woocommerce-analytics',
 				'order'  => 200,
-			),
+			) : null,
 			array(
 				'title' => __( 'Marketing', 'woocommerce' ),
 				'id'    => 'woocommerce-marketing',
@@ -175,18 +189,18 @@ class CoreMenu {
 		}
 
 		$home_item = array();
-		if ( defined( '\Automattic\WooCommerce\Admin\Features\AnalyticsDashboard::MENU_SLUG' ) ) {
+		if ( defined( '\Automattic\WooCommerce\Admin\Features\Homescreen::MENU_SLUG' ) ) {
 			$home_item = array(
 				'id'              => 'woocommerce-home',
 				'title'           => __( 'Home', 'woocommerce' ),
-				'url'             => \Automattic\WooCommerce\Admin\Features\AnalyticsDashboard::MENU_SLUG,
+				'url'             => \Automattic\WooCommerce\Admin\Features\Homescreen::MENU_SLUG,
 				'order'           => 0,
 				'matchExpression' => 'page=wc-admin((?!path=).)*$',
 			);
 		}
 
 		$customers_item = array();
-		if ( class_exists( '\Automattic\WooCommerce\Admin\Features\Analytics' ) ) {
+		if ( Features::is_enabled( 'analytics' ) ) {
 			$customers_item = array(
 				'id'    => 'woocommerce-analytics-customers',
 				'title' => __( 'Customers', 'woocommerce' ),
@@ -239,7 +253,7 @@ class CoreMenu {
 	/**
 	 * Get items for tools category.
 	 *
-	 * @returna array
+	 * @return array
 	 */
 	public static function get_tool_items() {
 		$tabs = array(
@@ -344,7 +358,7 @@ class CoreMenu {
 				) {
 					continue;
 				}
-	
+
 				// Use the link from the first item if it's a category.
 				if ( ! isset( $item['url'] ) ) {
 					$categoryMenuId = $menuId === 'favorites' ? 'plugins' : $menuId;
@@ -353,7 +367,7 @@ class CoreMenu {
 					if ( ! empty( $category_items ) ) {
 						$first_item = $category_items[0];
 
-	
+
 						$submenu['woocommerce'][] = array(
 							$item['title'],
 							$first_item['capability'],
@@ -361,10 +375,10 @@ class CoreMenu {
 							$item['title'],
 						);
 					}
-	
+
 					continue;
 				}
-	
+
 				// Show top-level items.
 				$submenu['woocommerce'][] = array(
 					$item['title'],

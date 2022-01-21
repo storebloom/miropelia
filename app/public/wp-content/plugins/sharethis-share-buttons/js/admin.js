@@ -716,6 +716,16 @@ var ShareButtons = ( function( $, wp ) {
         contentType: 'application/json; charset=utf-8',
         success: function( results ) {
           result = results;
+        },
+        error: function (results) {
+          result = {
+            inline: {
+              networks: [],
+            },
+            sticky: {
+              networks: [],
+            },
+          };
         }
       } );
 
@@ -1199,10 +1209,10 @@ var ShareButtons = ( function( $, wp ) {
      */
     setGDPRConfig: function(config, type) {
       $('#sharethis-publisher-name').val(config['publisher_name']);
-      $(`#sharethis-user-type option[value="${config['display']}"]` ).attr('selected',true);
-      $(`#sharethis-consent-type option[value="${config['scope']}"]`).attr('selected', true);
+      $(`#sharethis-user-type option[value="${config['display']}"]`).prop('selected', true);
+      $(`#sharethis-consent-type option[value="${config['scope']}"]`).prop('selected', true);
       $(`#sharethis-form-color .color[data-value="${config['color']}"]`).addClass('selected');
-      $(`#st-language option[value="${config['language']}"]`).attr('selected', true);
+      $(`#st-language option[value="${config['language']}"]`).prop('selected', true);
 
       $( "#publisher-purpose .purpose-item input" ).prop('checked', false);
       $( ".vendor-table-cell-wrapper input" ).prop('checked', false);

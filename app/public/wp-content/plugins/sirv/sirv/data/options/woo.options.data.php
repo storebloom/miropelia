@@ -3,6 +3,9 @@ defined('ABSPATH') or die('No script kiddies please!');
 
 if(!function_exists('sirv_convert_array_to_assoc_array')){
   function sirv_convert_array_to_assoc_array($arr){
+
+    if( !isset($arr) || empty($arr) ) return array();
+
     $assoc_arr = array();
 
     foreach ($arr as $item) {
@@ -33,6 +36,7 @@ $smv_options = array(
     //'desc' => 'Some text here',
     'type' => 'radio',
     'func' => 'render_radio_option',
+    'is_new_line' => true,
     'value' => '',
     'values' => array(
       array(
@@ -127,6 +131,7 @@ $content_options = array(
     'enabled_option' => true,
     'option_name' => 'empty-view-cache-table',
     'label' => 'Sirv content cache',
+    'is_new_line' => true,
     'type' => 'custom',
     'func' => 'render_sirv_content_cache',
     'custom_type' => 'table',
@@ -156,39 +161,28 @@ $content_options = array(
 );
 
 $order_options = array(
-  'SIRV_WOO_SHOW_MAIN_VARIATION_IMAGE' => array(
+  'SIRV_WOO_SMV_CONTENT_ORDER' => array(
     'enabled_option' => true,
-    'option_name' => 'SIRV_WOO_SHOW_MAIN_VARIATION_IMAGE',
-    'label' => 'Main variation image',
-    'below_text' => "If variation has no image, show main product image.",
-    'type' => 'radio',
-    'func' => 'render_radio_option',
+    'option_name' => 'SIRV_WOO_SMV_CONTENT_ORDER',
+    'label' => 'Order of content',
+    'above_text' => 'Items ordered alphabetically. To display specific items first, choose them below:',
+    'below_text' => 'Drag items to reorder. Drag away to delete.<br>
+If item is not in gallery, it will be ignored.',
+    'type' => 'custom',
+    'func' => 'render_sirv_smv_order_content',
     'value' => '',
-    'values' => array(
-      array(
-        'label' => 'Show',
-        'check_data_type' => 'checked',
-        'attrs' => array(
-          'type' => 'radio',
-          'value' => '1',
-        ),
-      ),
-      array(
-        'label' => 'Hide',
-        'check_data_type' => 'checked',
-        'attrs' => array(
-          'type' => 'radio',
-          'value' => '2',
-        ),
-      ),
+    'default' => json_encode(array()),
+    'attrs' => array(
+      'type' => 'hidden',
+      'id' => 'sirv-woo-smv-content-order',
+      'value' => '',
     ),
-    'default' => '2',
-    'show_status' => false,
   ),
   'SIRV_WOO_CONTENT_ORDER' => array(
     'enabled_option' => true,
     'option_name' => 'SIRV_WOO_CONTENT_ORDER',
-    'label' => 'Order of content',
+    'label' => 'Order of remaining content',
+    'is_new_line' => true,
     'type' => 'radio',
     'func' => 'render_radio_option',
     'value' => '',
@@ -224,7 +218,8 @@ $order_options = array(
   'SIRV_WOO_SHOW_VARIATIONS' => array(
     'enabled_option' => true,
     'option_name' => 'SIRV_WOO_SHOW_VARIATIONS',
-    'label' => 'Number of images',
+    'label' => 'Variation images',
+    'is_new_line' => true,
     'type' => 'radio',
     'func' => 'render_radio_option',
     'value' => '',
@@ -248,6 +243,56 @@ $order_options = array(
     ),
     'default' => '2',
     'show_status' => false,
+  ),
+  'SIRV_WOO_SHOW_MAIN_VARIATION_IMAGE' => array(
+    'enabled_option' => true,
+    'option_name' => 'SIRV_WOO_SHOW_MAIN_VARIATION_IMAGE',
+    'label' => 'Main variation image',
+    'below_text' => "If variation has no image, show main product image.",
+    'type' => 'radio',
+    'is_new_line' => true,
+    'func' => 'render_radio_option',
+    'value' => '',
+    'values' => array(
+      array(
+        'label' => 'Show',
+        'check_data_type' => 'checked',
+        'attrs' => array(
+          'type' => 'radio',
+          'value' => '1',
+        ),
+      ),
+      array(
+        'label' => 'Hide',
+        'check_data_type' => 'checked',
+        'attrs' => array(
+          'type' => 'radio',
+          'value' => '2',
+        ),
+      ),
+    ),
+    'default' => '2',
+    'show_status' => false,
+  ),
+  'SIRV_WOO_PIN' => array(
+    'enabled_option' => true,
+    'option_name' => 'SIRV_WOO_PIN',
+    'label' => 'Pin gallery items',
+    'above_text' => 'Always show thumbnail(s) beside scroller.',
+    'type' => 'custom',
+    'func' => 'render_pin_gallery',
+    'value' => '',
+    'attrs' => array(
+      'type' => 'hidden',
+      'id' => 'sirv-woo-pin-gallery',
+      'value' => ''
+    ),
+    'default' => json_encode(array(
+      'video' => 'no',
+      'spin' => 'no',
+      'image' => 'no',
+      'image_template' => ''
+    )),
   )
 );
 
@@ -352,6 +397,7 @@ var SirvOptions = {
     'enabled_option' => true,
     'option_name' => 'SIRV_WOO_ZOOM_IS_ENABLE',
     'label' => 'Image zoom',
+    'is_new_line' => true,
     //'desc' => 'Some text here',
     'type' => 'radio',
     'func' => 'render_radio_option',
@@ -405,6 +451,7 @@ float: left;',
     'enabled_option' => true,
     'option_name' => 'SIRV_WOO_MV_SKELETON',
     'label' => 'Gallery placeholder',
+    'is_new_line' => true,
     'below_text' => 'Show gallery skeleton while images are loading.',
     'type' => 'radio',
     'func' => 'render_radio_option',

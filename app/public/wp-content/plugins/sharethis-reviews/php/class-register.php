@@ -665,6 +665,10 @@ class Register
             foreach ($review_ids as $review_id) {
                 $post_reviews = get_post_meta((int)$review_id, 'sharethisreview_review', true);
 
+                if (false === is_array($post_reviews)) {
+                    continue;
+                }
+
                 foreach ($post_reviews as $num => $review) {
                     $review['position'] = $num;
                     $reviews[]          = $review;
@@ -762,6 +766,7 @@ class Register
      */
     public function get_rating_icons($number, $all = false, $radio = false)
     {
+        $number     = intval($number);
         $symbol     = get_option('sharethisreviews_rating_section_symbols');
         $symbol     = isset($symbol) ? $symbol : '';
         $symbol_svg = $this->get_symbol_svg('rating_section', $symbol);
@@ -770,17 +775,19 @@ class Register
 
         $html = '<div class="' . $new_class . '">';
 
-        for ($x = $start; $x <= (int)$number; $x++) {
+        for ($x = $start; $x < $number; $x++) {
+            $rating = min(max($x, 0), 4); // Ensure we stay between our limits.
+
             ob_start();
-            include $this->plugin->dir_path . 'assets/' . $symbol_svg[$x];
+            include $this->plugin->dir_path . 'assets/' . $symbol_svg[$rating];
             $symbol_icon = ob_get_clean();
-            $checked     = 4 === $x ? 'checked="checked"' : '';
+            $checked     = 4 === $rating ? 'checked="checked"' : '';
 
             $html .= '<div class="rating-icon">';
 
             if ($radio) {
-                $html .= '<input type="radio" id="sharethis-rating-' . $x . '" name="st-review-rating" value="' . $x . '" ' . $checked . '>';
-                $html .= '<label for="sharethis-rating-' . $x . '">';
+                $html .= '<input type="radio" id="sharethis-rating-' . $rating . '" name="st-review-rating" value="' . $rating . '" ' . $checked . '>';
+                $html .= '<label for="sharethis-rating-' . $rating . '">';
                 $html .= '<div class="symbol-icon-wrap">';
                 $html .= $symbol_icon;
                 $html .= '</div>';

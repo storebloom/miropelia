@@ -94,9 +94,5 @@ class Options_generator extends Options_components{
   }
 
 
-  protected static function checked($value, $current){
-    return (string) $value === (string) $current;
-  }
-
 }
 ?>

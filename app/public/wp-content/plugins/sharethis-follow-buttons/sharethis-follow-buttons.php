@@ -3,25 +3,24 @@
  * Plugin Name: ShareThis Follow Buttons
  * Plugin URI: https://www.sharethis.com/platform/follow-buttons-wordpress/
  * Description: Integrates the ShareThis Follow Buttons directly into your website.
- * Version: 1.2.0
+ * Version: 1.2.1
  * Author: ShareThis
  * Author URI: https://sharethis.com/
  * Text Domain: sharethis-follow-buttons
  * Domain Path: /languages
- * License:     GPL v2 or later
-
-Copyright 2019 ShareThis
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
+ * License: GPL v2 or later
+ *
+ * Copyright 2021 ShareThis
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  * @package ShareThisFollowButtons
  */
 

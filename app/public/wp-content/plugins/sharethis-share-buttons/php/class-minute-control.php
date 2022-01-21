@@ -198,7 +198,7 @@ class Minute_Control
 		$data_url = isset( $atts['url'] ) ? esc_attr( 'data-url="' . $atts['url'] . '"' ) : '';
 
 		if ( is_archive() || is_front_page() || is_tag() ) {
-			$data_url = esc_attr( 'data-url="' . get_permalink( $post->ID ) . '"' );
+			$data_url = esc_attr( 'data-url=' . get_permalink( $post->ID ) );
 		}
 
 		// Build container.
@@ -380,8 +380,12 @@ class Minute_Control
 				$current_cats = is_array( $current_cats ) ? $current_cats : array();
 				$queried_object = get_queried_object();
 
-				if ( is_archive() ) {
-					if ( ! in_array( (string) $queried_object->term_id, array_values( $current_cats ), true ) ) {
+				if (true === is_archive()
+					 && true === is_object($queried_object)
+					 && true === property_exists($queried_object, 'term_id')
+				) {
+					if (false === in_array((string)$queried_object->term_id, array_values($current_cats), true))
+					{
 						return $value;
 					} else {
 						return true;

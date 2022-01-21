@@ -2266,3 +2266,72 @@ function wc_update_500_fix_product_review_count() {
 function wc_update_500_db_version() {
 	WC_Install::update_db_version( '5.0.0' );
 }
+
+/**
+ * Creates the refund and returns policy page.
+ *
+ * See @link https://github.com/woocommerce/woocommerce/issues/29235.
+ */
+function wc_update_560_create_refund_returns_page() {
+	/**
+	 * Filter on the pages created to return what we expect.
+	 *
+	 * @param array $pages The default WC pages.
+	 */
+	function filter_created_pages( $pages ) {
+		$page_to_create = array( 'refund_returns' );
+
+		return array_intersect_key( $pages, array_flip( $page_to_create ) );
+	}
+
+	add_filter( 'woocommerce_create_pages', 'filter_created_pages' );
+
+	WC_Install::create_pages();
+
+	remove_filter( 'woocommerce_create_pages', 'filter_created_pages' );
+}
+
+/**
+ * Update DB version to 5.6.0.
+ */
+function wc_update_560_db_version() {
+	WC_Install::update_db_version( '5.6.0' );
+}
+
+/**
+ * Migrate rate limit options to the new table.
+ *
+ * See @link https://github.com/woocommerce/woocommerce/issues/27103.
+ */
+function wc_update_600_migrate_rate_limit_options() {
+	global $wpdb;
+
+	$rate_limits = $wpdb->get_results(
+		"
+			SELECT option_name, option_value
+			FROM $wpdb->options
+			WHERE option_name LIKE 'woocommerce_rate_limit_add_payment_method_%'
+		",
+		ARRAY_A
+	);
+	$prefix_length = strlen( 'woocommerce_rate_limit_' );
+
+	foreach ( $rate_limits as $rate_limit ) {
+		$new_delay = (int) $rate_limit['option_value'] - time();
+
+		// Migrate the limit if it hasn't expired yet.
+		if ( 0 < $new_delay ) {
+			$action_id = substr( $rate_limit['option_name'], $prefix_length );
+			WC_Rate_Limiter::set_rate_limit( $action_id, $new_delay );
+		}
+
+		delete_option( $rate_limit['option_name'] );
+	}
+}
+
+/**
+ * Update DB version to 6.0.0.
+ */
+function wc_update_600_db_version() {
+	WC_Install::update_db_version( '6.0.0' );
+}

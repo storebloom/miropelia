@@ -9,7 +9,8 @@ class FetchError{
         3 => "Timeout was reached",
         4 => "Unknown error",
         5 => "Sirv API request limit reached",
-        6 => 'Uploading error'
+        6 => 'Uploading error',
+        7 => 'Could not confirm successful upload'
     );
 
     protected static $_errors_desc = array(
@@ -18,7 +19,8 @@ class FetchError{
         3 => "clear the failed images and try again. Contact your hosting provider if this continues.",
         4 => 'clear the failed images and try again. <a class="sirv-get-error-data" href="https://sirv.com/contact/" target="_blank">Contact Sirv</a> if this error occurs again.',
         5 => '',
-        6 => 'this file size probably exceeds the limit - try again or replace with a smaller image.'
+        6 => 'this file size probably exceeds the limit - try again or replace with a smaller image.',
+        7 => 'clear failed images and they will re-synchronize.'
 
     );
 

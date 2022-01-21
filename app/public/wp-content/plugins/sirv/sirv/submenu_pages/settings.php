@@ -47,19 +47,20 @@
         </td>
       </tr>
       <?php
-      if ($isMultiCDN && !empty($customCDNs) && !$is_direct) {
+      //if ($isMultiCDN && !empty($domains) && !$is_direct) {
+      if (count($domains) > 1) {
       ?>
         <tr>
-          <th><label>Custom Domain</label></th>
-          <td colspan="2">
+          <th><label>Domain</label></th>
+          <td>
             <select id="sirv-choose-domain" name="SIRV_CDN_URL">
               <?php
-              foreach ($customCDNs as $customCDN) {
+              foreach ($domains as $domain) {
                 $selected = '';
-                if ($customCDN == $sirvCDNurl) {
+                if ($domain == $sirvCDNurl) {
                   $selected = 'selected';
                 }
-                echo '<option ' . $selected . ' value="' . $customCDN . '">' . $customCDN . '</option>';
+                echo '<option ' . $selected . ' value="' . $domain . '">' . $domain . '</option>';
               }
               ?>
             </select>
@@ -80,7 +81,10 @@
           <p class="sirv-editable-option" style="display: none;">
             <span class="sirv--grey"><?php echo $sirvCDNurl; ?>/</span><input class="regular-text" type="text" name="SIRV_FOLDER" value="<?php echo $sirv_folder; ?>">
           </p>
-
+          <br>
+          <div class="sirv-message warning-message sirv-hide sirv-warning-on-folder-change">
+            <span style="font-size: 15px;font-weight: 800;">Important!</span><br>Changing folder name will clear the image cache, so images will re-synchronize on first request or use <a class="sirv-show-sync-tab">Sync Images</a> to pre-sync entire library.
+          </div>
         </td>
       </tr>
       <tr>
@@ -94,6 +98,11 @@
 <div class="sirv-profiles-wrapper">
   <!-- profiles options-->
   <h2>Image settings</h2>
+  <?php
+  $useSirvResponsiveOption = get_option('SIRV_USE_SIRV_RESPONSIVE');
+  $isShowPlaceholder = $useSirvResponsiveOption == '1' ? true : false;
+  $showPlaceholderBlock = $isShowPlaceholder ? 'table-row' : 'none';
+  ?>
   <div class="sirv-optiontable-holder">
     <table class="optiontable form-table">
       <tr>
@@ -102,8 +111,12 @@
         </th>
         <td>
           <label>
-            <input type="checkbox" name="SIRV_USE_SIRV_RESPONSIVE" id="SIRV_USE_SIRV_RESPONSIVE" value='1' "<?php checked('1', get_option('SIRV_USE_SIRV_RESPONSIVE'));  ?>"><span class="sirv-option-responsive-text">Load images on demand & scale them perfectly.</span>
+            <input type="radio" name="SIRV_USE_SIRV_RESPONSIVE" value='1' "<?php checked('1', $useSirvResponsiveOption);  ?>">Enable
           </label>
+          <label>
+            <input type="radio" name="SIRV_USE_SIRV_RESPONSIVE" value='2' "<?php checked('2', $useSirvResponsiveOption);  ?>">Disable
+          </label>
+          <span class="sirv-option-responsive-text">Load images on demand & scale them perfectly.</span>
           <div class="sirv-responsive-msg sirv-message warning-message">
             <div>
               Deactivate any other lazy loading plugins. After saving, check that your images display as expected.
@@ -111,17 +124,13 @@
           </div>
         </td>
       </tr>
-      <tr>
-        <th><label>Placeholder</label></th>
+      <tr class="sirv-hide-placeholder" style="display:<?php echo $showPlaceholderBlock; ?>;">
+        <th><label>Lazy placeholder</label></th>
         <td>
-          <label><input type="radio" name="SIRV_RESPONSIVE_PLACEHOLDER" value='2' "<?php checked(2, get_option('SIRV_RESPONSIVE_PLACEHOLDER'), true); ?>">Grey</label>
-          <label><input type="radio" name="SIRV_RESPONSIVE_PLACEHOLDER" value='1' "<?php checked(1, get_option('SIRV_RESPONSIVE_PLACEHOLDER'), true); ?>">Blurred</label>
-        </td>
-        <td>
-          <div class="sirv-tooltip">
-            <i class="dashicons dashicons-editor-help sirv-tooltip-icon"></i>
-            <span class="sirv-tooltip-text sirv-no-select-text">Display a grey or blurred background while images load. Grey is more efficient - blurred makes an extra request for a tiny image.</span>
-          </div>
+          <label><input type="radio" name="SIRV_RESPONSIVE_PLACEHOLDER" value='3' "<?php checked(3, get_option('SIRV_RESPONSIVE_PLACEHOLDER'), true); ?>"><b>Image</b> - best experience.</label>
+          <label><input type="radio" name="SIRV_RESPONSIVE_PLACEHOLDER" value='2' "<?php checked(2, get_option('SIRV_RESPONSIVE_PLACEHOLDER'), true); ?>"><b>Grey background</b> - most efficient.</label>
+          <label><input type="radio" name="SIRV_RESPONSIVE_PLACEHOLDER" value='1' "<?php checked(1, get_option('SIRV_RESPONSIVE_PLACEHOLDER'), true); ?>"><b>Blurred image</b> - popular effect.</label>
+          <span class="sirv-option-responsive-text">Display background while image loads.</span>
         </td>
       </tr>
       <tr>
@@ -230,22 +239,6 @@
       </tr>
       <tr>
         <th>
-          <label>Sirv JS version</label>
-        </th>
-        <td>
-          <label>
-            <input type="radio" name="SIRV_JS_FILE" value="3" <?php checked(3, get_option('SIRV_JS_FILE'), true); ?>>Sirv JS v3 (uses <a href="https://sirv.com/help/resources/sirv-media-viewer/" target="_blank">Sirv Media Viewer</a>) <span style="color: orange;">Recommended<span>
-          </label>
-          <label>
-            <input type="radio" name="SIRV_JS_FILE" value="2" <?php checked(2, get_option('SIRV_JS_FILE'), true); ?>>Sirv JS v2 light (excludes <a href="https://sirv.com/features/360-product-viewer/" target="_blank">Sirv Spin</a>)
-          </label>
-          <label>
-            <input type="radio" name="SIRV_JS_FILE" value="1" <?php checked(1, get_option('SIRV_JS_FILE'), true); ?>>Sirv JS v2
-          </label>
-        </td>
-      </tr>
-      <tr>
-        <th>
           <label>Custom CSS</label>
         </th>
         <td>
@@ -253,7 +246,7 @@
 .here-is-a-style img {
   width: auto !important;
 }" value="<?php echo get_option('SIRV_CUSTOM_CSS'); ?>" rows="4"><?php echo get_option('SIRV_CUSTOM_CSS'); ?></textarea>
-          <span>Add styles to fix any rendering conflicts caused by other CSS.</span>
+          <span class="sirv-option-responsive-text">Add styles to fix any rendering conflicts caused by other CSS.</span>
         </td>
       </tr>
       <tr>

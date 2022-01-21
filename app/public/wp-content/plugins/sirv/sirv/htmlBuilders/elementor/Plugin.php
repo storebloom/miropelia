@@ -26,14 +26,12 @@ class Plugin {
 
 
 	public function widget_scripts() {
-		$js_type = (int) get_option('SIRV_JS_FILE');
-		$js_path = $js_type == 3 ? 'https://scripts.sirv.com/sirvjs/v3/sirv.js' : 'https://scripts.sirv.com/sirv.js';
-		wp_register_script('sirv-js', $js_path, array(), false, true);
+		wp_register_script('sirv-js', 'https://scripts.sirv.com/sirvjs/v3/sirv.js', array(), false, true);
 		wp_enqueue_script('sirv-js');
 
 		wp_register_script('sirv-inject-js', plugins_url('/assets/js/sirv-inject.js', __FILE__), array('jquery'), false, true);
 		wp_enqueue_script('sirv-inject-js');
-		wp_enqueue_script( 'sirv-gallery-viewer', SIRV_PLUGIN_URL_PATH . 'sirv/js/wp-sirv-gallery.js', array('jquery'), '1.0.0');
+		wp_enqueue_script( 'sirv-gallery-viewer', SIRV_PLUGIN_URL_PATH . 'sirv/js/wp-sirv-gallery.js', array('jquery'), false);
 
 	}
 

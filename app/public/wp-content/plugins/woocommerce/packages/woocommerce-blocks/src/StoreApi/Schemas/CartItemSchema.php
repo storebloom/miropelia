@@ -1,7 +1,6 @@
 <?php
 namespace Automattic\WooCommerce\Blocks\StoreApi\Schemas;
 
-use Automattic\WooCommerce\Blocks\Domain\Services\ExtendRestApi;
 use Automattic\WooCommerce\Checkout\Helpers\ReserveStock;
 
 /**
@@ -407,7 +406,17 @@ class CartItemSchema extends ProductSchema {
 				}
 				$label = wc_attribute_label( $taxonomy );
 			} else {
-				// If this is a custom option slug, get the options name.
+				/**
+				 * Filters the variation option name.
+				 *
+				 * Filters the variation option name for custom option slugs.
+				 *
+				 * @param string $value The name to display.
+				 * @param null $unused Unused because this is not a variation taxonomy.
+				 * @param string $taxonomy Taxonomy or product attribute name.
+				 * @param \WC_Product $product Product data.
+				 * @return string
+				 */
 				$value = apply_filters( 'woocommerce_variation_option_name', $value, null, $taxonomy, $product );
 				$label = wc_attribute_label( str_replace( 'attribute_', '', $key ), $product );
 			}
@@ -428,6 +437,15 @@ class CartItemSchema extends ProductSchema {
 	 * @return array
 	 */
 	protected function get_item_data( $cart_item ) {
+		/**
+		 * Filters cart item data.
+		 *
+		 * Filters the variation option name for custom option slugs.
+		 *
+		 * @param array $item_data Cart item data. Empty by default.
+		 * @param array $cart_item Cart item array.
+		 * @return array
+		 */
 		$item_data = apply_filters( 'woocommerce_get_item_data', array(), $cart_item );
 		return array_map( [ $this, 'format_item_data_element' ], $item_data );
 	}

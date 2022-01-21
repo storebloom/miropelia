@@ -1,5 +1,3 @@
-/* eslint-disable camelcase -- API responses have camelcase properties */
-
 /**
  * Internal dependencies
  */
@@ -8,6 +6,9 @@ import {
 	ShippingRateItem,
 	ExtensionsData,
 } from './cart-response';
+
+import { ProductResponseItemData } from './product-response';
+
 export interface CurrencyInfo {
 	currency_code: string;
 	currency_symbol: string;
@@ -25,6 +26,7 @@ export interface CartTotalsItem extends CurrencyInfo {
 
 export interface CartCouponItem {
 	code: string;
+	label: string;
 	discount_type: string;
 	totals: CartTotalsItem;
 }
@@ -66,10 +68,10 @@ export interface CartShippingRate {
 
 export interface CartShippingAddress extends BaseAddress, FirstNameLastName {
 	company: string;
+	phone: string;
 }
 
 export interface CartBillingAddress extends CartShippingAddress {
-	phone: string;
 	email: string;
 }
 
@@ -131,7 +133,7 @@ export interface CartItem {
 	prices: CartItemPrices;
 	totals: CartItemTotals;
 	extensions: ExtensionsData;
-	item_data: Record< string, unknown >[];
+	item_data: ProductResponseItemData[];
 }
 
 export interface CartTotalsTaxLineItem {
@@ -193,4 +195,13 @@ export interface CartMeta {
 	isCartDataStale: boolean;
 	applyingCoupon: string;
 	removingCoupon: string;
+}
+export interface ExtensionCartUpdateArgs {
+	data: Record< string, unknown >;
+	namespace: string;
+}
+
+export interface BillingAddressShippingAddress {
+	billing_address: CartBillingAddress;
+	shipping_address: CartShippingAddress;
 }

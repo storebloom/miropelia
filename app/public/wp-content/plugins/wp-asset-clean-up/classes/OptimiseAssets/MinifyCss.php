@@ -32,6 +32,8 @@ class MinifyCss
 					return $cssContent;
 				}
 
+				$cssContentBeforeAnyBugChanges = $cssContent;
+
 				// [CUSTOM BUG FIX]
 				// Encode the special matched content to avoid any wrong minification from the minifier
 				$hasVarWithZeroUnit = false;
@@ -45,13 +47,26 @@ class MinifyCss
 						$cssContent = str_replace( $zeroUnitMatch, '[wpacu]' . base64_encode( $zeroUnitMatch ) . '[/wpacu]', $cssContent );
 					}
 				}
+
+				// Fix: if the content is something like "calc(50% - 22px) calc(50% - 22px);" then leave it as it is
+				preg_match_all('#calc(.*?)(;|})#si', $cssContent, $cssCalcMatches);
+
+				$multipleCalcMatches = array(); // over 1
+
+				if (isset($cssCalcMatches[0]) && ! empty($cssCalcMatches[0])) {
+					foreach ($cssCalcMatches[0] as $cssCalcMatch) {
+						if (substr_count($cssCalcMatch, 'calc') > 1) {
+							$cssContent = str_replace( $cssCalcMatch, '[wpacu]' . base64_encode( $cssCalcMatch ) . '[/wpacu]', $cssContent );
+							$multipleCalcMatches[] = $cssCalcMatch;
+						}
+					}
+				}
 				// [/CUSTOM BUG FIX]
 
 				$minifier = new \MatthiasMullie\Minify\CSS( $cssContent );
 
 				if ( $forInlineStyle ) {
-					// If the minification is applied for inlined CSS (within STYLE)
-					// Leave the background URLs unchanged as it sometimes lead to issues
+					// If the minification is applied for inlined CSS (within STYLE) leave the background URLs unchanged as it sometimes lead to issues
 					$minifier->setImportExtensions( array() );
 				}
 
@@ -65,7 +80,28 @@ class MinifyCss
 						$minifiedContent = str_replace( '[wpacu]' . base64_encode( $zeroUnitMatch ) . '[/wpacu]', $zeroUnitMatchAlt, $minifiedContent );
 					}
 				}
+
+				if ( ! empty($multipleCalcMatches) ) {
+					foreach ( $multipleCalcMatches as $cssCalcMatch ) {
+						$originalCssCalcMatch = $cssCalcMatch;
+						$cssCalcMatch = preg_replace(array('#calc\(\s+#', '#\s+\);#'), array('calc(', ');'), $originalCssCalcMatch);
+						$cssCalcMatch = str_replace(' ) calc(', ') calc(', $cssCalcMatch);
+						$minifiedContent = str_replace( '[wpacu]' . base64_encode( $originalCssCalcMatch ) . '[/wpacu]', $cssCalcMatch, $minifiedContent );
+					}
+				}
 				// [/CUSTOM BUG FIX]
+
+				// Is there any [wpacu] left? Hmm, the replacement wasn't alright. Make sure to use the original minified version
+				if (strpos($minifiedContent, '[wpacu]') !== false && strpos($minifiedContent, '[/wpacu]') !== false) {
+					$minifier = new \MatthiasMullie\Minify\CSS( $cssContentBeforeAnyBugChanges );
+
+					if ( $forInlineStyle ) {
+						// If the minification is applied for inlined CSS (within STYLE) leave the background URLs unchanged as it sometimes leads to issues
+						$minifier->setImportExtensions( array() );
+					}
+
+					$minifiedContent = trim( $minifier->minify() );
+				}
 
 				if ($checkForAlreadyMinifiedShaOne && $minifiedContent === $cssContent) {
 					// If the resulting content is the same, mark it as minified to avoid the minify process next time
@@ -298,12 +334,12 @@ class MinifyCss
 		// Request Minify On The Fly
 		// It will preview the page with CSS minified
 		// Only if the admin is logged-in as it uses more resources (CPU / Memory)
-		if (array_key_exists('wpacu_css_minify', $_GET) && Menu::userCanManageAssets()) {
+		if ( isset($_GET['wpacu_css_minify']) && Menu::userCanManageAssets() ) {
 			self::isMinifyCssEnabledChecked('true');
 			return true;
 		}
 
-		if ( array_key_exists('wpacu_no_css_minify', $_GET) || // not on query string request (debugging purposes)
+		if ( isset($_REQUEST['wpacu_no_css_minify']) || // not on query string request (debugging purposes)
 		     is_admin() || // not for Dashboard view
 		     (! Main::instance()->settings['minify_loaded_css']) || // Minify CSS has to be Enabled
 		     (Main::instance()->settings['test_mode'] && ! Menu::userCanManageAssets()) ) { // Does not trigger if "Test Mode" is Enabled
@@ -332,6 +368,7 @@ class MinifyCss
 			return false;
 		}
 
+		self::isMinifyCssEnabledChecked('true');
 		return true;
 	}
 

@@ -22,7 +22,7 @@ do_action('wpacu_admin_notices');
 $wikiStatus = ($data['wiki_read'] == 1) ? '<small style="font-weight: 200; color: green;">* '.__('read', 'wp-asset-clean-up').'</small>'
 	: '<small style="font-weight: 200; color: #cc0000;"><span class="dashicons dashicons-warning" style="width: 15px; height: 15px; margin: 2px 0 0 0; font-size: 16px;"></span> '.__('unread', 'wp-asset-clean-up').'</small>';
 
-$showSettingsType = array_key_exists('wpacu_show_all', $_GET) ? 'all' : 'tabs';
+$showSettingsType = isset($_GET['wpacu_show_all']) ? 'all' : 'tabs';
 $selectedTabArea = $selectedSubTabArea = '';
 
 if ($showSettingsType === 'tabs') {
@@ -52,15 +52,16 @@ if ($showSettingsType === 'tabs') {
 
 	$selectedTabArea = isset($_REQUEST['wpacu_selected_tab_area']) && array_key_exists($_REQUEST['wpacu_selected_tab_area'],
 		$settingsTabs) // the tab id area has to be one within the list above
-		? sanitize_text_field($_REQUEST['wpacu_selected_tab_area']) // after update
+		? $_REQUEST['wpacu_selected_tab_area'] // after update
 		: $defaultTabArea; // default
 
 	if ($selectedTabArea && array_key_exists($selectedTabArea, $settingsTabs)) {
 		$settingsTabActive = $selectedTabArea;
 	}
 
-	$selectedSubTabArea = isset($_REQUEST['wpacu_selected_sub_tab_area']) // after update
-        ? sanitize_text_field($_REQUEST['wpacu_selected_sub_tab_area'])
+	$selectedSubTabArea = isset($_REQUEST['wpacu_selected_sub_tab_area']) && in_array($_REQUEST['wpacu_selected_sub_tab_area'],
+        $settingsSubTabs) // the sub tab id area has to be one within the list above
+        ? $_REQUEST['wpacu_selected_sub_tab_area']
         : ''; // default
 }
 ?>

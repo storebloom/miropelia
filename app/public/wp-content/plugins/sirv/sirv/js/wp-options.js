@@ -102,6 +102,10 @@ jQuery(function ($) {
             changeTab(e, $('.nav-tab-sirv-account'));
         });
 
+        $('.sirv-show-sync-tab').on('click', function (e) {
+            changeTab(e, $('.nav-tab-sirv-cache'));
+        });
+
 
         function changeTab(e, $object) {
             if (!!e) e.preventDefault();
@@ -110,8 +114,14 @@ jQuery(function ($) {
             $('.sirv-tab-content' + $object.attr('href')).addClass('sirv-tab-content-active');
             $object.addClass('nav-tab-active').blur();
             $('#active_tab').val($object.attr('href'));
-            //window.location.hash = $object.attr('href');
-            window.location.hash = $object.attr('data-link');
+            let hash = $object.attr('data-link');
+            window.location.hash = hash;
+
+            document.dispatchEvent(new CustomEvent('options_tab_changed', {
+                detail: {
+                    hash: hash
+                }
+            }));
         }
 
 
@@ -186,8 +196,8 @@ jQuery(function ($) {
                     return;
                 }
 
-                if(validator.invalidValidate(data['pass'], validator.lenghtBetween, {min: 8, max: 128})){
-                    showMessage('.sirv-error', 'Choose a password at least 8 characters long and less than 128 characters.', 'sirv-init-account');
+                if(validator.invalidValidate(data['pass'], validator.lenghtBetween, {min: 8, max: 64})){
+                    showMessage('.sirv-error', 'Choose a password at least 8 characters long and less than 64 characters.', 'sirv-init-account');
                     return;
                 }
 
@@ -654,15 +664,18 @@ jQuery(function ($) {
         });
 
 
-        $('#SIRV_USE_SIRV_RESPONSIVE').on('change', showResponsiveWarning);
+        $('input[name=SIRV_USE_SIRV_RESPONSIVE]').on('change', showResponsiveWarning);
         function showResponsiveWarning(){
-            let $checkbox = $('#SIRV_USE_SIRV_RESPONSIVE');
+            let checked = $(this).val();
+            let $placeholderWrap = $('.sirv-hide-placeholder');
             let $msg = $('.sirv-responsive-msg');
 
-            if($checkbox.is(":checked")){
+            if(checked == '1'){
                 $msg.slideDown();
+                $placeholderWrap.show();
             }else{
                 $msg.slideUp();
+                $placeholderWrap.hide();
             }
         }
 
@@ -1762,6 +1775,12 @@ jQuery(function ($) {
             });
         }
 
+        $(document).on('options_tab_changed', onOptionsTabChanged);
+        function onOptionsTabChanged(event){
+            if(!!event.detail.hash && event.detail.hash == 'cache'){
+                addInputCssPathPadding();
+            }
+        }
 
         function addInputCssPathPadding(){
             let $constPath = $('.sirv-input-const-text');
@@ -1773,6 +1792,109 @@ jQuery(function ($) {
                 $cssPathInput.css('padding-left', constPathWidth);
             }
         }
+
+
+        $('input[name=sirv-woo-pin-video], input[name=sirv-woo-pin-spin], input[name=sirv-woo-pin-image]').on('click', updatePinData);
+        $('#sirv-woo-pin-input-template').on('input', updatePinData);
+        function updatePinData(){
+            let video = $('input[name=sirv-woo-pin-video]:checked').val();
+            let spin = $('input[name=sirv-woo-pin-spin]:checked').val();
+            let image = $('input[name=sirv-woo-pin-image]:checked').val();
+            let image_template = $('#sirv-woo-pin-input-template').val();
+
+            if(image !== 'no'){
+                $('.sirv-woo-pin-input-wrapper').show();
+            }else{
+                $('.sirv-woo-pin-input-wrapper').hide();
+            }
+
+            $('#sirv-woo-pin-gallery').val(JSON.stringify({'video': video, 'spin': spin, 'image': image, 'image_template' : image_template}));
+        }
+
+        //-----------------------smv order----------------------------
+        let isRemoveItem = false;
+        $( "#sirv-smv-order-items" ).sortable({
+            /*  revert: true,
+            cursor: "move",
+            scroll: false, */
+            items: "> li:not(:first)",
+            cursor: 'move',
+            scrollSensitivity: 40,
+            //forcePlaceholderSize: true,
+            //forceHelperSize: false,
+            //helper: 'clone',
+            opacity: 0.65,
+            scroll: false,
+            placeholder: "sirv-smv-order-sortable-placeholder",
+            beforeStop: function(event, ui){
+            if (isRemoveItem) {
+                ui.item.remove();
+            }
+            },
+            stop: function( event, ui ) {
+            recalcSmvOrderData();
+            },
+            over: function(event, ui){
+            isRemoveItem = false;
+            ui.placeholder.css('color', 'black');
+            ui.placeholder.html("");
+            },
+            out: function(event, ui){
+            //ui.item.remove();
+            isRemoveItem = true;
+            ui.placeholder.css({
+                "display": "flex",
+                "align-items" : "center",
+                "justify-content" : "center",
+                "text-align": 'center',
+                "color" : 'red'
+
+            });
+            ui.placeholder.html("Drop to remove");
+            }
+        });
+
+        $('.sirv-smv-order-add-item').on('click', function(){
+            $container = $('#sirv-smv-order-items');
+            $template = '<li class="sirv-smv-order-item sirv-smv-order-item-changeble sirv-no-select-text">' +
+                '<div>' +
+                    '<div class="sirv-smv-order-item-select">' +
+                        '<select>' +
+                            '<option value="spin">Spin</option>' +
+                            '<option value="video">Video</option>' +
+                            '<option value="zoom">Zoom</option>' +
+                            '<option value="image">Image</option>' +
+                        '</select>' +
+                    '</div>' +
+                    '<div class="sirv-smv-order-item-order"></div>' +
+                '</div>' +
+            '</li>';
+            $container.append($template);
+            recalcSmvOrderData();
+        });
+
+        function recalcSmvOrderData(){
+            data = [];
+            $('.sirv-smv-order-item-select select').each(function(index){
+                $(this).closest('.sirv-smv-order-item-changeble').attr('data-order', index + 1);
+                $(this).parent().siblings('.sirv-smv-order-item-order').text(index + 1);
+                $(this).blur();
+                data.push($(this).val());
+            });
+
+            $('#sirv-woo-smv-content-order').val(JSON.stringify(data));
+
+        }
+
+        $('#sirv-smv-order-items').on('change', '.sirv-smv-order-item select', recalcSmvOrderData);
+
+        $('input[name=SIRV_FOLDER]').on('input', showWarningOnFolderChange);
+        function showWarningOnFolderChange() {
+            $('.sirv-warning-on-folder-change').fadeIn(800);
+        }
+
+
+        //--------------------END smv order---------------------------
 
         //-----------------------initialization-----------------------
         setProfiles();

@@ -652,7 +652,7 @@ var Credentials = ( function( $, wp ) {
         language: 'en',
         publisher_name: '',
         publisher_purposes: [],
-        scope: 'global'
+        scope: 'publisher'
       },
       self = this;
 

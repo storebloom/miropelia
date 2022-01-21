@@ -1,6 +1,7 @@
 (function(wpElement, wpBlocks, wpComponents, wpEditor, wpi18n){
     let __ = wpi18n.__;
     let el = wpElement.createElement;
+    //let Fragment = wpElement.Fragment;
     let registerBlockType = wpBlocks.registerBlockType;
     let richText = wpEditor.RichText;
     let InspectorControls = wpEditor.InspectorControls;
@@ -10,6 +11,7 @@
     let ToggleControl = wpComponents.ToggleControl;
     let TextControl = wpComponents.TextControl;
     let RadioControl = wpComponents.RadioControl;
+    let Checkbox = wpComponents.CheckboxControl;
     let Button = wpComponents.Button;
 
     let placehodler_grey = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAKSURBVAgdY3gPAADxAPAXl1qaAAAAAElFTkSuQmCC";
@@ -146,7 +148,9 @@
     function renderImagesInspectorControls( props ){
         let isResponsive = props.attributes.isResponsive == 'true';
         let lazyLoading = props.attributes.lazyLoading == 'true';
-        let isLink = props.attributes.isLink == 'true';
+        let linkType = props.attributes.linkType;
+        let isBlankWindow = props.attributes.isBlankWindow == 'true';
+
         //let isAltCaption = props.attributes.isAltCaption == 'true';
         let width = props.attributes.width;
 
@@ -202,19 +206,6 @@
                                 }
                             }
                         ),
-                        el(
-                            ToggleControl,
-                            {
-                                label: __('Link to big image'),
-                                checked: isLink,
-                                instanceId: '',
-                                onChange: function (event) {
-                                    //props.setAttributes({enableAjax: !props.attributes.enableAjax});
-                                    props.setAttributes({isLink: '' + event});
-
-                                }
-                            }
-                        ),
                         /*el(
                             ToggleControl,
                             {
@@ -242,6 +233,34 @@
                                     },
                             }
                         ),
+                        el(RadioControl,
+                            {
+                                label: __('Link'),
+                                selected: props.attributes.linkType,
+                                options: getLinkOptions(props, linkType),
+                                onChange: function ( value ) {
+                                        props.setAttributes({linkType: value});
+                                    },
+                            }
+                        ),
+                        (linkType == 'url') && el(TextControl,
+                            {
+                                label: __('Custom url'),
+                                value: props.attributes.customLink,
+                                onChange: function( newCustomLink ){
+                                    props.setAttributes({customLink: newCustomLink});
+                                },
+                            }
+                        ),
+                        (linkType == 'large' || linkType == 'url') && el(Checkbox,
+                            {
+                                label: __('Open in new tab'),
+                                checked: isBlankWindow,
+                                onChange: function( event){
+                                    props.setAttributes({isBlankWindow: '' + event});
+                                },
+                            }
+                        ),
                         el(
                             SelectControl,
                             {
@@ -260,6 +279,26 @@
     }
 
 
+    function getLinkOptions(props, linkType){
+        let imagesCount = props.attributes.images.length;
+        let optionsList = [
+            { label: "None", value: "none" },
+            { label: "Big image", value: "large" },
+            { label: "URL", value: "url" }
+        ];
+        let options  = optionsList.slice();
+
+        if(imagesCount > 1){
+            if (linkType == "url") props.setAttributes({ linkType: "none" });
+
+            options = optionsList.slice(0,2);
+        }
+
+
+        return options;
+    }
+
+
 
     function renderImagesHtml(props, type){
         let images = props.attributes.images.slice();
@@ -267,7 +306,8 @@
         let width = props.attributes.width;
         let isResponsive = props.attributes.isResponsive == 'true';
         let lazyLoading = props.attributes.lazyLoading == 'true';
-        let isLink = props.attributes.isLink == 'true';
+        let linkType = props.attributes.linkType;
+        let imagesCount = images.length;
         let isAltCaption = props.attributes.isAltCaption == 'true';
         let isSelected = props.isSelected;
 
@@ -276,16 +316,16 @@
         if(type == 'edit'){
             images.forEach( function(image, index) {
                 tmpImagesArr.push(
-                    el('li',{className: 'sirv-block-gallery-item'}, [
-                        el('figure', {}, [
-                            el('DIV', {className: 'sirv-close-button dashicons dashicons-no', 'data-index': index, onClick: function(event){
+                    el('li',{className: 'sirv-block-gallery-item', key: index},
+                        el('figure', {key: index+1},
+                            el('div', {className: 'sirv-close-button dashicons dashicons-no', 'data-index': index, key: index+2, onClick: function(event){
                                 let index = parseInt(event.currentTarget.getAttribute('data-index'));
                                 images.splice(index, 1);
                                 //props.setAttributes({images: []});
                                 let newImages = images.slice();
                                 props.setAttributes({images: newImages});
                             }}, ''),
-                            el('img', {src: image.thumb, alt: image.alt, onClick: function(event){
+                            el('img', {src: image.thumb, alt: image.alt, key: index+3, onClick: function(event){
                                 let liTarget = event.currentTarget.parentNode;
                                 if(jQuery(liTarget).hasClass('sirv-is-selected')){
                                     jQuery(liTarget).removeClass('sirv-is-selected');
@@ -296,11 +336,11 @@
                                     liTarget.className  += ' sirv-is-selected';
                                 }
                             }}),
-                            el('div',{className: 'sirv-img-caption-wrapper'}, [
-                                //el('span', {className: 'sirv-img-caption'}, image.alt)
+                            el('div',{className: 'sirv-img-caption-wrapper', key: index},
                                 el(richText, {
                                     tagName: 'figcaption',
                                     className: 'sirv-img-caption-' + index,
+                                    key: index+4,
                                     value: image.alt,
                                     onChange: function( newCaption ){
                                         image.alt = newCaption;
@@ -310,9 +350,9 @@
                                     },
                                     placeholder: __('Write caption...'),
                                 })
-                            ])
-                        ])
-                    ])
+                            )
+                        )
+                    )
                 );
             });
             tmpImagesArr.push(
@@ -322,7 +362,6 @@
                             window.isSirvGutenberg = true;
                             window.renderSirvModalWindowWithParams(null, false, false, true, function(){
                                 window.isSirvGutenberg = false;
-                                console.log(window.sirvShObj);
                                 if(window.sirvShObj && Object.keys(window.sirvShObj).length > 0){
                                     images = images.concat(window.sirvShObj.sirvSrImages);
                                     images = checkProfile(window.sirvShObj.sirvProfile, images, props);
@@ -335,7 +374,7 @@
                     },
                     el('div', {className: 'sirv-add-more-images-button'},
                         el('span', {className: 'dashicons dashicons-plus-alt'}),
-                        el('text', {}, __('Add more images to gallery'))
+                        el('span', {}, __('Add more images to gallery'))
                     )
                 )
             );
@@ -351,10 +390,12 @@
                     el('figure', {
                             className: cssClassesToStr(['sirv-flx', 'sirv-img-container', imgAlign]),
                             style: style,
-                        },[renderImgTag(image, width, isResponsive, lazyLoading, isLink),
+                            key: index,
+                        },[renderImgTag(props, image, width, isResponsive, lazyLoading, linkType, index),
                         //(image.alt && isAltCaption) && el('figcaption',{className: 'sirv-img-container__cap'}, wp.element.RawHTML( { children: image.alt } ))
                         (image.alt && isAltCaption) && el('figcaption',{
                             className: 'sirv-img-container__cap',
+                            key:index,
                             dangerouslySetInnerHTML: {
                                 __html: image.alt
                             }
@@ -372,7 +413,7 @@
     }
 
 
-    function renderImgTag(image, width, isResponsive, lazyLoading, isLink){
+    function renderImgTag(props, image, width, isResponsive, lazyLoading, linkType, itemIndex){
         let src = isResponsive ? '' : image.src;
         let dataSrc = isResponsive ? image.src : '';
         let sirvClass = isResponsive ? 'Sirv' : '';
@@ -383,31 +424,48 @@
             if(src) src = src.search(/\?/i) !== -1 ? src + '&w='+ width : src + '?w=' + width;
         }
 
-        let props = {
+        let imgProps = {
             className: cssClassesToStr([sirvClass, 'sirv-img-container__img']),
             alt: image.alt,
             'data-link': image.link,
             'data-thumb': image.thumb,
             'data-original': image.original,
             'data-options': dataOptions,
+            key: itemIndex+6,
         };
 
         let size = getImageSizes(image.width, image.height, width, isResponsive);
-        if(!!size.width) props.width = size.width;
-        if(!!size.height) props.height = size.height;
+        if(!!size.width) imgProps.width = size.width;
+        if(!!size.height) imgProps.height = size.height;
 
-        if(src){props.src = src;} else{
-            props['data-src'] = dataSrc;
+        if(src){imgProps.src = src;} else{
+            imgProps['data-src'] = dataSrc;
             //props['src'] = placehodler_grey;
-            props['src'] = dataSrc + placeholder_grey_params;
+            imgProps['src'] = dataSrc + placeholder_grey_params;
 
         }
 
-        let imgTag = el('img', props);
+        let imgTag = el('img', imgProps);
+        let linkTag;
 
-        let linkTag = el('a',{ className: 'sirv-img-container__link', href: image.link}, [imgTag]);
+        if(linkType !== 'none'){
+            let linkUrl = linkType == 'url' ? props.attributes.customLink : image.link;
+            let isBlankWindow = props.attributes.isBlankWindow == 'true';
+            let linkProps = {
+                className: "sirv-img-container__link",
+                href: linkUrl,
+                key: itemIndex+7,
+            };
 
-        let result = isLink ? linkTag : imgTag;
+            if(isBlankWindow){
+                linkProps["target"] = "_blank";
+                linkProps["rel"] = "noopener";
+            }
+
+            linkTag = el('a', linkProps, [imgTag]);
+        }
+
+        let result = linkType !== "none" ? linkTag : imgTag;
 
         return result;
     }
@@ -511,11 +569,26 @@
                 selector: '.sirv-block-gallery-div',
                 attribute: 'data-isresponsive',
             },
-            isLink: {
+            linkType:{
                 type: 'string',
                 source: 'attribute',
                 selector: '.sirv-block-gallery-div',
-                attribute: 'data-link',
+                attribute: 'data-link-type',
+                default: 'none',
+            },
+            customLink:{
+                type: 'string',
+                source: 'attribute',
+                selector: '.sirv-block-gallery-div',
+                attribute: 'data-custom-link',
+                default: '',
+            },
+            isBlankWindow:{
+                type: 'string',
+                source: 'attribute',
+                selector: '.sirv-block-gallery-div',
+                attribute: 'data-is-blank-window',
+                default: 'false',
             },
             width: {
                 type: 'string',
@@ -582,7 +655,7 @@
             if(!shId && images.length == 0 ){
                 return el('div', {
                         className: 'sirv-g-start-div components-placeholder',
-                        },[
+                        },
                             el('div',{
                                 className: 'sirv-modal',
                             }, ''),
@@ -593,7 +666,7 @@
                                     className: 'sirv-g-icon',
                                     src: sirv_ajax_object.assets_path + '/ico_img_blue.svg',
                                 }),
-                                el('text', {}, __('Sirv Media')),
+                                el('span', {}, __('Sirv Media')),
                             ),
                             el('div',{
                                 className: 'sirv-g-desc components-placeholder__instructions',
@@ -605,7 +678,6 @@
                                     window.renderSirvModalWindowWithParams(null, false, true, false, function(){
                                         window.isSirvGutenberg = false;
                                         if(window.sirvShObj && Object.keys(window.sirvShObj).length > 0){
-                                            console.log(window.sirvShObj);
                                             props.setAttributes({shId: (window.sirvShObj.sirvId).toString(),
                                                                 shType: (window.sirvShObj.sirvType).toString(),
                                                                 shCount: (window.sirvShObj.sirvCount).toString(),
@@ -616,7 +688,9 @@
                                                                 width: window.sirvShObj.sirvWidth,
                                                                 isResponsive: window.sirvShObj.sirvIsResponsive,
                                                                 lazyLoading: window.sirvShObj.sirvIsLazyLoading,
-                                                                isLink: window.sirvShObj.sirvIsLink,
+                                                                linkType: window.sirvShObj.sirvLinkType,
+                                                                customLink: window.sirvShObj.sirvCustomLink,
+                                                                isBlankWindow: window.sirvShObj.sirvIsBlankWindow,
                                                                 isAltCaption: window.sirvShObj.sirvIsAltCaption,
                                                                 profile: window.sirvShObj.sirvProfile,
                                                                 profilesJsonStr: window.sirvShObj.sirvProfiles,
@@ -626,39 +700,38 @@
                                     });
                                 },
                             }, 'Add Sirv Media')
-                        ]
-                );
+                        );
             }
 
             if(shId){
                 let shType = props.attributes.shType;
                 let shCount = props.attributes.shCount;
-                let shImages = props.attributes.shImages;
+                //let shImages = props.attributes.shImages;
                 let shImagesJsonStr = props.attributes.shImagesJsonStr;
 
                 function renderShortcodeImages(images){
                     let imagesElArr = [];
 
                     let tmpImages = JSON.parse(images);
-                    tmpImages.forEach(function(elem){
-                        imagesElArr.push( el('img', {src: elem, className: 'sirv-sc-view-img'}) );
+                    tmpImages.forEach(function(elem, index){
+                        imagesElArr.push( el('img', {src: elem, className: 'sirv-sc-view-img', key: index}) );
                     });
 
                     return imagesElArr;
                 }
 
 
-                return el('DIV', {
+                return el('div', {
                     className: 'sirv-sc-view',
                     'data-id': shId,
                     'data-type': shType,
                     'data-count': shCount,
-                }, [
-                    el('DIV', {className: 'sirv-modal'}, ''),
+                },
+                    el('div', {className: 'sirv-modal'}, ''),
                     el('div', {
                         className: 'sirv-overlay',
                         'data-id': shId,
-                    }, [
+                    },
                         el('span', {
                             className: 'sirv-overlay-text',
                         }, shType + ': ' + shCount + ' item(s)'),
@@ -691,10 +764,10 @@
                                 });
                             },
                         }, ''),
-                    ]),
+                    ),
                     renderShortcodeImages(shImagesJsonStr),
                     renderShortcodeInspectorControls(props),
-                ]);
+                );
             }
 
             if(images.length > 0){
@@ -702,27 +775,31 @@
                 let width = props.attributes.width;
                 let isResponsive = props.attributes.isResponsive;
                 let lazyLoading = props.attributes.lazyLoading;
-                let isLink = props.attributes.isLink;
+                let linkType = props.attributes.linkType;
+                let customLink = props.attributes.customLink;
+                let isBlankWindow = props.attributes.isBlankWindow;
                 let isAltCaption = props.attributes.isAltCaption;
                 let profile = props.attributes.profile;
                 let profiles = props.attributes.profilesJsonStr;
 
-                return [
-                        el('DIV', {className: 'sirv-modal'}),
-                        el('ul', {
-                            className: 'sirv-block-gallery',
-                            'data-align': align,
-                            'data-width': width,
-                            'data-isresponsive': isResponsive,
-                            'data-lazy-loading': lazyLoading,
-                            'data-link': isLink,
-                            'data-alt-caption': isAltCaption,
-                            'data-profile': profile,
-                            'data-json-profiles': profiles,
+                return el('div', {},
+                    el('div', {className: 'sirv-modal'}),
+                    el('ul', {
+                        className: 'sirv-block-gallery',
+                        'data-align': align,
+                        'data-width': width,
+                        'data-isresponsive': isResponsive,
+                        'data-lazy-loading': lazyLoading,
+                        'data-link-type': linkType,
+                        'data-custom-link': customLink,
+                        'data-is-blank-window': isBlankWindow,
+                        'data-alt-caption': isAltCaption,
+                        'data-profile': profile,
+                        'data-json-profiles': profiles,
 
-                        }, renderImagesHtml(props, 'edit')),
-                        renderImagesInspectorControls(props)
-                ];
+                    }, renderImagesHtml(props, 'edit')),
+                    renderImagesInspectorControls(props)
+                );
             }
         },
 
@@ -750,7 +827,9 @@
                 let width = props.attributes.width;
                 let isResponsive = props.attributes.isResponsive;
                 let lazyLoading = props.attributes.lazyLoading;
-                let isLink = props.attributes.isLink;
+                let linkType = props.attributes.linkType;
+                let customLink = props.attributes.customLink;
+                let isBlankWindow = props.attributes.isBlankWindow;
                 let isAltCaption = props.attributes.isAltCaption;
                 let profile = props.attributes.profile;
                 let profiles = props.attributes.profilesJsonStr;
@@ -761,7 +840,9 @@
                     'data-width': width,
                     'data-isresponsive': isResponsive,
                     'data-lazy-loading': lazyLoading,
-                    'data-link': isLink,
+                    'data-link-type': linkType,
+                    'data-custom-link': customLink,
+                    'data-is-blank-window': isBlankWindow,
                     'data-alt-caption': isAltCaption,
                     'data-profile': profile,
                     'data-json-profiles': profiles,
