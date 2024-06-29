@@ -643,7 +643,7 @@ const enterNewArea = (function () {
     let called = false;
 
     return function(position, weapon, mapUrl) {
-        // clear enemy interval.
+        // Clear enemy interval.
         clearInterval(window.shooterInt);
         clearInterval(window.runnerInt);
         clearInterval(window.walkingInterval);
