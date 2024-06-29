@@ -47,7 +47,7 @@ do_action('wpacu_admin_notices');
                     <td>
                         <label><input type="checkbox"
                                       class="wpacu_remove_preload"
-                                      name="wpacu_styles_remove_preloads[<?php echo $styleHandle; ?>]"
+                                      name="wpacu_styles_remove_preloads[<?php echo esc_attr($styleHandle); ?>]"
                                       value="remove" /> Remove preload for this CSS file</label>
                     </td>
                 </tr>
@@ -81,7 +81,7 @@ do_action('wpacu_admin_notices');
                     <td>
                         <label><input type="checkbox"
                                       class="wpacu_remove_preload"
-                                      name="wpacu_scripts_remove_preloads[<?php echo $scriptHandle; ?>]"
+                                      name="wpacu_scripts_remove_preloads[<?php echo esc_attr($scriptHandle); ?>]"
                                       value="remove" /> Remove preload for this JS file</label>
                     </td>
                 </tr>
@@ -115,7 +115,7 @@ do_action('wpacu_admin_notices');
             ?>
         </p>
         <div id="wpacu-updating-settings" style="margin-left: 285px; top: 10px;">
-            <img src="<?php echo admin_url('images/spinner.gif'); ?>" align="top" width="20" height="20" alt="" />
+            <img src="<?php echo esc_url(admin_url('images/spinner.gif')); ?>" align="top" width="20" height="20" alt="" />
         </div>
     </div>
 </form>

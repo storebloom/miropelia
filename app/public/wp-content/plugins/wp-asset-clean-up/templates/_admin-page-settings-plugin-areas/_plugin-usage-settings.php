@@ -18,7 +18,7 @@ foreach (\WpAssetCleanUp\MetaBoxes::$noMetaBoxesForPostTypes as $noMetaBoxesForP
     unset($postTypesList[$noMetaBoxesForPostType]);
 }
 ?>
-<div id="<?php echo $tabIdArea; ?>" class="wpacu-settings-tab-content" <?php echo $styleTabContent; ?>>
+<div id="<?php echo esc_attr($tabIdArea); ?>" class="wpacu-settings-tab-content" <?php echo wp_kses($styleTabContent, array('style' => array())); ?>>
     <h2 class="wpacu-settings-area-title"><?php _e('General &amp; Files Management', 'wp-asset-clean-up'); ?></h2>
     <p><?php _e('Choose how the assets are retrieved and whether you would like to see them within the Dashboard / Front-end view', 'wp-asset-clean-up'); ?>; <?php _e('Decide how the management list of CSS &amp; JavaScript files will show up and get sorted, depending on your preferences.', 'wp-asset-clean-up'); ?></p>
     <table class="wpacu-form-table">
@@ -66,7 +66,7 @@ foreach (\WpAssetCleanUp\MetaBoxes::$noMetaBoxesForPostTypes as $noMetaBoxesForP
                             </li>
                         </ul>
 
-                        <div class="wpacu-clearfix" style="height: 0;"></div>
+                        <div class="wpacu_clearfix" style="height: 0;"></div>
 
                         <ul id="wpacu-dom-get-type-infos">
                             <li <?php if ($data['dom_get_type'] !== 'direct') { ?>style="display: none;"<?php } ?>
@@ -82,7 +82,7 @@ foreach (\WpAssetCleanUp\MetaBoxes::$noMetaBoxesForPostTypes as $noMetaBoxesForP
                         </ul>
                     </div>
 
-                    <hr /><div class="wpacu-clearfix" style="height: 0;"></div>
+                    <hr /><div class="wpacu_clearfix" style="height: 0;"></div>
 
                     <input type="hidden" name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[show_assets_meta_box]" value="0" />
                     <fieldset style="margin: 15px 0 0 0; padding: 10px; border: 1px solid #8c8f94; border-radius: 10px;">
@@ -109,7 +109,7 @@ foreach (\WpAssetCleanUp\MetaBoxes::$noMetaBoxesForPostTypes as $noMetaBoxesForP
                                                value="fetch_on_click" /> <?php _e('Fetch the assets on a button click', 'wp-asset-clean-up'); ?>
                                     </label>
                                 </li>
-                            </ul><div class="wpacu-clearfix" style="height: 0; clear: both;"></div>
+                            </ul><div class="wpacu_clearfix" style="height: 0; clear: both;"></div>
 
                             <hr />
 
@@ -119,13 +119,13 @@ foreach (\WpAssetCleanUp\MetaBoxes::$noMetaBoxesForPostTypes as $noMetaBoxesForP
                                         id="wpacu-hide-meta-boxes-for-post-types"
                                         <?php if ($data['input_style'] !== 'standard') { ?>
                                             data-placeholder="Choose Post Type(s)..."
-                                            class="wpacu-chosen-select"
+                                            class="wpacu_chosen_select"
                                         <?php } ?>
                                         multiple="multiple"
                                         name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[hide_meta_boxes_for_post_types][]">
                                     <?php foreach ($postTypesList as $postTypeKey => $postTypeValue) { ?>
                                         <option <?php if (in_array($postTypeKey, $data['hide_meta_boxes_for_post_types'])) { echo 'selected="selected"'; } ?>
-                                                value="<?php echo $postTypeKey; ?>"><?php echo $postTypeValue; ?></option>
+                                                value="<?php echo esc_attr($postTypeKey); ?>"><?php echo esc_html($postTypeValue); ?></option>
                                     <?php } ?>
                                 </select>
                                 <p id="wpacu-hide-meta-boxes-for-post-types-info" style="margin-top: 4px;"><small>Sometimes, you might have a post type marked as 'public', but it's not queryable or doesn't have a public URL of its own, making the assets list irrelevant. Or, you have finished optimising pages for a particular post type and you wish to have the assets list hidden. You can choose to hide the meta boxes for these particular post types.</small></p>
@@ -162,7 +162,7 @@ foreach (\WpAssetCleanUp\MetaBoxes::$noMetaBoxesForPostTypes as $noMetaBoxesForP
                         <textarea id="wpacu_frontend_show_exceptions"
                                   name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[frontend_show_exceptions]"
                                   rows="5"
-                                  style="width: 100%;"><?php echo $data['frontend_show_exceptions']; ?></textarea>
+                                  style="width: 100%;"><?php echo esc_textarea($data['frontend_show_exceptions']); ?></textarea>
                         <p><strong>Example:</strong> If the URI contains <strong>et_fb=1</strong> which triggers the front-end Divi page builder, then you can specify it in the list above (it's added by default) to prevent the asset list from showing below the page builder area.</p>
                     </div>
                 </div>
@@ -184,7 +184,6 @@ foreach (\WpAssetCleanUp\MetaBoxes::$noMetaBoxesForPostTypes as $noMetaBoxesForP
                 );
 
                 $users = get_users( $args );
-
                 ?>
                 <select style="vertical-align: top;" id="wpacu-allow-manage-assets-to-select" name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[allow_manage_assets_to]">
                     <option <?php if (in_array($data['allow_manage_assets_to'], array('', 'any_admin'))) { ?>selected="selected"<?php } ?> value="any_admin">any administrator</option>
@@ -256,7 +255,7 @@ foreach (\WpAssetCleanUp\MetaBoxes::$noMetaBoxesForPostTypes as $noMetaBoxesForP
                     <div class="clear"></div>
                 </div>
 
-                <div class="wpacu-clearfix"></div>
+                <div class="wpacu_clearfix"></div>
 
                 <p style="margin-top: 8px;"><?php _e('These are various ways in which the list of assets that you will manage will show up. Depending on your preference, you might want to see the list of styles &amp; scripts first, or all together sorted in alphabetical order etc.', 'wp-asset-clean-up'); ?> <?php _e('Options that are disabled are available in the Pro version.', 'wp-asset-clean-up'); ?></p>
             </td>
@@ -287,7 +286,7 @@ foreach (\WpAssetCleanUp\MetaBoxes::$noMetaBoxesForPostTypes as $noMetaBoxesForP
                         </label>
                     </li>
                 </ul>
-                <div class="wpacu-clearfix"></div>
+                <div class="wpacu_clearfix"></div>
 
                 <p><?php _e('Sometimes, when you have plenty of elements in the edit page, you might want to contract the list of assets when you\'re viewing the page as it will save space. This can be a good practice, especially when you finished optimising the pages and you don\'t want to keep seeing the long list of files every time you edit a page.', 'wp-asset-clean-up'); ?></p>
                 <p><strong><?php _e('Note', 'wp-asset-clean-up'); ?>:</strong> <?php _e('This does not include the assets rows within the groups which are expanded &amp; contracted individually, depending on your preference.', 'wp-asset-clean-up'); ?></p>
@@ -319,7 +318,7 @@ foreach (\WpAssetCleanUp\MetaBoxes::$noMetaBoxesForPostTypes as $noMetaBoxesForP
                         </label>
                     </li>
                 </ul>
-                <div class="wpacu-clearfix"></div>
+                <div class="wpacu_clearfix"></div>
 
                 <p><?php echo sprintf(
                         __('Some assets (CSS &amp; JavaScript) have inline code associate with them and often, they are quite large, making the asset row bigger and requiring you to scroll more until you reach a specific area. By setting it to "%s", it will hide all the inline code by default and you can view it by clicking on the toggle link inside the asset row.', 'wp-asset-clean-up'),
@@ -354,7 +353,7 @@ foreach (\WpAssetCleanUp\MetaBoxes::$noMetaBoxesForPostTypes as $noMetaBoxesForP
                         </label>
                     </li>
                 </ul>
-                <div class="wpacu-clearfix"></div>
+                <div class="wpacu_clearfix"></div>
 
                 <p><?php _e('In case you prefer standard HTML checkboxes instead of the enhanced CSS3 iPhone style ones (on &amp; off) or you need a simple HTML layout in case you\'re using a screen reader software (e.g. for people with disabilities) which requires standard/clean HTML code, then you can choose "Standard" as an option.', 'wp-asset-clean-up'); ?> <span style="color: #004567;" class="dashicons dashicons-info"></span> <a href="https://assetcleanup.com/docs/?p=95" target="_blank">Read more</a></p>
             </td>
@@ -405,7 +404,7 @@ foreach (\WpAssetCleanUp\MetaBoxes::$noMetaBoxesForPostTypes as $noMetaBoxesForP
                 <p style="margin-top: 10px;"><?php _e('They should only be unloaded by experienced developers when they are convinced that are not needed in particular situations. It\'s better to leave them loaded if you have any doubts whether you need them or not. By hiding them in the assets management list, you will see a smaller assets list (easier to manage) and you will avoid updating by mistake any option (unload, async, defer) related to any core file.', 'wp-asset-clean-up'); ?></p>
             </td>
         </tr>
-        <tr valign="top">
+        <tr valign="top" id="wpacu-settings-allow-usage-tracking">
             <th scope="row">
                 <label for="wpacu_allow_usage_tracking"><?php _e('Allow Usage Tracking', 'wp-asset-clean-up'); ?></label>
             </th>
@@ -442,10 +441,10 @@ foreach (\WpAssetCleanUp\MetaBoxes::$noMetaBoxesForPostTypes as $noMetaBoxesForP
             <td>
                     <input id="wpacu_clear_cached_files_after"
                            type="number"
-                           min="0"
+                           min="1"
                            style="width: 60px; margin-bottom: 10px;"
                            name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[clear_cached_files_after]"
-                           value="<?php echo $data['clear_cached_files_after']; ?>" /> days <small>(setting the value to 0 will result in all the previously cached CSS/JS files to be deleted).</small>
+                           value="<?php echo esc_attr($data['clear_cached_files_after']); ?>" /> day(s)
                 <br />This is relevant in case there are alterations made to the content of the CSS/JS files via minification, combination or any other settings that would require an update to the content of a file (e.g. apply "font-display" to @font-face in stylesheets). When the caching is cleared, the previously cached CSS/JS files stored in <code><?php echo \WpAssetCleanUp\OptimiseAssets\OptimizeCommon::getRelPathPluginCacheDir(); ?></code> that are older than (X) days will be deleted as they are outdated and likely not referenced anymore in any source code (e.g. old cached pages, Google Search cached version etc.). <span style="color: #004567;" class="dashicons dashicons-info"></span> <a href="https://assetcleanup.com/docs/?p=237" target="_blank">Read more</a>
             </td>
         </tr>
@@ -462,7 +461,7 @@ foreach (\WpAssetCleanUp\MetaBoxes::$noMetaBoxesForPostTypes as $noMetaBoxesForP
                 <textarea id="wpacu_do_not_load_plugin_patterns"
                            name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[do_not_load_plugin_patterns]"
                            rows="4"
-                           style="width: 100%;"><?php echo $data['do_not_load_plugin_patterns']; ?></textarea>
+                           style="width: 100%;"><?php echo esc_textarea($data['do_not_load_plugin_patterns']); ?></textarea>
                 </div>
                 <div>
                     <p>You can either use specific strings or patterns (the # delimiter will be automatically applied to the <code>preg_match()</code> PHP function that would check if the requested URI is matched). Please do not include the domain name. Here are a few examples:</p>
@@ -498,11 +497,11 @@ foreach (\WpAssetCleanUp\MetaBoxes::$noMetaBoxesForPostTypes as $noMetaBoxesForP
 <div id="wpacu-show-tracked-data-list-modal" class="wpacu-modal" style="padding-top: 100px;">
     <div class="wpacu-modal-content" style="max-width: 800px;">
         <span class="wpacu-close">&times;</span>
-        <p>The following information will be sent to us and it would be helpful to make the plugin better.</p>
+        <p>The following information will be sent to us, and it would be helpful to make the plugin better.</p>
         <p>e.g. see which themes and plugins are used the most and make the plugin as compatible as possible with them, see the most used plugin settings, determine the most used languages after English which is helpful to prioritise translations etc.</p>
         <?php
         $pluginTrackingClass = new \WpAssetCleanUp\PluginTracking();
-        $pluginTrackingClass->setup_data();
+        $pluginTrackingClass->setupData();
         $pluginTrackingClass::showSentInfoDataTable($pluginTrackingClass->data);
         ?>
     </div>
@@ -519,7 +518,7 @@ foreach (\WpAssetCleanUp\MetaBoxes::$noMetaBoxesForPostTypes as $noMetaBoxesForP
 
         <p>Once this information is retrieved, the file's original URL will be updated to match the optimized one for the file's content stored in <code><?php echo \WpAssetCleanUp\OptimiseAssets\OptimizeCommon::getRelPathPluginCacheDir(); ?></code>.</p>
 
-        <p><strong>Note:</strong> If you are using a plugin such as WP Rocket, WP Fastest Cache or the caching system provided by your hosting company, then this fetching process would be significantly reduced as visitors will access static HTML pages read from the caching. Technically, no SQL queries should be made as the WordPress environment would not be loaded as it happens with a non-cached page (e.g. when you are logged-in and access the front-end pages).</p>
+        <p><strong>Note:</strong> If you are using a plugin such as WP-Optimize, WP Fastest Cache or the caching system provided by your hosting company, then this fetching process would be significantly reduced as visitors will access static HTML pages read from the caching. Technically, no SQL queries should be made as the WordPress environment would not be loaded as it happens with a non-cached page (e.g. when you are logged-in and access the front-end pages).</p>
     </div>
 </div>
 

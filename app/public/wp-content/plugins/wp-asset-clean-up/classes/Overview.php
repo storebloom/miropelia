@@ -27,6 +27,11 @@ class Overview
 	 */
 	public function __construct()
     {
+        // The code initiated in this function is relevant only in the "Overview" page
+        if (Misc::getVar('request', 'page') !== WPACU_PLUGIN_ID . '_overview') {
+            return;
+        }
+
         $this->data['page_options_to_text']['no_wpacu_load'] = sprintf(__($this->data['page_options_to_text']['no_wpacu_load'], 'wp-asset-clean-up'), WPACU_PLUGIN_TITLE);
 
         // [START] Clear load exceptions for a handle
@@ -39,11 +44,11 @@ class Overview
 	        check_admin_referer('wpacu_clear_load_exceptions', 'wpacu_clear_load_exceptions_nonce');
             Maintenance::removeAllLoadExceptionsFor($wpacuHandle, $wpacuAssetType);
             set_transient($transientName, array('handle' => $wpacuHandle, 'type' => $wpacuAssetType));
-            wp_redirect(admin_url('admin.php?page=wpassetcleanup_overview'));
+            wp_redirect(admin_url('admin.php?page=wpassetcleanup_overview&wpacu_load_exceptions_cleared=1'));
             exit();
         }
 
-	    if ($transientData = get_transient($transientName)) {
+	    if (Misc::getVar('get', 'wpacu_load_exceptions_cleared') && $transientData = get_transient($transientName)) {
 	        add_action('admin_notices', static function() use ($transientData, $transientName) {
 		        $wpacuAssetTypeToPrint = ($transientData['type'] === 'styles') ? 'CSS' : 'JavaScript';
 	            ?>
@@ -66,11 +71,11 @@ class Overview
 		    check_admin_referer('wpacu_clear_all_rules', 'wpacu_clear_all_rules_nonce');
 		    Maintenance::removeAllRulesFor($wpacuHandle, $wpacuAssetType);
 		    set_transient('wpacu_all_rules_cleared', array('handle' => $wpacuHandle, 'type' => $wpacuAssetType));
-		    wp_redirect(admin_url('admin.php?page=wpassetcleanup_overview'));
+		    wp_redirect(admin_url('admin.php?page=wpassetcleanup_overview&wpacu_all_rules_cleared=1'));
 		    exit();
 	    }
 
-	    if ($transientData = get_transient($transientName)) {
+	    if (Misc::getVar('get', 'wpacu_all_rules_cleared') && $transientData = get_transient($transientName)) {
 		    add_action('admin_notices', static function() use ($transientData, $transientName) {
 			    $wpacuAssetTypeToPrint = ($transientData['type'] === 'styles') ? 'CSS' : 'JavaScript';
 			    ?>
@@ -93,11 +98,11 @@ class Overview
 		    check_admin_referer('wpacu_clear_all_redundant_rules', 'wpacu_clear_all_redundant_rules_nonce');
 		    Maintenance::removeAllRedundantUnloadRulesFor($wpacuHandle, $wpacuAssetType);
 		    set_transient($transientName, array('handle' => $wpacuHandle, 'type' => $wpacuAssetType));
-		    wp_redirect(admin_url('admin.php?page=wpassetcleanup_overview'));
+		    wp_redirect(admin_url('admin.php?page=wpassetcleanup_overview&wpacu_all_redundant_unload_rules_cleared=1'));
 		    exit();
 	    }
 
-	    if ($transientData = get_transient($transientName)) {
+	    if (Misc::getVar('get', 'wpacu_all_redundant_unload_rules_cleared') && $transientData = get_transient($transientName)) {
 		    add_action('admin_notices', static function() use ($transientData, $transientName) {
 			    $wpacuAssetTypeToPrint = ($transientData['type'] === 'styles') ? 'CSS' : 'JavaScript';
 			    ?>
@@ -111,7 +116,7 @@ class Overview
 	    // [END] Clear all redundant unload rules (if the site-wide one is already enabled)
     }
 
-	/**
+    /**
 	 * @return array
 	 */
 	public static function handlesWithAtLeastOneRule()
@@ -135,7 +140,7 @@ class Overview
 			    if ( isset( $wpacuFrontPageUnloadsArray[$assetType] ) && ! empty( $wpacuFrontPageUnloadsArray[$assetType] ) ) {
 				    foreach ( $wpacuFrontPageUnloadsArray[$assetType] as $assetHandle ) {
 					    $allHandles[$assetType][ $assetHandle ]['unload_on_home_page'] = 1;
-				    }
+					    }
 			    }
 		    }
 	    }
@@ -150,7 +155,7 @@ class Overview
 			    if ( isset( $wpacuFrontPageLoadExceptionsArray[$assetType] ) && ! empty( $wpacuFrontPageLoadExceptionsArray[$assetType] ) ) {
 				    foreach ( $wpacuFrontPageLoadExceptionsArray[$assetType] as $assetHandle ) {
 					    $allHandles[$assetType][ $assetHandle ]['load_exception_on_home_page'] = 1;
-				    }
+					    }
 			    }
 		    }
 	    }
@@ -165,7 +170,7 @@ class Overview
 				    if (isset($assetData['attributes']) && ! empty($assetData['attributes'])) {
 					    // async, defer attributes
 					    $allHandles['scripts'][ $assetHandle ]['script_attrs']['home_page'] = $assetData['attributes'];
-				    }
+					    }
 			    }
 		    }
 
@@ -173,7 +178,7 @@ class Overview
 		    if (isset($wpacuFrontPageDataArray['scripts_attributes_no_load']) && ! empty($wpacuFrontPageDataArray['scripts_attributes_no_load'])) {
 			    foreach ($wpacuFrontPageDataArray['scripts_attributes_no_load'] as $assetHandle => $assetAttrsNoLoad) {
 				    $allHandles['scripts'][$assetHandle]['attrs_no_load']['home_page'] = $assetAttrsNoLoad;
-			    }
+				    }
 		    }
 	    }
 
@@ -190,7 +195,7 @@ class Overview
 	                    foreach ($dbAssetHandles[$assetType] as $assetHandle => $assetValue) {
 	                        if ($assetValue !== '') {
 		                        $allHandles[ $assetType ][ $assetHandle ]['load_exception_post_type'][] = $wpacuPostType;
-	                        }
+		                        }
 	                    }
 	                }
 	            }
@@ -229,14 +234,14 @@ SQL;
 					    foreach ( $assetHandles as $assetHandle ) {
 						    // Unload it on this page
 						    $allHandles[ $assetType ][ $assetHandle ]['unload_on_this_page'][$refKey][] = $refId;
-					    }
+						    }
 				    }
 			    } elseif ( $wpacuValues['meta_key'] === '_' . $wpacuPluginId . '_load_exceptions' ) {
 				    foreach ( $decodedValues as $assetType => $assetHandles ) {
 					    foreach ( $assetHandles as $assetHandle ) {
 						    // If bulk unloaded, 'Load it on this page'
 						    $allHandles[ $assetType ][ $assetHandle ]['load_exception_on_this_page'][$refKey][] = $refId;
-					    }
+						    }
 				    }
 			    } elseif ( $wpacuValues['meta_key'] === '_' . $wpacuPluginId . '_data' ) {
 				    if ( isset( $decodedValues['scripts'] ) && ! empty( $decodedValues['scripts'] ) ) {
@@ -244,14 +249,14 @@ SQL;
 						    if ( isset( $scriptData['attributes'] ) && ! empty( $scriptData['attributes'] ) ) {
 							    // async, defer attributes
 							    $allHandles['scripts'][ $assetHandle ]['script_attrs'][$refKey][$refId] = $scriptData['attributes'];
-						    }
+							    }
 					    }
 				    }
 
 				    if ( isset( $decodedValues['scripts_attributes_no_load'] ) && ! empty( $decodedValues['scripts_attributes_no_load'] ) ) {
 					    foreach ( $decodedValues['scripts_attributes_no_load'] as $assetHandle => $scriptNoLoadAttrs ) {
 						    $allHandles['scripts'][$assetHandle]['attrs_no_load'][$refKey][$refId] = $scriptNoLoadAttrs;
-					    }
+						    }
 				    }
 			    }
 		    }
@@ -263,7 +268,13 @@ SQL;
 	    $wpacuGlobalData = get_option(WPACU_PLUGIN_ID . '_global_data');
 	    $wpacuGlobalDataArray = @json_decode($wpacuGlobalData, ARRAY_A);
 
-	    $allPossibleDataTypes = array('load_it_logged_in', 'preloads', 'positions', 'notes', 'ignore_child', 'everywhere', 'date', '404', 'search');
+	    $allPossibleDataTypes = array(
+            'load_it_logged_in',
+            'preloads',
+            'notes',
+            'ignore_child',
+            'everywhere'
+        );
 
 	    foreach (array('styles', 'scripts') as $assetType) {
 		    if ($assetType === 'scripts' && isset( $wpacuGlobalDataArray[ $assetType ])) {
@@ -284,12 +295,12 @@ SQL;
 						    }
 						    // async/defer applied site-wide
 						    $allHandles[ $assetType ][ $assetHandle ]['script_site_wide_attrs'] = $dataValue['attributes'];
-					    } elseif ($dataType !== 'everywhere' && $assetType === 'scripts' && isset($dataValue['attributes'])) {
+						    } elseif ($dataType !== 'everywhere' && $assetType === 'scripts' && isset($dataValue['attributes'])) {
 						    // For date, 404, search pages
 						    $allHandles[ $assetType ][ $assetHandle ]['script_attrs'][$dataType] = $dataValue['attributes'];
-					    } else {
+						    } else {
 						    $allHandles[ $assetType ][ $assetHandle ][ $dataType ] = $dataValue;
-					    }
+						    }
 				    }
 			    }
 		    }
@@ -299,7 +310,7 @@ SQL;
 				    foreach ($wpacuGlobalDataArray[$assetType][$unloadType] as $assetHandle => $unloadData) {
 					    if (isset($unloadData['enable'], $unloadData['value']) && $unloadData['enable'] && $unloadData['value']) {
 						    $allHandles[ $assetType ][ $assetHandle ][$unloadType] = $unloadData['value'];
-					    }
+						    }
 				    }
 			    }
 		    }
@@ -310,7 +321,7 @@ SQL;
 		    foreach ($wpacuGlobalDataArray['scripts_attributes_no_load'] as $unloadedIn => $unloadedInValues) {
 			    foreach ($unloadedInValues as $assetHandle => $assetAttrsNoLoad) {
 				    $allHandles['scripts'][$assetHandle]['attrs_no_load'][$unloadedIn] = $assetAttrsNoLoad;
-			    }
+				    }
 		    }
 	    }
 
@@ -324,7 +335,7 @@ SQL;
 		    if (isset($wpacuGlobalUnloadDataArray[$assetType]) && ! empty($wpacuGlobalUnloadDataArray[$assetType])) {
 			    foreach ($wpacuGlobalUnloadDataArray[$assetType] as $assetHandle) {
 				    $allHandles[ $assetType ][ $assetHandle ]['unload_site_wide'] = 1;
-			    }
+				    }
 		    }
 	    }
 
@@ -341,26 +352,12 @@ SQL;
 					    continue;
 				    }
 
-				    // $unloadBulkType could be 'post_type', 'date', '404', 'taxonomy', 'search', 'custom_post_type_archive_[post_type_name_here]', etc.
+				    // $unloadBulkType could be 'post_type', 'post_type_via_tax', 'date', '404', 'taxonomy', 'search', 'custom_post_type_archive_[post_type_name_here]', etc.
 				    if ($unloadBulkType === 'post_type') {
 					    foreach ($unloadBulkValues as $postType => $assetHandles) {
 						    foreach ($assetHandles as $assetHandle) {
-							    $allHandles[ $assetType ][ $assetHandle ]['unload_bulk']['post_type'][] = $postType;
-						    }
-					    }
-				    } elseif (in_array($unloadBulkType, array('date', '404', 'search')) || (strpos($unloadBulkType, 'custom_post_type_archive_') !== false)) {
-					    foreach ($unloadBulkValues as $assetHandle) {
-						    $allHandles[ $assetType ][ $assetHandle ]['unload_bulk'][$unloadBulkType] = 1;
-					    }
-				    } elseif ($unloadBulkType === 'taxonomy') {
-					    foreach ($unloadBulkValues as $taxonomyType => $assetHandles) {
-						    foreach ($assetHandles as $assetHandle) {
-							    $allHandles[ $assetType ][ $assetHandle ]['unload_bulk']['taxonomy'][] = $taxonomyType;
-						    }
-					    }
-				    } elseif ($unloadBulkType === 'author' && isset($unloadBulkValues['all']) && ! empty($unloadBulkValues['all'])) {
-					    foreach ($unloadBulkValues['all'] as $assetHandle) {
-						    $allHandles[ $assetType ][ $assetHandle ]['unload_bulk']['author'] = 1;
+							    $allHandles[ $assetType ][ $assetHandle ]['unload_bulk'][$unloadBulkType][] = $postType;
+							    }
 					    }
 				    }
 			    }
@@ -473,9 +470,9 @@ SQL;
 			        : $data['assets_info'][ $assetType ][ $handle ][$verKey] ;
 	        }
 	        ?>
-            <strong><span style="color: green;"><?php echo $handle; ?></span></strong>
-            <small><em>v<?php echo $ver; ?></em></small>
-            <?php
+            <strong><span style="color: green;"><?php echo esc_html($handle); ?></span></strong>
+		        <small><em>v<?php echo esc_html($ver); ?></em></small>
+		        <?php
             if ($isCoreFile) {
                 ?>
                 <span title="WordPress Core File" style="font-size: 15px; vertical-align: middle;" class="dashicons dashicons-wordpress-alt wpacu-tooltip"></span>
@@ -501,7 +498,7 @@ SQL;
 	        }
 
 	        if (isset($handleData['positions']) && $handleData['positions']) {
-                $handleExtras[1] = '<span style="color: #004567; font-weight: 600;">Moved to <code>&lt;'.$handleData['positions'].'&gt;</code></span>';
+                $handleExtras[1] = '<span style="color: #004567; font-weight: 600;">Moved to <code>&lt;'.esc_html($handleData['positions']).'&gt;</code></span>';
             }
 
 	        /*
@@ -511,25 +508,25 @@ SQL;
             // Per home page
 	        if (isset($handleData['script_attrs']['home_page']) && ! empty($handleData['script_attrs']['home_page'])) {
 		        ksort($handleData['script_attrs']['home_page']);
-		        $handleExtras[2] = 'Homepage attributes: <strong>'.implode(', ', $handleData['script_attrs']['home_page']).'</strong>';
+		        $handleExtras[2] = 'Homepage attributes: <strong>'.esc_html(implode(', ', $handleData['script_attrs']['home_page'])).'</strong>';
 	        }
 
 	        // Date archive pages
 	        if (isset($handleData['script_attrs']['date']) && ! empty($handleData['script_attrs']['date'])) {
 		        ksort($handleData['script_attrs']['date']);
-		        $handleExtras[22] = 'Date archive attributes: <strong>'.implode(', ', $handleData['script_attrs']['date']).'</strong>';
+		        $handleExtras[22] = 'Date archive attributes: <strong>'.esc_html(implode(', ', $handleData['script_attrs']['date'])).'</strong>';
 	        }
 
 	        // 404 page
 	        if (isset($handleData['script_attrs']['404']) && ! empty($handleData['script_attrs']['404'])) {
 		        ksort($handleData['script_attrs']['404']);
-		        $handleExtras[23] = '404 Not Found attributes: <strong>'.implode(', ', $handleData['script_attrs']['404']).'</strong>';
+		        $handleExtras[23] = '404 Not Found attributes: <strong>'.esc_html(implode(', ', $handleData['script_attrs']['404'])).'</strong>';
 	        }
 
 	        // Search results page
 	        if (isset($handleData['script_attrs']['search']) && ! empty($handleData['script_attrs']['search'])) {
 		        ksort($handleData['script_attrs']['search']);
-		        $handleExtras[24] = '404 Not Found attributes: <strong>'.implode(', ', $handleData['script_attrs']['search']).'</strong>';
+		        $handleExtras[24] = '404 Not Found attributes: <strong>'.esc_html(implode(', ', $handleData['script_attrs']['search'])).'</strong>';
 	        }
 
             // Archive page for Custom Post Type (those created via theme editing or via plugins such as "Custom Post Type UI")
@@ -539,7 +536,7 @@ SQL;
 	            $keyNo = 225;
 	            foreach ($handleData['script_attrs'] as $scriptAttrsKey => $scriptAttrsValue) {
 	                $customPostTypeName = str_replace('custom_post_type_archive_', '', $scriptAttrsKey);
-		            $handleExtras[$keyNo] = 'Archive custom post type page "'.$customPostTypeName.'" attributes: <strong>'.implode(', ', $handleData['script_attrs'][$scriptAttrsKey]).'</strong>';
+		            $handleExtras[$keyNo] = 'Archive custom post type page "'.$customPostTypeName.'" attributes: <strong>'.esc_html(implode(', ', $handleData['script_attrs'][$scriptAttrsKey])).'</strong>';
 		            $keyNo++;
 	            }
 	        }
@@ -554,9 +551,14 @@ SQL;
 
 		        foreach ($handleData['script_attrs']['post'] as $postId => $attrList) {
 			        $postData   = get_post($postId);
-			        $postTitle  = $postData->post_title;
-			        $postType   = $postData->post_type;
-			        $postsList .= '<a title="Post Title: '.$postTitle.', Post Type: '.$postType.'" class="wpacu-tooltip" target="_blank" href="'.admin_url('post.php?post='.$postId.'&action=edit').'">'.$postId.'</a> - <strong>'.implode(', ', $attrList).'</strong> / ';
+
+                    if (isset($postData->post_title, $postData->post_type)) {
+	                    $postTitle = $postData->post_title;
+	                    $postType  = $postData->post_type;
+	                    $postsList .= '<a title="Post Title: ' . esc_attr( $postTitle ) . ', Post Type: ' . esc_attr( $postType ) . '" class="wpacu-tooltip" target="_blank" href="' . esc_url( admin_url( 'post.php?post=' . $postId . '&action=edit' ) ) . '">' . $postId . '</a> - <strong>' . esc_html( implode( ', ', $attrList ) ) . '</strong> / ';
+                    } else {
+	                    $postsList .= '<s class="wpacu-tooltip" title="N/A (post deleted)" style="color: #cc0000;">'.$postId.'</s> / ';
+                    }
 		        }
 
 	            $handleExtras[3] .= rtrim($postsList, ' / ');
@@ -589,15 +591,15 @@ SQL;
                 $taxPagesList = '';
 
 	            foreach ($handleData['script_attrs']['term'] as $termId => $attrList) {
-		            $taxData     = get_term( $termId );
+		            $taxData = term_exists( (int)$termId ) ? get_term( $termId ) : false;
 
-		            if (isset($taxData->errors['invalid_taxonomy']) && ! empty($taxData->errors['invalid_taxonomy'])) {
+		            if ( ! $taxData || ( isset($taxData->errors['invalid_taxonomy']) && ! empty($taxData->errors['invalid_taxonomy']) ) ) {
 			            $taxPagesList .= '<span style="color: darkred; font-style: italic;">Error: Taxonomy with ID '.$termId.' does not exist anymore (rule does not apply)</span> | ';
 		            } else {
 			            $taxonomy    = $taxData->taxonomy;
 			            $termLink    = get_term_link( $taxData, $taxonomy );
 			            $termRelLink = str_replace( site_url(), '', $termLink );
-			            $taxPagesList .= '<a href="' . $termRelLink . '">' . $termRelLink . '</a> - <strong>' . implode( ', ', $attrList ) . '</strong> | ';
+			            $taxPagesList .= '<a href="' . esc_attr($termRelLink) . '">' . esc_html($termRelLink) . '</a> - <strong>' . esc_html(implode( ', ', $attrList )) . '</strong> | ';
 		            }
 	            }
 
@@ -613,7 +615,7 @@ SQL;
 	        if (isset($handleData['script_site_wide_attrs'])) {
 		        $handleExtras[4] = 'Site-wide attributes: ';
 		        foreach ( $handleData['script_site_wide_attrs'] as $attrValue ) {
-			        $handleExtras[4] .= '<strong>' . $attrValue . '</strong>';
+			        $handleExtras[4] .= '<strong>' . esc_html($attrValue) . '</strong>';
 
 			        // Are there any exceptions? e.g. async, defer unloaded site-wide, but loaded on the homepage
 			        if ( isset( $handleData['attrs_no_load'] ) && ! empty( $handleData['attrs_no_load'] ) ) {
@@ -654,10 +656,15 @@ SQL;
 							        }
 
 							        $postData   = get_post($postId);
-							        $postTitle  = $postData->post_title;
-							        $postType   = $postData->post_type;
 
-							        $postPagesList .= '<a title="Post Title: '.$postTitle.', Post Type: '.$postType.'" class="wpacu-tooltip" target="_blank" href="'.admin_url('post.php?post='.$postId.'&action=edit').'">'.$postId.'</a> | ';
+                                    if (isset($postData->post_title, $postData->post_type)) {
+	                                    $postTitle = $postData->post_title;
+	                                    $postType  = $postData->post_type;
+
+	                                    $postPagesList .= '<a title="Post Title: ' . esc_attr( $postTitle ) . ', Post Type: ' . esc_attr( $postType ) . '" class="wpacu-tooltip" target="_blank" href="' . esc_url( admin_url( 'post.php?post=' . $postId . '&action=edit' ) ) . '">' . $postId . '</a> | ';
+                                    } else {
+	                                    $postPagesList .= '<s style="color: #cc0000;">'.$postId.'</s> <em>N/A (post deleted)</em> | ';
+                                    }
 						        }
 
 						        if ($postPagesList) {
@@ -675,16 +682,16 @@ SQL;
 						                continue;
                                     }
 
-							        $taxData = get_term( $termId );
+							        $taxData = term_exists((int)$termId) ? get_term( $termId ) : false;
 
-							        if (isset($taxData->errors['invalid_taxonomy']) && ! empty($taxData->errors['invalid_taxonomy'])) {
-								        $taxPagesList .= '<span style="color: darkred; font-style: italic;">Error: Taxonomy with ID '.$termId.' does not exist anymore (rule does not apply)</span> | ';
+							        if ( ! $taxData || (isset($taxData->errors['invalid_taxonomy']) && ! empty($taxData->errors['invalid_taxonomy'])) ) {
+								        $taxPagesList .= '<span style="color: darkred; font-style: italic;">Error: Taxonomy with ID '.(int)$termId.' does not exist anymore (rule does not apply)</span> | ';
 							        } else {
 								        $taxonomy    = $taxData->taxonomy;
 								        $termLink    = get_term_link( $taxData, $taxonomy );
 								        $termRelLink = str_replace( site_url(), '', $termLink );
 
-								        $taxPagesList .= '<a href="' . $termRelLink . '">' . $termRelLink . '</a> | ';
+								        $taxPagesList .= '<a href="' . esc_url($termRelLink) . '">' . esc_url($termRelLink) . '</a> | ';
 							        }
 						        }
 
@@ -706,7 +713,7 @@ SQL;
 							        $authorLink = get_author_posts_url(get_the_author_meta('ID', $userId));
 							        $authorRelLink = str_replace(site_url(), '', $authorLink);
 
-							        $authorPagesList .= '<a target="_blank" href="'.$authorLink.'">'.$authorRelLink.'</a> | ';
+							        $authorPagesList .= '<a target="_blank" href="'.esc_url($authorLink).'">'.esc_html($authorRelLink).'</a> | ';
 						        }
 
 						        if ($authorPagesList) {
@@ -747,24 +754,29 @@ SQL;
 			        $appendAfterSrc .= 'ver='.$wp_version; // default
 		        }
 		        ?>
-                <div><a <?php if ($isExternalSrc) { ?> data-wpacu-external-source="<?php echo $src . $appendAfterSrc; ?>" <?php } ?> href="<?php echo $src . $appendAfterSrc; ?>" target="_blank"><small><?php echo str_replace( site_url(), '', $src ); ?></small></a> <?php if ($isExternalSrc) { ?><span data-wpacu-external-source-status></span><?php } ?></div>
+                <div><a <?php if ($isExternalSrc) { ?> data-wpacu-external-source="<?php echo esc_attr($src . $appendAfterSrc); ?>" <?php } ?> href="<?php echo esc_attr($src . $appendAfterSrc); ?>" target="_blank"><small><?php echo str_replace( site_url(), '', $src ); ?></small></a> <?php if ($isExternalSrc) { ?><span data-wpacu-external-source-status></span><?php } ?></div>
                 <?php
-	            if ($maybeInactiveAsset = \WpAssetCleanUp\Misc::maybeIsInactiveAsset($src)) {
-		            $clearAllRulesConfirmMsg = sprintf(esc_attr(__('This will clear all rules (unloads, load exceptions &amp; other settings) for the `%s` CSS handle', 'wp-asset-clean-up')), $handle)
-                        . esc_js("\n\n") . esc_attr(__('Click `OK` to confirm the action', 'wp-asset-clean-up'));
-		            $wpacuNonceField = wp_nonce_field('wpacu_clear_all_rules', 'wpacu_clear_all_rules_nonce');
+	            $maybeInactiveAsset = \WpAssetCleanUp\Misc::maybeIsInactiveAsset($src);
+
+	            if (is_array($maybeInactiveAsset) && ! empty($maybeInactiveAsset)) {
+	                $uniqueStr = md5($handle . $assetType);
+		            $clearAllRulesConfirmMsg = sprintf(esc_attr(__('This will clear all rules (unloads, load exceptions and other settings) for the `%s` CSS handle', 'wp-asset-clean-up')), $handle) . ".\n\n" . esc_attr(__('Click `OK` to confirm the action', 'wp-asset-clean-up')).'!';
 	                ?>
                     <div>
-                        <small><strong>Note:</strong> <span style="color: darkred;">The plugin `<strong><?php echo $maybeInactiveAsset; ?></strong>` seems to be inactive, thus any rules set are also inactive &amp; irrelevant, unless you re-activate the plugin.</span></small>
+                        <?php if ($maybeInactiveAsset['from'] === 'plugin') { ?>
+                            <small><strong>Note:</strong> <span style="color: darkred;">The plugin `<strong><?php echo esc_html($maybeInactiveAsset['name']); ?></strong>` seems to be inactive, thus any rules set are also inactive &amp; irrelevant, unless you re-activate the plugin.</span></small>
+                        <?php } elseif ($maybeInactiveAsset['from'] === 'theme') { ?>
+                            <small><strong>Note:</strong> <span style="color: darkred;">The theme `<strong><?php echo esc_html($maybeInactiveAsset['name']); ?></strong>` seems to be inactive, thus any rules set are also inactive &amp; irrelevant, unless you re-activate the theme.</span></small>
+                        <?php } ?>
                         <form method="post" action="" style="display: inline-block;">
                             <input type="hidden" name="wpacu_action" value="clear_all_rules" />
-                            <input type="hidden" name="wpacu_handle" value="<?php echo $handle; ?>" />
-                            <input type="hidden" name="wpacu_asset_type" value="<?php echo $assetType; ?>" />
-                            <?php echo $wpacuNonceField; ?>
+                            <input type="hidden" name="wpacu_handle" value="<?php echo esc_attr($handle); ?>" />
+                            <input type="hidden" name="wpacu_asset_type" value="<?php echo esc_attr($assetType); ?>" />
+                            <?php echo wp_nonce_field('wpacu_clear_all_rules', 'wpacu_clear_all_rules_nonce'); ?>
                             <script type="text/javascript">
-                                var wpacuClearAllRulesConfirmMsg = '<?php echo $clearAllRulesConfirmMsg; ?>';
+                                var wpacuClearAllRulesConfirmMsg_<?php echo $uniqueStr; ?> = '<?php echo esc_js($clearAllRulesConfirmMsg); ?>';
                             </script>
-                            <button onclick="return confirm(wpacuClearAllRulesConfirmMsg);" type="submit" class="button button-secondary"><span class="dashicons dashicons-trash" style="vertical-align: text-bottom;"></span> Clear all rules for this "orphaned" handle</button>
+                            <button onclick="return confirm(wpacuClearAllRulesConfirmMsg_<?php echo $uniqueStr; ?>);" type="submit" class="button button-secondary"><span class="dashicons dashicons-trash" style="vertical-align: text-bottom;"></span> Clear all rules for this "orphaned" handle</button>
                         </form>
                     </div>
 		            <?php
@@ -785,7 +797,7 @@ SQL;
 	/**
 	 * @param $handleData
 	 *
-	 * @return mixed
+	 * @return array
 	 */
 	public static function renderHandleChangesOutput($handleData)
 	{
@@ -808,7 +820,11 @@ SQL;
 
 			if (isset($handleData['unload_bulk']['post_type'])) {
 				foreach ($handleData['unload_bulk']['post_type'] as $postType) {
-					$handleChangesOutput['bulk'] .= ' Unloaded on all pages of <strong>' . $postType . '</strong> post type, ';
+                    $textToShow = 'Unloaded on all pages of <strong>' . $postType . '</strong> post type';
+
+                    $handleChangesOutput['bulk'] .= ' <span style="color: #cc0000;">'.$textToShow.'</span>'.
+                                                    self::anyNoPostTypeEntriesMsg($postType).', ';
+
 					$anyUnloadRule = true;
 				}
 			}
@@ -839,7 +855,7 @@ SQL;
 
 		// On this page: post, page, custom post type
 		if (isset($handleData['unload_on_this_page']['post'])) {
-			$handleChangesOutput['on_this_post'] = 'Unloaded in the following posts: ';
+			$handleChangesOutput['on_this_post'] = '<span style="color: #cc0000;">Unloaded in the following posts:</span> ';
 
 			$postsList = '';
 
@@ -847,9 +863,22 @@ SQL;
 
 			foreach ($handleData['unload_on_this_page']['post'] as $postId) {
 				$postData   = get_post($postId);
-				$postTitle  = $postData->post_title;
-				$postType   = $postData->post_type;
-				$postsList .= '<a title="Post Title: '.$postTitle.', Post Type: '.$postType.'" class="wpacu-tooltip" target="_blank" href="'.admin_url('post.php?post='.$postId.'&action=edit').'">'.$postId.'</a>, ';
+
+                if (isset($postData->post_title, $postData->post_type)) {
+	                $postTitle  = $postData->post_title;
+	                $postType   = $postData->post_type;
+                    $postStatus = $postData->post_status;
+
+	                $postsList .= '<a title="Post Title: ' . esc_attr( $postTitle ) . ', Post Type: ' . esc_attr( $postType ) . '" class="wpacu-tooltip" target="_blank" href="' . esc_url( admin_url( 'post.php?post=' . $postId . '&action=edit' ) ) . '">' . $postId . '</a>';
+
+                    if ($postStatus === 'trash') {
+                        $postsList .= '&nbsp;<span style="color: #cc0000;" title="The post is in the \'Trash\'. This rule is not relevant if the post URL is not accessible." class="wpacu-tooltip dashicons dashicons-warning"></span>';
+                    }
+
+                    $postsList .= ', ';
+                } else {
+	                $postsList .= '<s class="wpacu-tooltip" title="N/A (post deleted)" style="color: #cc0000;">'.$postId.'</s>, ';
+                }
 			}
 
 			$handleChangesOutput['on_this_post'] .= rtrim($postsList, ', ');
@@ -864,8 +893,8 @@ SQL;
 
 		// Maybe it has other unload rules on top of the site-wide one (which covers everything)
 		if ($hasRedundantUnloadRules) {
-			$clearRedundantUnloadRulesConfirmMsg = sprintf(esc_js(__('This will clear all redundant (useless) unload rules for the `%s` CSS handle as there\'s already a site-wide rule applied.', 'wp-asset-clean-up')), $handleData['handle'])
-			                                       . esc_js("\n\n") . esc_js(__('Click `OK` to confirm the action', 'wp-asset-clean-up'));
+			$uniqueDelimiter = md5($handleData['handle'] . $handleData['asset_type']);
+			$clearRedundantUnloadRulesConfirmMsg = sprintf(esc_js(__('This will clear all redundant (useless) unload rules for the `%s` CSS handle as there\'s already a site-wide rule applied.', 'wp-asset-clean-up')), $handleData['handle']) . '\n\n' . esc_js(__('Click `OK` to confirm the action', 'wp-asset-clean-up')).'!';
 			$wpacuNonceField = wp_nonce_field('wpacu_clear_all_redundant_rules', 'wpacu_clear_all_redundant_rules_nonce');
 			$clearRedundantUnloadRulesArea = <<<HTML
 <form method="post" action="" style="display: inline-block;">
@@ -874,9 +903,9 @@ SQL;
 <input type="hidden" name="wpacu_asset_type" value="{$handleData['asset_type']}" />
 {$wpacuNonceField}
 <script type="text/javascript">
-var wpacuClearRedundantUnloadRulesConfirmMsg = '{$clearRedundantUnloadRulesConfirmMsg}';
+var wpacuClearRedundantUnloadRulesConfirmMsg_{$uniqueDelimiter} = "{$clearRedundantUnloadRulesConfirmMsg}";
 </script>
-<button onclick="return confirm(wpacuClearRedundantUnloadRulesConfirmMsg);" type="submit" class="button button-secondary"><span class="dashicons dashicons-trash" style="vertical-align: text-bottom;"></span> Clear all redundant unload rules</button>
+<button onclick="return confirm(wpacuClearRedundantUnloadRulesConfirmMsg_{$uniqueDelimiter});" type="submit" class="button button-secondary"><span class="dashicons dashicons-trash" style="vertical-align: text-bottom;"></span> Clear all redundant unload rules</button>
 </form>
 HTML;
 			$handleChangesOutput['has_redundant_unload_rules'] = $clearRedundantUnloadRulesArea;
@@ -896,9 +925,14 @@ HTML;
 
 			foreach ($handleData['load_exception_on_this_page']['post'] as $postId) {
 				$postData   = get_post($postId);
-				$postTitle  = $postData->post_title;
-				$postType   = $postData->post_type;
-				$postsList .= '<a title="Post Title: '.$postTitle.', Post Type: '.$postType.'" class="wpacu-tooltip" target="_blank" href="'.admin_url('post.php?post='.$postId.'&action=edit').'">'.$postId.'</a>, ';
+
+                if (isset($postData->post_title, $postData->post_type)) {
+				    $postTitle  = $postData->post_title;
+				    $postType   = $postData->post_type;
+				    $postsList .= '<a title="Post Title: '.esc_attr($postTitle).', Post Type: '.esc_attr($postType).'" class="wpacu-tooltip" target="_blank" href="'.esc_url(admin_url('post.php?post='.$postId.'&action=edit')).'">'.$postId.'</a>, ';
+                } else {
+	                $postsList .= '<s class="wpacu-tooltip" title="N/A (post deleted)" style="color: #cc0000;">'.$postId.'</s>, ';
+                }
 			}
 
 			$handleChangesOutput['load_exception_on_this_post'] .= rtrim($postsList, ', ');
@@ -914,7 +948,7 @@ HTML;
 			sort($handleData['load_exception_post_type']);
 
 			foreach ($handleData['load_exception_post_type'] as $postType) {
-				$postTypesList .= '<strong>'.$postType.'</strong>, ';
+				$postTypesList .= '<strong>'.$postType.'</strong>'.self::anyNoPostTypeEntriesMsg($postType).', ';
 			}
 
 			$handleChangesOutput['load_exception_post_type'] .= rtrim($postTypesList, ', ');
@@ -940,8 +974,7 @@ HTML;
 
 		if (! $anyUnloadRule && $anyLoadExceptionRule) {
 		    $handleType = ($handleData['asset_type'] === 'styles') ? 'CSS' : 'JS';
-		    $clearLoadExceptionsConfirmMsg = sprintf( esc_attr(__('This will clear all load exceptions for the `%s` %s handle', 'wp-asset-clean-up')), $handleData['handle'], $handleType).'.'
-                . esc_js("\n\n") . esc_js(__('Click `OK` to confirm the action', 'wp-asset-clean-up')).'!';
+		    $clearLoadExceptionsConfirmMsg = sprintf( esc_attr(__('This will clear all load exceptions for the `%s` %s handle', 'wp-asset-clean-up')), $handleData['handle'], $handleType).'.' . '\n\n' . esc_js(__('Click `OK` to confirm the action', 'wp-asset-clean-up')).'!';
 		    $wpacuNonceField = wp_nonce_field('wpacu_clear_load_exceptions', 'wpacu_clear_load_exceptions_nonce');
 
 		    $uniqueDelimiter = md5($handleData['handle'].$handleData['asset_type']);
@@ -963,4 +996,21 @@ HTML;
 
 		return $handleChangesOutput;
 	}
+
+	/**
+	 * @param $postType
+	 *
+	 * @return string
+	 */
+	public static function anyNoPostTypeEntriesMsg($postType)
+    {
+	    $appendAfter = '';
+	    $postTypeStatus = Misc::isValidPostType($postType);
+
+	    if ( ! $postTypeStatus['has_records'] ) {
+		    $appendAfter = ' <span style="color: #cc0000;" title="There are no posts in the database having the following post type: ' . $postType . '" class="wpacu-tooltip dashicons dashicons-warning"></span>';
+	    }
+
+        return $appendAfter;
+    }
 }

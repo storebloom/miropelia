@@ -14,10 +14,53 @@ class AjaxSearchAutocomplete
 	{
 		add_action('admin_enqueue_scripts', array($this, 'enqueueScripts'));
 		add_action('wp_ajax_' . WPACU_PLUGIN_ID . '_autocomplete_search', array($this, 'wpAjaxSearch'));
+
+		self::maybePreventWpmlPluginFromFiltering();
 	}
 
 	/**
+	 * "WPML Multilingual CMS" prevents the AJAX loader from "Load assets manager for:" from loading the results as they are
+	 * If a specific ID is put there, the post with that ID should be returned and not one of its translated posts with a different ID
 	 *
+	 * @return void
+	 */
+	public static function maybePreventWpmlPluginFromFiltering()
+	{
+		if ( ! (isset($_REQUEST['action'], $_REQUEST['wpacu_term'], $GLOBALS['sitepress']) &&
+		    $_REQUEST['action'] === WPACU_PLUGIN_ID . '_autocomplete_search' &&
+		    $_REQUEST['wpacu_term'] &&
+		    Misc::isPluginActive('sitepress-multilingual-cms/sitepress.php')) ) {
+			return;
+		}
+
+		// This is called before "WPML Multilingual CMS" loads as we need to avoid any filtering of the search results
+		// to avoid confusing the admin when managing the assets within "CSS & JS Manager" -- "Manage CSS/JS"
+
+		// Avoid retrieving the wrong (language related) post ID and title
+		global $sitepress;
+		remove_action( 'parse_query', array( $sitepress, 'parse_query' ) );
+
+		// Avoid retrieving the wrong (language related) permalink
+		global $wp_filter;
+
+		if ( ! isset( $wp_filter['page_link']->callbacks ) ) {
+			return;
+		}
+
+		foreach ( $wp_filter['page_link']->callbacks as $key => $values ) {
+			if ( ! empty( $wp_filter['page_link']->callbacks ) ) {
+				foreach ( $values as $values2 ) {
+					if ( isset( $values2['function'][0] ) && $values2['function'][0] instanceof \WPML_URL_Filters ) {
+						unset( $wp_filter['page_link']->callbacks[ $key ] );
+					}
+				}
+			}
+		}
+
+		}
+
+	/**
+	 * Only valid for "CSS & JS Manager" -- "Manage CSS/JS" -- ("Posts" | "Pages" | "Custom Post Types" | "Media")
 	 */
 	public function enqueueScripts()
     {
@@ -25,8 +68,17 @@ class AjaxSearchAutocomplete
 			return;
 	    }
 
-	    $wpacuFor = $_REQUEST['wpacu_for'];
-	    $forPostType = '';
+		$isManageCssJsDash = isset($_GET['page']) && $_GET['page'] === WPACU_PLUGIN_ID.'_assets_manager';
+		$subPage = isset($_GET['wpacu_sub_page']) ? $_GET['wpacu_sub_page'] : 'manage_css_js';
+
+		$loadAutoCompleteOnManageCssJsDash = ($isManageCssJsDash && $subPage === 'manage_css_js') &&
+			in_array($_REQUEST['wpacu_for'], array('posts', 'pages', 'media-attachment', 'custom-post-types'));
+
+		if ( ! $loadAutoCompleteOnManageCssJsDash ) {
+			return;
+		}
+
+	    $wpacuFor = sanitize_text_field($_REQUEST['wpacu_for']);
 
 	    switch ($wpacuFor) {
 		    case 'posts':
@@ -41,6 +93,8 @@ class AjaxSearchAutocomplete
 		    case 'custom-post-types':
 		    	$forPostType = 'wpacu-custom-post-types';
 		    	break;
+		    default:
+			    $forPostType = '';
 	    }
 
 	    if ( ! $forPostType ) {
@@ -48,24 +102,24 @@ class AjaxSearchAutocomplete
 	    }
 
 	    wp_enqueue_script(
-	    	'wpacu-autocomplete-search',
-		    WPACU_PLUGIN_URL . '/assets/auto-complete/main.js',
+		    OwnAssets::$ownAssets['scripts']['autocomplete_search']['handle'],
+		    plugins_url(OwnAssets::$ownAssets['scripts']['autocomplete_search']['rel_path'], WPACU_PLUGIN_FILE),
 		    array('jquery', 'jquery-ui-autocomplete'),
-		    OwnAssets::assetVer('/assets/auto-complete/main.js'),
+		    OwnAssets::assetVer(OwnAssets::$ownAssets['scripts']['autocomplete_search']['rel_path']),
 		    true
 	    );
 
-	    wp_localize_script('wpacu-autocomplete-search', 'wpacu_autocomplete_search_obj', array(
-		    'ajax_url'       => admin_url('admin-ajax.php'),
+	    wp_localize_script(OwnAssets::$ownAssets['scripts']['autocomplete_search']['handle'], 'wpacu_autocomplete_search_obj', array(
+		    'ajax_url'       => esc_url(admin_url('admin-ajax.php')),
 		    'ajax_nonce'     => wp_create_nonce('wpacu_autocomplete_search_nonce'),
 		    'ajax_action'    => WPACU_PLUGIN_ID . '_autocomplete_search',
 		    'post_type'      => $forPostType,
-		    'redirect_to'    => admin_url('admin.php?page=wpassetcleanup_assets_manager&wpacu_for='.$wpacuFor.'&wpacu_post_id=[post_id_here]')
+		    'redirect_to'    => esc_url(admin_url('admin.php?page=wpassetcleanup_assets_manager&wpacu_for='.$wpacuFor.'&wpacu_post_id=post_id_here'))
 	    ));
 
-	    $wp_scripts = wp_scripts();
-	    wp_enqueue_style('wpacu-jquery-ui-css',
-		    '//ajax.googleapis.com/ajax/libs/jqueryui/' . $wp_scripts->registered['jquery-ui-autocomplete']->ver . '/themes/smoothness/jquery-ui.css',
+	    wp_enqueue_style(
+			OwnAssets::$ownAssets['styles']['autocomplete_search_jquery_ui_custom']['handle'],
+		    plugins_url(OwnAssets::$ownAssets['styles']['autocomplete_search_jquery_ui_custom']['rel_path'], WPACU_PLUGIN_FILE),
 		    false, null, false
 	    );
 
@@ -74,7 +128,7 @@ class AjaxSearchAutocomplete
 	background-position: 99% 6px;
 }
 CSS;
-	    wp_add_inline_style('wpacu-jquery-ui-css', $jqueryUiCustom);
+	    wp_add_inline_style(OwnAssets::$ownAssets['styles']['autocomplete_search_jquery_ui_custom']['handle'], $jqueryUiCustom);
     }
 
 	/**
@@ -86,11 +140,11 @@ CSS;
 
 		global $wpdb;
 
-		$search_term = isset($_REQUEST['wpacu_term'])      ? $_REQUEST['wpacu_term']      : '';
-		$post_type   = isset($_REQUEST['wpacu_post_type']) ? $_REQUEST['wpacu_post_type'] : '';
+		$search_term = isset($_REQUEST['wpacu_term'])      ? sanitize_text_field($_REQUEST['wpacu_term']) : '';
+		$post_type   = isset($_REQUEST['wpacu_post_type']) ? sanitize_text_field($_REQUEST['wpacu_post_type']) : '';
 
 		if ( $search_term === '' ) {
-			echo json_encode(array());
+			echo wp_json_encode(array());
 		}
 
 		$results = array();
@@ -98,20 +152,22 @@ CSS;
 	    if ($post_type !== 'attachment') {
 	    	// 'post', 'page', custom post types
 		    $queryDataByKeyword = array(
-			    'post_type'      => $post_type,
-			    's'              => $search_term,
-			    'post_status'    => array( 'publish', 'private' ),
-			    'posts_per_page' => -1
+			    'post_type'        => $post_type,
+			    's'                => $search_term,
+			    'post_status'      => array( 'publish', 'private' ),
+			    'posts_per_page'   => -1,
+			    'suppress_filters' => true
 		    );
 	    } else {
 	    	// 'attachment'
-		    $search = $wpdb->get_col( $wpdb->prepare( " SELECT DISTINCT ID FROM {$wpdb->posts} WHERE post_title = '%s' ", $search_term ) );
+		    $search = $wpdb->get_col( $wpdb->prepare( "SELECT DISTINCT ID FROM {$wpdb->posts} WHERE post_title = '%s'", $search_term ) );
 		    $queryDataByKeyword = array(
 			    'post_type' => 'attachment',
 			    'post_status' => 'inherit',
 			    'orderby' => 'date',
 			    'order' => 'DESC',
 			    'post__in' => $search,
+			    'suppress_filters' => true
 		    );
 	    }
 
@@ -122,9 +178,12 @@ CSS;
 	    if (! $query->have_posts()) {
 	    	// This one works for any post type, including 'attachment'
 		    $queryDataByID = array(
-			    'post_type'      => $post_type,
-			    'p'              => $search_term,
-			    'posts_per_page' => -1
+			    'post_type'        => $post_type,
+			    'p'                => $search_term,
+			    'post_status'      => array( 'publish', 'private' ),
+			    'posts_per_page'   => -1,
+			    'post__in'         => $search_term,
+			    'suppress_filters' => true
 		    );
 
 		    $query = new \WP_Query($queryDataByID);
@@ -150,7 +209,7 @@ CSS;
 					$resultToShow .= ' / '.$iconPrivate.' Private';
 				}
 
-				// This is a page and it was set as the homepage (point this out)
+				// This is a page, and it was set as the homepage (point this out)
 				if ($pageOnFront === $resultPostId) {
 					$iconHome = '<span class="dashicons dashicons-admin-home"></span>';
 					$resultToShow .= ' / '.$iconHome.' Homepage';
@@ -175,7 +234,7 @@ CSS;
 			wp_die();
 		}
 
-		echo json_encode($results);
+		echo wp_json_encode($results);
 		wp_die();
 	}
 }

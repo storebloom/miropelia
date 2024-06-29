@@ -130,7 +130,7 @@ tr.wpacu_plugin_row_debug_unload.wpacu_plugin_row_debug_unload_marked td {
     border-top: 1px solid #e7e7e7;
 }
 
-#wpacu-debug-plugins-unloaded .wpacu_plugin_icon > img {
+#wpacu-debug-plugins-list .wpacu_plugin_icon > img {
     -webkit-border-radius: 3px;
     /* Chrome, Safari, Opera */
     -moz-border-radius: 3px;
@@ -138,7 +138,7 @@ tr.wpacu_plugin_row_debug_unload.wpacu_plugin_row_debug_unload_marked td {
     border-radius: 3px;
 }
 
-#wpacu-debug-plugins-unloaded .wpacu_plugin_icon > div {
+#wpacu-debug-plugins-list .wpacu_plugin_icon > div {
     background: #efefef;
     border: #cdcdcd;
     border-radius: 3px;
@@ -149,7 +149,7 @@ tr.wpacu_plugin_row_debug_unload.wpacu_plugin_row_debug_unload_marked td {
     text-align: center;
 }
 
-#wpacu-debug-plugins-unloaded .wpacu_plugin_icon > div > span {
+#wpacu-debug-plugins-list .wpacu_plugin_icon > div > span {
     font-size: 20px;
     color: #b3b3b3;
     top: 50%;

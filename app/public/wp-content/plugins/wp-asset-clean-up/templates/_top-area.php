@@ -12,47 +12,47 @@ use WpAssetCleanUp\Misc;
 $wpacuTopAreaLinks = array(
 	'admin.php?page=wpassetcleanup_settings' => array(
 		'icon' => '<span class="dashicons dashicons-admin-generic"></span>',
-		'title' => __('Settings', 'wp-asset-clean-up'),
+		'title' => esc_html__('Settings', 'wp-asset-clean-up'),
 		'page' => 'wpassetcleanup_settings'
 	),
 
 	'admin.php?page=wpassetcleanup_assets_manager' => array(
 		'icon' => '<span class="dashicons dashicons-media-code"></span>',
-		'title' => __('CSS &amp; JS Manager', 'wp-asset-clean-up'),
+		'title' => esc_html__('CSS &amp; JS Manager', 'wp-asset-clean-up'),
 		'page'  => 'wpassetcleanup_assets_manager',
 	),
 
 	'admin.php?page=wpassetcleanup_plugins_manager' => array(
 		'icon' => '<span class="dashicons dashicons-admin-plugins"></span>',
-		'title' => __('Plugins Manager', 'wp-asset-clean-up'),
+		'title' => esc_html__('Plugins Manager', 'wp-asset-clean-up'),
 		'page'  => 'wpassetcleanup_plugins_manager',
 	),
 
 	'admin.php?page=wpassetcleanup_bulk_unloads' => array(
 		'icon' => '<span class="dashicons dashicons-networking"></span>',
-		'title' => __('Bulk Changes', 'wp-asset-clean-up'),
+		'title' => esc_html__('Bulk Changes', 'wp-asset-clean-up'),
 		'page'  => 'wpassetcleanup_bulk_unloads'
 	),
 
 	'admin.php?page=wpassetcleanup_overview' => array(
 		'icon' => '<span class="dashicons dashicons-media-text"></span>',
-		'title' => __('Overview', 'wp-asset-clean-up'),
+		'title' => esc_html__('Overview', 'wp-asset-clean-up'),
 		'page'  => 'wpassetcleanup_overview'
 	),
 
 	'admin.php?page=wpassetcleanup_tools' => array(
 		'icon' => '<span class="dashicons dashicons-admin-tools"></span>',
-		'title' => __('Tools', 'wp-asset-clean-up'),
+		'title' => esc_html__('Tools', 'wp-asset-clean-up'),
 		'page' => 'wpassetcleanup_tools'
 	),
 	'admin.php?page=wpassetcleanup_license' => array(
 		'icon' => '<span class="dashicons dashicons-awards"></span>',
-		'title' => __('License', 'wp-asset-clean-up'),
+		'title' => esc_html__('License', 'wp-asset-clean-up'),
 		'page' => 'wpassetcleanup_license'
 	),
 	'admin.php?page=wpassetcleanup_get_help' => array(
 		'icon' => '<span class="dashicons dashicons-sos"></span>',
-		'title' => __('Help', 'wp-asset-clean-up'),
+		'title' => esc_html__('Help', 'wp-asset-clean-up'),
 		'page' => 'wpassetcleanup_get_help'
 	),
     // [wpacu_lite]
@@ -77,7 +77,7 @@ if (! $wpacuCurrentPage) {
 	);
 }
 
-$wpacuDefaultPageUrl = admin_url(Misc::arrayKeyFirst($wpacuTopAreaLinks));
+$wpacuDefaultPageUrl = esc_url(admin_url(Misc::arrayKeyFirst($wpacuTopAreaLinks)));
 
 $goBackToCurrentUrl = '&_wp_http_referer=' . urlencode( wp_unslash( $_SERVER['REQUEST_URI'] ) );
 
@@ -85,9 +85,9 @@ $isSettingsCurrentPage = ($wpacuCurrentPage !== WPACU_PLUGIN_ID . '_settings');
 ?>
 <div id="wpacu-top-area">
     <div id="wpacu-logo-wrap">
-        <a href="<?php echo $wpacuDefaultPageUrl; ?>">
+        <a href="<?php echo esc_url($wpacuDefaultPageUrl); ?>">
             <img alt="" src="<?php echo WPACU_PLUGIN_URL; ?>/assets/images/asset-cleanup-logo.png" />
-            <div class="wpacu-pro-sign wpacu-lite">
+            <div class="wpacu-version-sign wpacu-lite">
                 <div>
                     LITE<div class="wpacu-version-text">v<?php echo WPACU_PLUGIN_VERSION; ?></div>
                 </div>
@@ -97,17 +97,19 @@ $isSettingsCurrentPage = ($wpacuCurrentPage !== WPACU_PLUGIN_ID . '_settings');
 
     <div id="wpacu-quick-actions">
         <span class="wpacu-actions-title"><?php _e('QUICK ACTIONS', 'wp-asset-clean-up'); ?>:</span>
-        <a href="<?php echo wp_nonce_url(admin_url('admin-post.php?action=assetcleanup_clear_assets_cache' . $goBackToCurrentUrl),
-		    'assetcleanup_clear_assets_cache'); ?>">
+        <a href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=assetcleanup_clear_assets_cache' . $goBackToCurrentUrl),
+		    'assetcleanup_clear_assets_cache')); ?>">
             <span class="dashicons dashicons-update"></span> <?php _e('Clear CSS/JS Files Cache', 'wp-asset-clean-up'); ?>
         </a>
         |
         <?php
         if ($isSettingsCurrentPage) {
-            echo '<a style="text-decoration: none; color: #74777b;" href="'.admin_url('admin.php?page=wpassetcleanup_settings&wpacu_selected_tab_area=wpacu-setting-test-mode').'">';
+        ?>
+        <a style="text-decoration: none; color: #74777b;" href="<?php echo esc_url(admin_url('admin.php?page=wpassetcleanup_settings&wpacu_selected_tab_area=wpacu-setting-test-mode')); ?>">
+        <?php
         }
 
-        echo __('TEST MODE', 'wp-asset-clean-up').': ';
+        echo esc_html__('TEST MODE', 'wp-asset-clean-up').': ';
 
         if (Main::instance()->settings['test_mode']) {
             echo '<strong style="color: green;">ON</strong> ';
@@ -118,12 +120,14 @@ $isSettingsCurrentPage = ($wpacuCurrentPage !== WPACU_PLUGIN_ID . '_settings');
         }
 
         if ($isSettingsCurrentPage) {
-	        echo '</a>';
+        ?>
+            </a>
+        <?php
         }
         ?>
     </div>
 
-    <div class="wpacu-clearfix"></div>
+    <div class="wpacu_clearfix"></div>
 </div>
 
 <div class="wpacu-tabs wpacu-tabs-style-topline">
@@ -148,7 +152,7 @@ $isSettingsCurrentPage = ($wpacuCurrentPage !== WPACU_PLUGIN_ID . '_settings');
 	                        <?php
                         } elseif ($totalUnloadedAssets > 0) {
                             ?>
-                            <span class="extra-info assets-unloaded-true"><strong><?php echo $totalUnloadedAssets; ?></strong> page unloads</span>
+                            <span class="extra-info assets-unloaded-true"><strong><?php echo (int)$totalUnloadedAssets; ?></strong> page unloads</span>
                             <?php
                         }
                     }
@@ -170,14 +174,14 @@ $isSettingsCurrentPage = ($wpacuCurrentPage !== WPACU_PLUGIN_ID . '_settings');
 	                        <?php
                         } elseif ($totalBulkUnloadRules > 0) {
                             ?>
-                            <span class="extra-info has-bulk-unloads assets-unloaded-true"><strong><?php echo $totalBulkUnloadRules; ?></strong> bulk unloads</span>
+                            <span class="extra-info has-bulk-unloads assets-unloaded-true"><strong><?php echo $totalBulkUnloadRules; ?></strong> bulk unload<?php echo ($totalBulkUnloadRules > 1) ? 's' : ''; ?></span>
 	                        <?php
                         }
                     }
                     ?>
                     <a <?php if (isset($wpacuInfo['target']) && $wpacuInfo['target'] === '_blank') { ?> target="_blank" <?php } ?>
-                            href="<?php echo admin_url($wpacuLink); ?>">
-                        <?php echo $wpacuInfo['icon']; ?> <span><?php echo $wpacuInfo['title']; ?></span>
+                            href="<?php echo esc_url(admin_url($wpacuLink)); ?>">
+                        <?php echo wp_kses($wpacuInfo['icon'], array('span' => array('class' => array()))); ?> <span><?php echo esc_html($wpacuInfo['title']); ?></span>
                     </a>
                 </li>
 			<?php } ?>

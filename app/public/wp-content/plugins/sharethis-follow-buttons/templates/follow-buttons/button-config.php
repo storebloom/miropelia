@@ -7,14 +7,12 @@
  * @package ShareThisFollowButtons
  */
 
+use SharethisFollowButtons\Plugin;
 ?>
-<div class="inline-follow-platform platform-config-wrapper">
-	<hr>
-
-	<h4 style="text-align: left; font-size: 15px;"><?php echo esc_html__( 'Design', 'sharethis-follow-buttons' ); ?></h4>
-	<div class="st-design-message">
-		<?php echo esc_html__( 'Use the settings below to update the look of your follow buttons. We cache your button configurations to improve their performance. Any changes you make in the section may take up to five minutes to appear on your site.', 'sharethis-follow-buttons' ); ?>
-	</div>
+<div data-enabled="<?php echo esc_attr( $enabled ); ?>" class="inline-follow-platform platform-config-wrapper">
+	<?php if ( 'Disabled' === $enabled ) : ?>
+		<button class="enable-tool" data-button="inline-follow">Enable Tool</button>
+	<?php endif; ?>
 
 	<div class="sharethis-selected-networks">
 		<div id="inline-follow-8" class="sharethis-inline-follow-buttons"></div>
@@ -33,14 +31,15 @@
 			<div class="inline-follow-network-list follow-buttons">
 				<?php
 				foreach ( $networks as $network_name => $network_info ) :
-					$viewbox = isset( $network_info['viewbox'] ) ? '0 0 50 50' : '0 0 40 40';
+					$social_image = Plugin::getFormattedNetworkImage( $network_name );
+					$network_name = Plugin::getPlatformName( $network_name );
 					?>
-					<div class="follow-button" data-color="<?php echo esc_attr( $network_info['color'] ); ?>" data-selected="<?php echo esc_attr( $network_info['selected'] ); ?>" data-network="<?php echo esc_attr( $network_name ); ?>" title="<?php echo esc_attr( $network_name ); ?>" style="background: rgb(<?php echo esc_attr( $network_info['color-rgba'] ); ?>);">
-						<svg fill="#fff" preserveAspectRatio="xMidYMid meet" height="1em" width="1em" viewBox="<?php echo esc_attr( $viewbox ); ?>">
-							<g>
-								<path d="<?php echo esc_attr( $network_info['path'] ); ?>"></path>
-							</g>
-						</svg>
+					<div class="follow-button" data-color="<?php echo esc_attr( $network_info['color'] ); ?>"
+						data-selected="<?php echo esc_attr( true === isset( $network_info['selected'] ) ? $network_info['selected'] : '' ); ?>"
+						data-network="<?php echo esc_attr( str_replace( 'pocket', 'getpocket', $network_name ) ); ?>"
+						title="<?php echo esc_attr( $network_name ); ?>"
+						style="background-color: <?php echo esc_attr( $network_info['color'] ); ?>;">
+						<img alt="<?php echo esc_attr( $network_name ); ?>" src="<?php echo esc_url( $social_image ); ?>" />
 					</div>
 				<?php endforeach; ?>
 			</div>
@@ -195,4 +194,7 @@
 			</div>
 		</div>
 	</div>
+	<?php if ( 'Enabled' === $enabled ) : ?>
+		<button class="disable-tool" data-button="inline-follow">Disable Tool</button>
+	<?php endif; ?>
 </div>

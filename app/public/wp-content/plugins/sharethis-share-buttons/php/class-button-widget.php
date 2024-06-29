@@ -12,8 +12,8 @@ namespace ShareThisShareButtons;
  *
  * @package ShareThisShareButtons
  */
-class Button_Widget extends \WP_Widget
-{
+class Button_Widget extends \WP_Widget {
+
 
 	/**
 	 * Plugin instance.
@@ -31,7 +31,7 @@ class Button_Widget extends \WP_Widget
 		$this->plugin = $plugin;
 
 		$widget_options = array(
-			'classname' => 'st_button_widget',
+			'classname'   => 'st_button_widget',
 			'description' => esc_html__( 'Add ShareThis share buttons to your sidebar.', 'sharethis-share-buttons' ),
 		);
 		parent::__construct(
@@ -58,7 +58,7 @@ class Button_Widget extends \WP_Widget
 
 		// Add buttons.
 		?>
-		  <div class="sharethis-inline-share-buttons" <?php echo esc_attr( $data_url ); ?>></div>
+		<div class="sharethis-inline-share-buttons" <?php echo esc_attr( $data_url ); ?>></div>
 		<?php
 	}
 

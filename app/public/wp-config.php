@@ -2,61 +2,59 @@
 /**
  * The base configuration for WordPress
  *
- * The wp-config.php creation script uses this file during the
- * installation. You don't have to use the web site, you can
- * copy this file to "wp-config.php" and fill in the values.
+ * The wp-config.php creation script uses this file during the installation.
+ * You don't have to use the web site, you can copy this file to "wp-config.php"
+ * and fill in the values.
  *
  * This file contains the following configurations:
  *
- * * MySQL settings
+ * * Database settings
  * * Secret keys
  * * Database table prefix
+ * * Localized language
  * * ABSPATH
  *
- * @link https://codex.wordpress.org/Editing_wp-config.php
+ * @link https://wordpress.org/support/article/editing-wp-config-php/
  *
  * @package WordPress
  */
 
-// ** MySQL settings - You can get this info from your web host ** //
+// ** Database settings - You can get this info from your web host ** //
 /** The name of the database for WordPress */
 define( 'DB_NAME', 'local' );
 
-/** MySQL database username */
+/** Database username */
 define( 'DB_USER', 'root' );
 
-/** MySQL database password */
+/** Database password */
 define( 'DB_PASSWORD', 'root' );
 
-/** MySQL hostname */
+/** Database hostname */
 define( 'DB_HOST', 'localhost' );
 
-/** Database Charset to use in creating database tables. */
+/** Database charset to use in creating database tables. */
 define( 'DB_CHARSET', 'utf8' );
 
-/** The Database Collate type. Don't change this if in doubt. */
+/** The database collate type. Don't change this if in doubt. */
 define( 'DB_COLLATE', '' );
 
-/**
- * Authentication Unique Keys and Salts.
+/**#@+
+ * Authentication unique keys and salts.
  *
- * Change these to different unique phrases!
- * You can generate these using the {@link https://api.wordpress.org/secret-key/1.1/salt/ WordPress.org secret-key service}
- * You can change these at any point in time to invalidate all existing cookies. This will force all users to have to log in again.
+ * Change these to different unique phrases! You can generate these using
+ * the {@link https://api.wordpress.org/secret-key/1.1/salt/ WordPress.org secret-key service}.
+ *
+ * You can change these at any point in time to invalidate all existing cookies.
+ * This will force all users to have to log in again.
  *
  * @since 2.6.0
  */
-define('AUTH_KEY',         'uOeizzE/90N8GP6yyp/QmXHJASN8t53lKuCLiqfF+0eAMU+ME4/PbqH1ZFFq/W/my9LcQRllWZ+SRk96kIH0PQ==');
-define('SECURE_AUTH_KEY',  'EBSZo+KKXjbRXOjDubZkCmajmOaR+Nntl+zhvyH7VbHbL9htRmoiGG3cpIzh2DJrjc0KUrzVh0r4dSmqnxXYLw==');
-define('LOGGED_IN_KEY',    'L6xbUmAY+kLE413rvGbNJ2+6ObGsIbjVnML5TgDO1SYplpTFXHxqdY8G/Lk9IYC5v6rR0YZImqO3T1qaSC3UJQ==');
-define('NONCE_KEY',        'Uk+jcqq6yNYicftPaeT3Y18ZhIrKenM3Ppb9bfqV0S5ArI47IJZTxCRh9bmpIlKAfmjWDurP9N+hzz3XlNLpHw==');
-define('AUTH_SALT',        'ebQslGjUT5ZqoegYPLANudEUWq37zTnhNj2RAuZheT5wlzmbmDBBah5Pdt0tU88cZDt/oX2QqZjTE7KEcPF+Ow==');
-define('SECURE_AUTH_SALT', 'OGaV9Pe1RAM+zXTsdOx5hhlmE0/FyIp9KxCKqbx/BwxkZSFalN0qumFhYePM1yrWY7Zfzzr7hFCcisOXyXL1xQ==');
-define('LOGGED_IN_SALT',   'GxHowloeo05ZIJxbX7pElwkYlxQpXhnXAz+a3aGOqRVPFQXd6cKzp2BX6VVAvCHopbfOcBfcwqRVp5FC7rZjyw==');
-define('NONCE_SALT',       'UnXqLt7YZqN4KS66KsPKm1Y1AFk8CrTzGpnI+KZQViCEUB70UZdNBD0gWwEDeNl4eZZylj6T9s3JRcOxD+RJ5A==');
-define('REST_API_KEY', 'aG9tb25pYW46QnVyYmFuazQ1MjQzIQ==');
+
+
+/**#@-*/
+
 /**
- * WordPress Database Table prefix.
+ * WordPress database table prefix.
  *
  * You can have multiple installations in one database if you give each
  * a unique prefix. Only numbers, letters, and underscores please!
@@ -64,13 +62,43 @@ define('REST_API_KEY', 'aG9tb25pYW46QnVyYmFuazQ1MjQzIQ==');
 $table_prefix = 'wp_oqiyhatj7i_';
 
 
+/* Add any custom values between this line and the "stop editing" line. */
 
+
+
+/**
+ * For developers: WordPress debugging mode.
+ *
+ * Change this to true to enable the display of notices during development.
+ * It is strongly recommended that plugin and theme developers use WP_DEBUG
+ * in their development environments.
+ *
+ * For information on other constants that can be used for debugging,
+ * visit the documentation.
+ *
+ * @link https://wordpress.org/support/article/debugging-in-wordpress/
+ */
+if ( ! defined( 'WP_DEBUG' ) ) {
+	define( 'WP_DEBUG', false );
+}
+
+
+define('AUTH_KEY',         '9ZcZarhFXcJ+LIQyKX7LGdn1lLq5hafByAA8BR7pYnr4iwhy+SoBZKYL/tzt1ckHtRdxQP/kbmeXI9DKlzea6Q==');
+define('SECURE_AUTH_KEY',  'hd8XlLg5+AbHWDZuBzRCW/S5gKNNVm5L0ufnf+Xfrbn2XtKFyg98wIXMy8k/+6yoYRaups00/Ff3l0jPxPwR4A==');
+define('LOGGED_IN_KEY',    'fQWHcwuQ3+mi/Ajily8DK1rOvoI7eCVX1JlJDuXKlS3mFvTduvyE7vCKOPulrJH3mGVhp0ZjmtieL7EPmKSUpQ==');
+define('NONCE_KEY',        'D0a4RDPIGRHWG8VlHrx4K3mNnKdNx8D2yceJd3h6U9vbOrsqtz+JgUKTgd79DuaYAzZYJ5WG0C7OUkEzknHOPA==');
+define('AUTH_SALT',        '/I0zbvVEhY3D7BulmNgs+4gcytFsspAIv2Pih+ZijF07Lpdnw/EvdHk3cI4Gq8wiTf38tgxSGUzXC+hM8gqh5w==');
+define('SECURE_AUTH_SALT', 'PS3+OATwui25VEGD4Gk8EQDQF2d+4EtX7pqbL6P0sK/hs8bqXj75e3BLWnNfuZ2cyQ+QyiASc4e1tykOKGCDuQ==');
+define('LOGGED_IN_SALT',   'olJw6c9ZFdmMqh2gGyBdEV2IP5ABBqZ0Wh8bTTwX4T3Kz91Hdh7+2rzdfD/BOYDliERO9N7/AbcZG70sW67vhg==');
+define('NONCE_SALT',       'ZGbtOw1xiEAOJOpWoHqUFNNMIwx2AD3T+oV67wh9IvkWjvYFcJ+8NvyBOeGacsf/VRj1b2dsKTI3UjkoSsic1Q==');
+define( 'WP_ENVIRONMENT_TYPE', 'local' );
+define('REST_API_KEY', 'aG9tb25pYW46QnVyYmFuazQ1MjQzIQ==');
 
 /* That's all, stop editing! Happy publishing. */
 
 /** Absolute path to the WordPress directory. */
 if ( ! defined( 'ABSPATH' ) ) {
-	define( 'ABSPATH', dirname( __FILE__ ) . '/' );
+	define( 'ABSPATH', __DIR__ . '/' );
 }
 
 /** Sets up WordPress vars and included files. */

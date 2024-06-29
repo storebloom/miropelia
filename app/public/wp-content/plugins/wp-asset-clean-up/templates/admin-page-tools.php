@@ -14,15 +14,17 @@ do_action('wpacu_admin_notices');
 ?>
 <div class="wpacu-wrap wpacu-tools-area">
     <nav class="wpacu-tab-nav-wrapper nav-tab-wrapper">
-        <a href="<?php echo admin_url('admin.php?page=wpassetcleanup_tools&wpacu_for=reset'); ?>" class="nav-tab <?php if ($data['for'] === 'reset') { ?>nav-tab-active<?php } ?>"><?php _e('Reset', 'wp-asset-clean-up'); ?></a>
-        <a href="<?php echo admin_url('admin.php?page=wpassetcleanup_tools&wpacu_for=system_info'); ?>" class="nav-tab <?php if ($data['for'] === 'system_info') { ?>nav-tab-active<?php } ?>"><?php _e('System Info', 'wp-asset-clean-up'); ?></a>
-        <a href="<?php echo admin_url('admin.php?page=wpassetcleanup_tools&wpacu_for=storage'); ?>" class="nav-tab <?php if ($data['for'] === 'storage') { ?>nav-tab-active<?php } ?>"><?php _e('Storage Info', 'wp-asset-clean-up'); ?></a>
-        <a href="<?php echo admin_url('admin.php?page=wpassetcleanup_tools&wpacu_for=debug'); ?>" class="nav-tab <?php if ($data['for'] === 'debug') { ?>nav-tab-active<?php } ?>"><?php _e('Debugging', 'wp-asset-clean-up'); ?></a>
-        <a href="<?php echo admin_url('admin.php?page=wpassetcleanup_tools&wpacu_for=import_export'); ?>" class="nav-tab <?php if ($data['for'] === 'import_export') { ?>nav-tab-active<?php } ?>"><?php _e('Import &amp; Export', 'wp-asset-clean-up'); ?></a>
+        <a href="<?php echo esc_url(admin_url('admin.php?page=wpassetcleanup_tools&wpacu_for=reset')); ?>" class="nav-tab <?php if ($data['for'] === 'reset') { ?>nav-tab-active<?php } ?>"><?php _e('Reset', 'wp-asset-clean-up'); ?></a>
+        <a href="<?php echo esc_url(admin_url('admin.php?page=wpassetcleanup_tools&wpacu_for=system_info')); ?>" class="nav-tab <?php if ($data['for'] === 'system_info') { ?>nav-tab-active<?php } ?>"><?php _e('System Info', 'wp-asset-clean-up'); ?></a>
+        <a href="<?php echo esc_url(admin_url('admin.php?page=wpassetcleanup_tools&wpacu_for=storage')); ?>" class="nav-tab <?php if ($data['for'] === 'storage') { ?>nav-tab-active<?php } ?>"><?php _e('Storage Info', 'wp-asset-clean-up'); ?></a>
+        <a href="<?php echo esc_url(admin_url('admin.php?page=wpassetcleanup_tools&wpacu_for=debug')); ?>" class="nav-tab <?php if ($data['for'] === 'debug') { ?>nav-tab-active<?php } ?>"><?php _e('Debugging', 'wp-asset-clean-up'); ?></a>
+        <?php
+        ?>
+        <a href="<?php echo esc_url(admin_url('admin.php?page=wpassetcleanup_tools&wpacu_for=import_export')); ?>" class="nav-tab <?php if ($data['for'] === 'import_export') { ?>nav-tab-active<?php } ?>"><?php _e('Import &amp; Export', 'wp-asset-clean-up'); ?></a>
     </nav>
 
 	<div class="wpacu-tools-container">
-		<form id="wpacu-tools-form" action="<?php echo admin_url('admin.php?page='.WPACU_PLUGIN_ID.'_tools'); ?>" method="post">
+		<form id="wpacu-tools-form" action="<?php echo esc_url(admin_url('admin.php?page='.WPACU_PLUGIN_ID.'_tools')); ?>" method="post">
             <?php if ($data['for'] === 'reset') { ?>
                 <div><label for="wpacu-reset-drop-down"><?php _e('Do you need to reset the plugin to its initial settings or reset all changes?', 'wp-asset-clean-up'); ?></label></div>
 
@@ -86,7 +88,7 @@ do_action('wpacu_admin_notices');
 
                 <textarea disabled="disabled"
                           style="color: rgba(51,51,51,1); background: #eee; white-space: pre; font-family: Menlo, Monaco, Consolas, 'Courier New', monospace; width: 99%; max-width: 100%;"
-                          rows="20"><?php echo $data['system_info']; ?></textarea>
+                          rows="20"><?php echo esc_textarea($data['system_info']); ?></textarea>
 
                 <p><button name="submit"
                            id="wpacu-download-system-info-btn"
@@ -121,27 +123,27 @@ do_action('wpacu_admin_notices');
 	        <?php }
 	        ?>
             <p>
-		        <?php _e('Current storage directory', 'wp-asset-clean-up'); ?>: <code><?php echo WP_CONTENT_DIR; ?><strong><?php echo $currentStorageDirRel; ?></strong></code>
+		        <?php _e('Current storage directory', 'wp-asset-clean-up'); ?>: <code><?php echo WP_CONTENT_DIR; ?><strong><?php echo esc_html($currentStorageDirRel); ?></strong></code>
                 &nbsp; <?php if ($currentStorageDirIsWritable) {
 			        echo '<span style="color: green;"><span class="dashicons dashicons-yes"></span> '.__('writable', 'wp-asset-clean-up').'</span>';
 		        } ?>
             </p>
 
-            <p><?php echo __('Depending on the current settings, a storage caching directory of the optimized files is needed', 'wp-asset-clean-up'); ?>. Reason being that specific CSS/JS files had to be altered and they are retrieved faster from the caching directory, rather than altering then "on the fly" on every page load. <span style="color: #004567;" class="dashicons dashicons-info"></span> <a target="_blank" href="https://assetcleanup.com/docs/?p=526">Read more</a></p>
+            <p><?php _e('Depending on the current settings, a storage caching directory of the optimized files is needed', 'wp-asset-clean-up'); ?>. Reason being that specific CSS/JS files had to be altered and they are retrieved faster from the caching directory, rather than altering then "on the fly" on every page load. <span style="color: #004567;" class="dashicons dashicons-info"></span> <a target="_blank" href="https://assetcleanup.com/docs/?p=526">Read more</a></p>
 
             <?php
 	        $storageStats = \WpAssetCleanUp\OptimiseAssets\OptimizeCommon::getStorageStats();
 
 	        if (isset($storageStats['total_size'], $storageStats['total_files'])) {
 		        ?>
-                <p><?php _e('Total storage files', 'wp-asset-clean-up'); ?>: <strong><?php echo $storageStats['total_files']; ?></strong>, <?php echo $storageStats['total_size']; ?> of which <strong><?php echo $storageStats['total_files_assets']; ?></strong> are CSS/JS assets, <?php echo $storageStats['total_size_assets']; ?></p>
+                <p><?php _e('Total storage files', 'wp-asset-clean-up'); ?>: <strong><?php echo (int)$storageStats['total_files']; ?></strong>, <?php echo esc_html($storageStats['total_size']); ?> of which <strong><?php echo (int)$storageStats['total_files_assets']; ?></strong> are CSS/JS assets, <?php echo (int)$storageStats['total_size_assets']; ?></p>
 		        <?php
 	        }
 
 	        $cssJsDirMarker = '<span class="dashicons dashicons-yes-alt" style="font-size: 19px; vertical-align: top; color: green;"></span>';
 	        ?>
-            <p>The following list prints each directory (local path) and its size. Only the ones marked with <?php echo $cssJsDirMarker; ?> have CSS/JS files there. The other unmarked ones contain .json (for reference purposes), index.php or .htaccess file types.</p>
-            <div class="wpacu-clearfix"></div>
+            <p>The following list prints each directory (local path) and its size. Only the ones marked with <?php echo wp_kses($cssJsDirMarker, array('span' => array('class' => array(), 'style' => array()))); ?> have CSS/JS files there. The other unmarked ones contain .json (for reference purposes), index.php or .htaccess file types.</p>
+            <div class="wpacu_clearfix"></div>
             <?php
 	        echo '<ul style="margin-top: 0;margin-left: 25px; list-style: disc;">';
 
@@ -151,7 +153,7 @@ do_action('wpacu_admin_notices');
 
 		        $cssJsDirMarkerOutput = '';
 		        if (in_array($localDirPath, $storageStats['dirs_css_js'])) {
-			        $cssJsDirMarkerOutput = $cssJsDirMarker;
+			        $cssJsDirMarkerOutput = wp_kses($cssJsDirMarker, array('span' => array('class' => array(), 'style' => array())));
 		        }
 
 		        $rowStyle = '';
@@ -159,7 +161,7 @@ do_action('wpacu_admin_notices');
 			        $rowStyle = 'background: rgba(0,0,0,.07); padding: 4px; display: inline;';
 		        }
 
-                echo '<li><div style="'.$rowStyle.'">'.$localDirPath.': <strong>'.\WpAssetCleanUp\Misc::formatBytes($totalDirSize).'</strong> '.$cssJsDirMarkerOutput.'</div></li>';
+                echo '<li><div style="'.esc_html($rowStyle).'">'.esc_html($localDirPath).': <strong>'.\WpAssetCleanUp\Misc::formatBytes($totalDirSize).'</strong> '.$cssJsDirMarkerOutput.'</div></li>';
 	        }
 
 	        echo '</ul>';
@@ -188,6 +190,8 @@ do_action('wpacu_admin_notices');
             $isLogPHPErrors       = $data['error_log']['log_status'];
 	        $logPHPErrorsLocation = $data['error_log']['log_file'];
 
+	        $logPHPErrorsLocationFileSizeFormatted = '';
+
 	        if ($logPHPErrorsLocation !== 'none_set' && is_file($logPHPErrorsLocation)) {
 		        $logPHPErrorsLocationFileSize = filesize($logPHPErrorsLocation);
 		        $logPHPErrorsLocationFileSizeFormatted = \WpAssetCleanUp\Misc::formatBytes($logPHPErrorsLocationFileSize);
@@ -196,8 +200,8 @@ do_action('wpacu_admin_notices');
             <form method="post" action="">
                 <p>In case you experience timeout errors, blank screens, 500 internal server errors and so on, it's a good idea to check the PHP error logs (they are usually activated in your PHP.ini configuration) for more information about the reason behind any issues you might have. The error log file (if any set), it meant to record PHP errors (either from Asset CleanUp or any other active plugin/theme, etc.).</p>
                 <ul>
-                    <li>Log PHP Errors Status: <strong><?php echo $isLogPHPErrors ? 'On' : 'Off'; ?></strong></li>
-                    <li>Log PHP Errors Location: <code><?php echo $logPHPErrorsLocation; ?></code> <?php if($logPHPErrorsLocationFileSize) { ?> / <?php _e('File Size', 'wp-asset-clean-up'); ?>: <?php echo $logPHPErrorsLocationFileSizeFormatted; ?> &nbsp; <input style="vertical-align: middle;" type="submit" class="button button-primary" value="Download Error Log File" /><?php } ?></li>
+                    <li>Log PHP Errors Status: <strong><?php if ($isLogPHPErrors) { esc_html_e('On', 'wp-asset-clean-up'); } else { esc_html_e('Off', 'wp-asset-clean-up'); } ?></strong></li>
+                    <li>Log PHP Errors Location: <code><?php echo esc_html($logPHPErrorsLocation); ?></code> <?php if ($logPHPErrorsLocationFileSize) { ?> / <?php esc_html_e('File Size', 'wp-asset-clean-up'); ?>: <?php echo wp_kses($logPHPErrorsLocationFileSizeFormatted, array('span' => array('style' => array(), 'class' => array()))); ?> &nbsp; <input style="vertical-align: middle;" type="submit" class="button button-primary" value="Download Error Log File" /><?php } ?></li>
                 </ul>
                 <input type="hidden" name="wpacu-get-error-log" value="1" />
             </form>
@@ -220,7 +224,7 @@ do_action('wpacu_admin_notices');
             ?>
             <div id="wpacu-import-area" class="wpacu-export-import-area">
                 <form id="wpacu-import-form"
-                      action="<?php echo admin_url('admin.php?page='.WPACU_PLUGIN_ID.'_tools&wpacu_for='.$data['for']); ?>"
+                      action="<?php echo esc_url(admin_url('admin.php?page='.WPACU_PLUGIN_ID.'_tools&wpacu_for='.$data['for'])); ?>"
                       method="post"
                       enctype="multipart/form-data">
                     <p><label for="wpacu-import-file">Please choose the exported JSON file and upload it for import:</label></p>
@@ -244,7 +248,7 @@ do_action('wpacu_admin_notices');
 
             <div id="wpacu-export-area" class="wpacu-export-import-area">
                 <form id="wpacu-export-form"
-                      action="<?php echo admin_url('admin.php?page='.WPACU_PLUGIN_ID.'_tools&wpacu_for='.$data['for']); ?>"
+                      action="<?php echo esc_url(admin_url('admin.php?page='.WPACU_PLUGIN_ID.'_tools&wpacu_for='.$data['for'])); ?>"
                       method="post">
                     <p><label for="wpacu-export-selection">Please select what you would like to export:</label></p>
                     <p>

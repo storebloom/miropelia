@@ -23,4 +23,4 @@ location / {
 }
 
 # Add trailing slash to */wp-admin requests.
-rewrite /wp-admin$ $resolved_scheme://$host$uri/ permanent;
+rewrite ^(.*)(wp-admin)$ $1$2/ permanent;

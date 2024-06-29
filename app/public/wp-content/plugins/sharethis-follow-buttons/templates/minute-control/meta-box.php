@@ -34,7 +34,7 @@
 
 		<span class="under-message"><?php esc_html_e( 'Follow button shortcode.', 'sharethis-follow-buttons' ); ?></span>
 	</div>
-	<a href="<?php echo esc_url( admin_url( 'admin.php?page=sharethis-follow-buttons' ) ); ?>">
+	<a href="<?php echo esc_url( admin_url( 'admin.php?page=sharethis-share-buttons' ) ); ?>">
 		<?php esc_html_e( 'Update your default settings', 'sharethis-follow-buttons' ); ?>
 	</a>
 </div>

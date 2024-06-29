@@ -3,8 +3,8 @@ Contributors: mythemeshop
 Tags: quiz, quizzes, answer, question, test, create quiz, questionnaire, result, score, personality quiz, test yourself, play
 Author URI: https://mythemeshop.com/
 Requires at least: 4.2
-Tested up to: 5.5.1
-Stable tag: 2.0.6
+Tested up to: 5.9.1
+Stable tag: 2.0.10
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -166,6 +166,18 @@ If you have any further questions, please get in touch with us at, https://mythe
 6. Trivia Quiz
 
 == Changelog ==
+
+= 2.0.10 [Mar 12, 2022] =
+* Updated the CMB2 library to avoid a fatal error occurring on some setups
+
+= 2.0.9 [Mar 5, 2022] =
+* Fixed fatal error in previous version
+
+= 2.0.8 [Feb 27, 2022] =
+* Fixed compatibility issue with the Twenty Twenty Two theme
+
+= 2.0.7 [Jan 24, 2022] =
+* Updated CMB2 vendor library
 
 = 2.0.6 [Sep 25, 2020] =
 * Fixed autoplay issue for the `MP4` and `WEBM` videos

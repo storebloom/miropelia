@@ -52,7 +52,7 @@ class WPCF7_WelcomePanelColumn_AntiSpam extends WPCF7_WelcomePanelColumn {
 
 	protected function content() {
 		return array(
-			esc_html( __( "Spammers target everything; your contact forms aren&#8217;t an exception. Before you get spammed, protect your contact forms with the powerful anti-spam features Contact Form 7 provides.", 'contact-form-7' ) ),
+			esc_html( __( "Spammers target everything; your contact forms are not an exception. Before you get spammed, protect your contact forms with the powerful anti-spam features Contact Form 7 provides.", 'contact-form-7' ) ),
 			sprintf(
 				/* translators: links labeled 1: 'Akismet', 2: 'reCAPTCHA', 3: 'disallowed list' */
 				esc_html( __( 'Contact Form 7 supports spam-filtering with %1$s. Intelligent %2$s blocks annoying spambots. Plus, using %3$s, you can block messages containing specified keywords or those sent from specified IP addresses.', 'contact-form-7' ) ),
@@ -117,7 +117,7 @@ class WPCF7_WelcomePanelColumn_Flamingo extends WPCF7_WelcomePanelColumn {
 
 	protected function content() {
 		return array(
-			esc_html( __( "Contact Form 7 doesn&#8217;t store submitted messages anywhere. Therefore, you may lose important messages forever if your mail server has issues or you make a mistake in mail configuration.", 'contact-form-7' ) ),
+			esc_html( __( "Contact Form 7 does not store submitted messages anywhere. Therefore, you may lose important messages forever if your mail server has issues or you make a mistake in mail configuration.", 'contact-form-7' ) ),
 			sprintf(
 				/* translators: %s: link labeled 'Flamingo' */
 				esc_html( __( 'Install a message storage plugin before this happens to you. %s saves all messages through contact forms into the database. Flamingo is a free WordPress plugin created by the same author as Contact Form 7.', 'contact-form-7' ) ),
@@ -146,15 +146,11 @@ class WPCF7_WelcomePanelColumn_Integration extends WPCF7_WelcomePanelColumn {
 	protected function content() {
 		return array(
 			sprintf(
-				/* translators: 1: link labeled 'Sendinblue', 2: link labeled 'Constant Contact' */
-				esc_html( __( 'Your contact forms will become more powerful and versatile by integrating them with external APIs. With CRM and email marketing services, you can build your own contact lists (%1$s and %2$s).', 'contact-form-7' ) ),
+				/* translators: 1: link labeled 'Brevo' */
+				esc_html( __( 'Your contact forms will become more powerful and versatile by integrating them with external APIs. With CRM and email marketing services, you can build your own contact lists (%1$s).', 'contact-form-7' ) ),
 				wpcf7_link(
 					__( 'https://contactform7.com/sendinblue-integration/', 'contact-form-7' ),
-					__( 'Sendinblue', 'contact-form-7' )
-				),
-				wpcf7_link(
-					__( 'https://contactform7.com/constant-contact-integration/', 'contact-form-7' ),
-					__( 'Constant Contact', 'contact-form-7' )
+					__( 'Brevo', 'contact-form-7' )
 				)
 			),
 			sprintf(
@@ -200,7 +196,7 @@ function wpcf7_welcome_panel() {
 		$columns[] = new WPCF7_WelcomePanelColumn_Integration();
 	}
 
-	$classes = 'welcome-panel';
+	$classes = 'wpcf7-welcome-panel';
 
 	$vers = (array) get_user_meta( get_current_user_id(),
 		'wpcf7_hide_welcome_panel_on', true
@@ -211,7 +207,7 @@ function wpcf7_welcome_panel() {
 	}
 
 ?>
-<div id="welcome-panel" class="<?php echo esc_attr( $classes ); ?>">
+<div id="wpcf7-welcome-panel" class="<?php echo esc_attr( $classes ); ?>">
 	<?php wp_nonce_field( 'wpcf7-welcome-panel-nonce', 'welcomepanelnonce', false ); ?>
 	<a class="welcome-panel-close" href="<?php echo esc_url( menu_page_url( 'wpcf7', false ) ); ?>"><?php echo esc_html( __( 'Dismiss', 'contact-form-7' ) ); ?></a>
 
@@ -288,7 +284,7 @@ function wpcf7_welcome_panel_screen_settings( $screen_settings, $screen ) {
 		wpcf7_format_atts( array(
 			'id' => $checkbox_id,
 			'type' => 'checkbox',
-			'checked' => $checked ? 'checked' : null,
+			'checked' => $checked,
 		) )
 	);
 

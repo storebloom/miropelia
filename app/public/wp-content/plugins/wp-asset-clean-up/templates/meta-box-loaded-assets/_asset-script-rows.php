@@ -10,13 +10,15 @@ foreach ($allAssets as $obj) {
 	$row        = array();
 	$row['obj'] = $obj;
 
-	$active = ( isset( $data['current']['scripts'] ) && in_array( $row['obj']->handle, $data['current']['scripts'] ) );
+	// e.g. Unload on this page, Unload on all 404 pages, etc.
+	$activePageLevel = isset( $data['current_unloaded_page_level']['scripts'] ) && in_array( $row['obj']->handle, $data['current_unloaded_page_level']['scripts'] );
 
-	$row['class']   = $active ? 'wpacu_not_load' : '';
-	$row['checked'] = $active ? 'checked="checked"' : '';
+	$row['class']   = $activePageLevel ? 'wpacu_not_load' : '';
+	$row['checked'] = $activePageLevel ? 'checked="checked"' : '';
 
 	/*
-	 * $row['is_group_unloaded'] is only used to apply a red background in the script's area to point out that the script is unloaded
+	 * $row['is_group_unloaded'] is only used to apply a red background in the asset's area to point out that the style is unloaded
+	 * is set to `true` if either the asset is unloaded everywhere or it's unloaded on a group of pages (such as all pages belonging to 'page' post type)
 	*/
 	$row['global_unloaded'] = $row['is_post_type_unloaded'] = $row['is_load_exception_per_page'] = $row['is_group_unloaded'] = false;
 
@@ -37,17 +39,21 @@ foreach ($allAssets as $obj) {
 		}
 	}
 
-	$isLoadExceptionPerPage = isset( $data['load_exceptions']['scripts'] ) && in_array( $row['obj']->handle, $data['load_exceptions']['scripts'] );
-	$isLoadExceptionForCurrentPostType = ( isset( $data['load_exceptions_post_type'] ['scripts'] [$row['obj']->handle] )
-	                                       && $data['load_exceptions_post_type'] ['scripts'] [$row['obj']->handle] );
+	$isLoadExceptionPerPage              = isset($data['load_exceptions_per_page']['scripts']) && in_array($row['obj']->handle, $data['load_exceptions_per_page']['scripts']);
+	$isLoadExceptionForCurrentPostType   = isset($data['load_exceptions_post_type']['scripts'] ) && in_array($row['obj']->handle, $data['load_exceptions_post_type']['scripts']);
 
 	$row['is_load_exception_per_page']  = $isLoadExceptionPerPage;
 	$row['is_load_exception_post_type'] = $isLoadExceptionForCurrentPostType;
 
 	$isLoadException = $isLoadExceptionPerPage || $isLoadExceptionForCurrentPostType;
 
-	// No load exception of any kind and a bulk unload rule is applied? Append the CSS class for unloading
+	// No load exception to any kind and a bulk unload rule is applied? Append the CSS class for unloading
 	if ( ! $isLoadException && $row['is_group_unloaded']) {
+		$row['class'] .= ' wpacu_not_load';
+	}
+
+	// Probably most reliable to use in order to check the unloaded styles; it might be the only one used in future plugin versions
+	if (strpos($row['class'], 'wpacu_not_load') === false && isset($data['current_unloaded_all']['scripts']) && in_array($row['obj']->handle, $data['current_unloaded_all']['scripts'])) {
 		$row['class'] .= ' wpacu_not_load';
 	}
 
@@ -68,6 +74,8 @@ foreach ($allAssets as $obj) {
 
 	$row['class'] .= ' script_' . $row['obj']->handle;
 
+	$row['asset_type'] = 'scripts';
+
 	$allAssetsFinal[$obj->handle] = $row;
 }
 
@@ -75,10 +83,15 @@ foreach ($allAssetsFinal as $assetHandle => $row) {
 	$data['row'] = $row;
 
 	// Load Template
-	$templateRowOutput = \WpAssetCleanUp\Main::instance()->parseTemplate(
+	$parseTemplate = \WpAssetCleanUp\Main::instance()->parseTemplate(
 		'/meta-box-loaded-assets/_asset-script-single-row',
-		$data
+		$data,
+		false,
+		true
 	);
+
+	$templateRowOutput = $parseTemplate['output'];
+	$data = $parseTemplate['data'];
 
 	if (isset($data['rows_build_array']) && $data['rows_build_array']) {
 		$uniqueHandle = $row['obj']->handle;
@@ -123,7 +136,11 @@ foreach ($allAssetsFinal as $assetHandle => $row) {
 					[$uniqueHandle]
 						['scripts'] = $templateRowOutput;
 		} elseif (isset($data['rows_by_loaded_unloaded']) && $data['rows_by_loaded_unloaded']) {
-			$handleStatus = (strpos($row['class'], 'wpacu_not_load') !== false) ? 'unloaded' : 'loaded';
+			if (isset($data['current_unloaded_all']['scripts']) && in_array($row['obj']->handle, $data['current_unloaded_all']['scripts'])) {
+				$handleStatus = 'unloaded';
+			} else {
+				$handleStatus = ( strpos( $row['class'], 'wpacu_not_load' ) !== false ) ? 'unloaded' : 'loaded';
+			}
 
 			$data['rows_assets']
 				[$handleStatus] // 'loaded', 'unloaded'
@@ -142,7 +159,7 @@ foreach ($allAssetsFinal as $assetHandle => $row) {
 				$data['handles_sizes'][$uniqueHandle] = $row['obj']->sizeRaw;
 			}
 		} elseif (isset($data['rows_by_rules']) && $data['rows_by_rules']) {
-			$ruleStatus = \WpAssetCleanUp\Misc::handleHasAtLeastOneRule($data, 'scripts') ? 'with_rules' : 'with_no_rules';
+			$ruleStatus = (isset($data['row']['at_least_one_rule_set']) && $data['row']['at_least_one_rule_set']) ? 'with_rules' : 'with_no_rules';
 			$data['rows_assets']
 				[$ruleStatus] // 'with_rules', 'with_no_rules'
 					[$uniqueHandle]
@@ -151,6 +168,6 @@ foreach ($allAssetsFinal as $assetHandle => $row) {
 			$data['rows_assets'][$uniqueHandle] = $templateRowOutput;
 		}
 	} else {
-		echo $templateRowOutput;
+		echo \WpAssetCleanUp\Misc::stripIrrelevantHtmlTags($templateRowOutput);
 	}
 }

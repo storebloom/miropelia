@@ -1,0 +1,76 @@
+.wq-quiz.wq-skin-flat {
+	.wq_questionTextCtr {
+		background-color: var(--wq-background-color, #ecf0f1);
+		color: var(--wq-font-color, #5f5f5f);
+		border-radius: 3px 3px 0 0;
+		width: 100%;
+	}
+
+	.wq_singleAnswerCtr {
+		background-color: var(--wq-background-color, #ecf0f1);
+		color: var(--wq-font-color, #5f5f5f);
+		border: 3px solid transparent;
+		padding: 5px 7px;
+		margin: 0 0 15px 0;
+		border-radius: 3px;
+		line-height: 30px;
+	}
+
+	.wq_singleAnswerCtr:last-child { margin-bottom: 0; }
+	.wq_singleAnswerCtr:hover,
+	.wq_singleAnswerCtr.chosen,
+	.wq_singleAnswerCtr.wq_answerSelected { background: #FFF38B; color: #444; border: 3px solid #F7E971 ; -webkit-transition: background 550ms ease-out; transition: background 550ms ease-out; cursor: pointer; }
+	.wq_singleAnswerCtr.wq_correctAnswer { background: #8BC34A; border-color: #7BAD40; color: #fff; opacity: 0.5; }
+	.wq_singleAnswerCtr.wq_incorrectAnswer { background: #FF5722; border-color: #D4471B; color: #fff; opacity: 0.8; }
+	.wq_questionAnswered .wq_singleAnswerCtr { opacity: 0.5; }
+	.wq_questionAnswered .wq_singleAnswerCtr.chosen { opacity: 1; }
+
+	.wq_singleAnswerCtr .wq_answerTxtCtr {
+		word-break: break-word;
+	}
+
+	.wq-results { background: #ecf0f1; border-color: #ecf0f1; border-radius: 3px; }
+
+	.wq_quizForceActionCtr {
+		background: #ecf0f1;
+		padding: 30px 20px;
+		float: left;
+		width: 100%;
+		-webkit-box-sizing: border-box;
+		box-sizing: border-box;
+		margin-top: 30px;
+		border-radius: 3px;
+	}
+
+	.wq_shareCtr button,
+	.wq-results .wq_shareCtr button,
+	.wq_quizForceShareCtr button,
+	.wq_questionLogin button,
+	.wq_retakeQuizBtn,
+	.wq_quizEmailCtr form button,
+	.wq_triviaQuestionExplanation { border-radius: 3px; }
+
+	.wq_quizEmailCtr form input[type="text"],
+	.wq_quizEmailCtr form input[type="email"] {
+		border: 2px solid #d7dee0;
+		border-radius: 4px;
+	}
+}
+
+.wq_triviaQuestionExplanation {
+	border-color: #d7dee0;
+	padding: 12px 12px 2px;
+
+	.wq-explanation-head-correct {
+		color: #8BC34A;
+	}
+
+	.wq-explanation-head-incorrect {
+		color: #FF5722;
+	}
+
+	.wq_correctExplanationHead .wq-explanation-head-incorrect,
+	.wq_wrongExplanationHead .wq-explanation-head-correct {
+		display: none;
+	}
+}

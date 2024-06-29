@@ -35,9 +35,8 @@ class FontsGoogleRemove
 	{
 		$htmlSource = self::cleanLinkTags($htmlSource);
 		$htmlSource = self::cleanFromInlineStyleTags($htmlSource);
-		$htmlSource = str_replace(FontsGoogle::NOSCRIPT_WEB_FONT_LOADER, '', $htmlSource);
 
-		return $htmlSource;
+		return str_replace(FontsGoogle::NOSCRIPT_WEB_FONT_LOADER, '', $htmlSource);
 	}
 
 	/**
@@ -65,7 +64,7 @@ class FontsGoogleRemove
 
 		// Needs to match at least one to carry on with the replacements
 		if (isset($matchesFromLinkTags[0]) && ! empty($matchesFromLinkTags[0])) {
-			foreach ($matchesFromLinkTags as $linkIndex => $linkTagArray) {
+			foreach ($matchesFromLinkTags as $linkTagArray) {
 				$linkTag = trim(trim($linkTagArray[0], '"\''));
 
 				if (strip_tags($linkTag) !== '') {
@@ -230,10 +229,6 @@ class FontsGoogleRemove
 	 */
 	public static function preventAnyChange()
 	{
-		if (defined('WPACU_ALLOW_ONLY_UNLOAD_RULES') && WPACU_ALLOW_ONLY_UNLOAD_RULES) {
-			return true;
-		}
-
-		return false;
+		return defined( 'WPACU_ALLOW_ONLY_UNLOAD_RULES' ) && WPACU_ALLOW_ONLY_UNLOAD_RULES;
 	}
 }

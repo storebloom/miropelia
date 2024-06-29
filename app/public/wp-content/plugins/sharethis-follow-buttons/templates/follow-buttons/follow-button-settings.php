@@ -10,8 +10,6 @@
 ?>
 <hr class="wp-header-end" style="display:none;">
 <div class="wrap sharethis-wrap">
-	<?php echo wp_kses_post( $description ); ?>
-
 	<form action="options.php" method="post">
 		<?php
 		settings_fields( $this->menu_slug . '-follow-buttons' );

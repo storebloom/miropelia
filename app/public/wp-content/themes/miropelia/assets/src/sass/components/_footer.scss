@@ -8,6 +8,16 @@ footer {
   text-align: center;
   width: 100%;
 
+  @media only screen and (max-width: $small) {
+    .sharethis-inline-follow-buttons {
+      margin: 1rem 0;
+    }
+  }
+
+  .footer-detail {
+    min-width: 350px;
+  }
+
   .menu-footer-container {
     vertical-align: top;
 
@@ -20,6 +30,8 @@ footer {
 
       @media only screen and (max-width: $small) {
         flex-direction: column;
+        margin-top: 1rem;
+        padding: 0;
         width: 80px;
       }
 

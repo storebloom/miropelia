@@ -24,8 +24,8 @@ if (! empty($data['all']['styles']) || ! empty($data['all']['scripts'])) {
 	require_once __DIR__.'/_asset-script-rows.php';
 
 	$preloadsText = array(
-        'preloaded'     => '<span class="dashicons dashicons-upload"></span>&nbsp; Preloaded assets (.css &amp; .js)',
-        'not_preloaded' => '<span class="dashicons dashicons-download"></span>&nbsp; Not-preloaded (default status) assets (.css &amp; .js)',
+        'preloaded'     => '<span class="dashicons dashicons-upload"></span>&nbsp; '.esc_html__('Preloaded assets (.css &amp; .js)', 'wp-asset-clean-up'),
+        'not_preloaded' => '<span class="dashicons dashicons-download"></span>&nbsp; '.esc_html__('Not-preloaded (default status) assets (.css &amp; .js)', 'wp-asset-clean-up')
     );
 
 	if (! empty($data['rows_assets'])) {
@@ -51,12 +51,23 @@ if (! empty($data['all']['styles']) || ! empty($data['all']['scripts'])) {
 				}
 			}
 			?>
-            <div class="wpacu-assets-collapsible-wrap wpacu-by-preloads wpacu-wrap-area wpacu-<?php echo $preloadStatus; ?>">
-                <a class="wpacu-assets-collapsible <?php if ($listAreaStatus !== 'contracted') { ?>wpacu-assets-collapsible-active<?php } ?>" href="#wpacu-assets-collapsible-content-<?php echo $preloadStatus; ?>">
-					<?php echo $preloadsText[$preloadStatus]; ?> &#10141; Total files: <?php echo $totalFiles; ?>
+            <div class="wpacu-assets-collapsible-wrap wpacu-by-preloads wpacu-wrap-area wpacu-<?php echo esc_attr($preloadStatus); ?>">
+                <a class="wpacu-assets-collapsible <?php if ($listAreaStatus !== 'contracted') { ?>wpacu-assets-collapsible-active<?php } ?>" href="#wpacu-assets-collapsible-content-<?php echo esc_attr($preloadStatus); ?>">
+	                <?php echo wp_kses($preloadsText[$preloadStatus], array('span' => array('class' => array()))); ?> &#10141; Total files: <?php echo (int)$totalFiles; ?>
                 </a>
 
                 <div class="wpacu-assets-collapsible-content <?php if ($listAreaStatus !== 'contracted') { ?>wpacu-open<?php } ?>">
+	                <?php if (count($values) > 0) { ?>
+                        <div class="wpacu-area-toggle-all-assets wpacu-right">
+                            <a class="wpacu-area-contract-all-assets wpacu_area_handles_row_expand_contract"
+                               data-wpacu-area="<?php echo esc_html($preloadStatus); ?>_assets" href="#">Contract</a>
+                            |
+                            <a class="wpacu-area-expand-all-assets wpacu_area_handles_row_expand_contract"
+                               data-wpacu-area="<?php echo esc_html($preloadStatus); ?>_assets" href="#">Expand</a>
+                            All Assets
+                        </div>
+	                <?php } ?>
+
 					<?php if ($preloadStatus === 'preloaded') { ?>
                         <p class="wpacu-assets-note">This is the list of assets (if any) that were chosen to be preloaded through the <span style="background: #e8e8e8; padding: 2px;">&lt;link rel="preload"&gt;</span> tag (any valid option from "Preload (if kept loaded)?" drop-down). Note that the preload option is obviously irrelevant if the asset was chosen to be unloaded. The preload option is ONLY relevant for the assets that are loading in the page.</p>
 					    <?php
@@ -71,10 +82,11 @@ if (! empty($data['all']['styles']) || ! empty($data['all']['scripts'])) {
 					<?php } ?>
 
 					<?php if (count($values) > 0) { ?>
-                        <table class="wpacu_list_table wpacu_list_by_preload wpacu_widefat wpacu_striped">
+                        <table class="wpacu_list_table wpacu_list_by_preload wpacu_widefat wpacu_striped"
+                               data-wpacu-area="<?php echo esc_html($preloadStatus); ?>_assets">
                             <tbody>
 							<?php
-							echo $assetRowsOutput;
+							echo \WpAssetCleanUp\Misc::stripIrrelevantHtmlTags($assetRowsOutput);
 							?>
                             </tbody>
                         </table>
@@ -89,8 +101,8 @@ if (! empty($data['all']['styles']) || ! empty($data['all']['scripts'])) {
 if ( isset( $data['all']['hardcoded'] ) && ! empty( $data['all']['hardcoded'] ) ) {
 	$data['print_outer_html'] = true; // AJAX call from the Dashboard
 	include_once __DIR__ . '/_assets-hardcoded-list.php';
-} elseif (isset($hardcodedManageAreaHtml, $data['is_frontend_view']) && $data['is_frontend_view']) {
-	echo $hardcodedManageAreaHtml; // AJAX call from the front-end view
+} elseif (isset($data['is_frontend_view']) && $data['is_frontend_view']) {
+	echo \WpAssetCleanUp\HardcodedAssets::getHardCodedManageAreaForFrontEndView($data); // AJAX call from the front-end view
 }
 /*
 * ------------------------------------

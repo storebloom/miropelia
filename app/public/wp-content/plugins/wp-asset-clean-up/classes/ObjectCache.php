@@ -17,7 +17,7 @@ namespace WpAssetCleanUp;
  * Core class that implements an object cache.
  *
  * The WordPress Object Cache is used to save on trips to the database. The
- * Object Cache stores all of the cache data to memory and makes the cache
+ * Object Cache stores all the cache data to memory and makes the cache
  * contents available by using a key, which is used to name and later retrieve
  * the cache contents.
  *
@@ -636,7 +636,7 @@ class ObjectCache {
 		 * @global ObjectCache $wpacu_object_cache
 		 */
 		public static function wpacu_cache_init() {
-			$GLOBALS['wpacu_object_cache'] = new ObjectCache();
+			$GLOBALS['wpacu_object_cache'] = new self();
 		}
 
 		/**
@@ -665,7 +665,7 @@ class ObjectCache {
 		/**
 		 * Saves the data to the cache.
 		 *
-		 * Differs from ObjectCache::wpacu_cache_add) and wp_cache_replace() in that it will always write data.
+		 * Differs from ObjectCache::wpacu_cache_add() and wp_cache_replace() in that it will always write data.
 		 *
 		 * @since 2.0.0
 		 *

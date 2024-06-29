@@ -1,0 +1,18 @@
+// main: ../admin.scss
+
+.column-avatar {
+	width: 46px;
+
+	img {
+		padding: 2px;
+		border: 1px solid #d3d6db;
+		width: 100%;
+		height: auto;
+	}
+}
+
+.column-view_detail {
+	.wp-quiz-tracking {
+		display: none;
+	}
+}

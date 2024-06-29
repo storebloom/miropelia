@@ -29,6 +29,14 @@ server {
     include includes/wordpress-multi.conf;
     {{/unless}}
 
+	#
+	# Forward 404's to WordPress
+	#
+	error_page 404 = @wperror;
+	location @wperror {
+		rewrite ^/(.*)$ /index.php?q=$1 last;
+	}
+
     #
 	# Static file rules
 	#

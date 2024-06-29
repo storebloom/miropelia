@@ -1,0 +1,58 @@
+.wq-quiz-trivia {
+	.wq_questionTextCtr {
+		background-color: var(--wq-background-color);
+		color: var(--wq-font-color);
+	}
+
+	.row {
+		margin: 0;
+		margin-bottom: 10px;
+	}
+}
+
+.wq_triviaQuestionExplanation {
+	padding: 10px 10px 0 10px;
+	border: 1px solid #dddddd;
+	display: none;
+	margin: 20px 0 0 0;
+	clear: both;
+	width: 100%;
+	box-sizing: border-box;
+
+	span {
+		font-weight: 700;
+		font-size: 1.2em;
+	}
+
+	.wq_questionAnswered.is-incorrect &,
+	.wq_questionAnswered.is-correct & {
+		display: block;
+	}
+}
+
+.is-correct .wq-explanation-head-incorrect,
+.is-incorrect .wq-explanation-head-correct {
+	display: none;
+}
+
+.wq-checked-answers-list .is-correct {
+	color: #7bad40;
+}
+
+.wq-checked-answers-list .is-incorrect {
+	color: #ff5722;
+}
+
+.wq-checked-answers-list {
+	display: none;
+}
+
+.wq-end-answers.wq-layout-multiple {
+	.wq_triviaQuestionExplanation {
+		display: none !important;
+	}
+
+	.wq-checked-answers-list {
+		display: block;
+	}
+}

@@ -1,0 +1,15 @@
+%border-box {
+	&, * {
+		box-sizing: border-box;
+	}
+}
+
+%clear-float-after {
+	&:after {
+		content: " ";
+		display: block;
+		height: 0;
+		visibility: hidden;
+		clear: both;
+	}
+}

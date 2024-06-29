@@ -11,12 +11,17 @@
     position: relative;
     text-align: center;
 
+    @media (max-width: $small) {
+      height: 39vw;
+    }
+
     h1 {
       position: absolute;
       left: 50%;
       top: 30%;
       transform: translate(-50%, -50%);
       color: #fff;
+      width: 100%;
     }
   }
 
@@ -32,8 +37,13 @@
     }
 
     .post-list {
-      padding-top: 19%;
+      padding-left: 2.25rem;
+      padding-top: 6rem;
       position: relative;
+
+      @media (max-width: $small) {
+        padding-top: 6.5rem;
+      }
 
       &::before {
         background: url('../../src/images/tree-long.png');
@@ -41,22 +51,27 @@
         background-repeat: no-repeat;
         content: '';
         height: 100%;
-        left: -252px;
-        padding-bottom: 60px;
+        left: -25rem;
+        padding-bottom: 7.25rem;
         position: absolute;
-        top: 0;
-        width: 250px;
+        top: -3rem;
+        width: 26rem;
+
+        @media (max-width: $small) {
+          left: -25rem;
+          top: -2rem;
+        }
       }
 
       .post-item {
-        margin-bottom: 60px;
+        margin-bottom: 5rem;
         position: relative;
 
         &::after {
           background: url('../../src/images/straight-branch.svg');
           background-size: 100%;
           background-repeat: no-repeat;
-          bottom: -56px;
+          bottom: -5rem;
           content: '';
           height: 56px;
           left: -50px;
@@ -69,7 +84,7 @@
             background: url('../../src/images/straight-branch-2.svg');
             background-repeat: no-repeat;
             background-size: 100%;
-            bottom: -48px;
+            bottom: -4rem;
             height: 48px;
           }
         }
@@ -94,12 +109,25 @@
   &.single-post {
     .entry-content {
       margin-right: 1%;
-      max-width: 100%;
-      width: 49%;
+      max-width: 1000px;
+      width: 100%;
+
+      @media (max-width: $small) {
+        max-width: 300px;
+        margin: auto;
+
+        img {
+          max-width: 300px;
+        }
+      }
     }
 
     header {
       text-align: left;
+
+      @media (max-width: $small) {
+        text-align: center;
+      }
     }
   }
 
@@ -113,17 +141,12 @@
     }
 
     .entry-content {
-      margin: auto;
-      max-width: 700px;
       width: 100%;
     }
 
-    .feature-image {
-      width: 50%;
-
-      img {
-        width: 100%;
-      }
+    .wp-post-image {
+      max-height: 300px;
+      object-fit: cover;
     }
   }
 }

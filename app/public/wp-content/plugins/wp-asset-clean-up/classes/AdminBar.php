@@ -38,8 +38,8 @@ class AdminBar
 		$wpacuUnloadedAssetsStatus = false;
 
 		if (! is_admin()) {
-			$markedCssListForUnload = isset(Main::instance()->allUnloadedAssets['css']) ? array_unique(Main::instance()->allUnloadedAssets['css']) : array();
-			$markedJsListForUnload  = isset(Main::instance()->allUnloadedAssets['js'])  ? array_unique(Main::instance()->allUnloadedAssets['js'])  : array();
+			$markedCssListForUnload = isset(Main::instance()->allUnloadedAssets['styles'])  ? array_unique(Main::instance()->allUnloadedAssets['styles'])  : array();
+			$markedJsListForUnload  = isset(Main::instance()->allUnloadedAssets['scripts']) ? array_unique(Main::instance()->allUnloadedAssets['scripts']) : array();
 
 			// [wpacu_lite]
 			// Do not print any irrelevant data from the Pro version such as hardcoded CSS/JS
@@ -103,22 +103,21 @@ HTML;
 		$wp_admin_bar->add_menu(array(
 			'id'    => 'assetcleanup-parent',
 			'title' => $topTitle,
-			'href'  => admin_url('admin.php?page=' . WPACU_PLUGIN_ID . '_settings')
+			'href'  => esc_url(admin_url('admin.php?page=' . WPACU_PLUGIN_ID . '_settings'))
 		));
 
 		$wp_admin_bar->add_menu(array(
 			'parent' => 'assetcleanup-parent',
 			'id'     => 'assetcleanup-settings',
 			'title'  => __('Settings', 'wp-asset-clean-up'),
-			'href'   => admin_url( 'admin.php?page=' . WPACU_PLUGIN_ID . '_settings')
+			'href'   => esc_url(admin_url( 'admin.php?page=' . WPACU_PLUGIN_ID . '_settings'))
 		));
 
 		$wp_admin_bar->add_menu( array(
 			'parent' => 'assetcleanup-parent',
 			'id'     => 'assetcleanup-clear-css-js-files-cache',
 			'title'  => __('Clear CSS/JS Files Cache', 'wp-asset-clean-up'),
-			'href'   => wp_nonce_url( admin_url( 'admin-post.php?action=assetcleanup_clear_assets_cache' . $goBackToCurrentUrl ),
-				'assetcleanup_clear_assets_cache' )
+			'href'   => esc_url(wp_nonce_url( admin_url( 'admin-post.php?action=assetcleanup_clear_assets_cache' . $goBackToCurrentUrl ), 'assetcleanup_clear_assets_cache' ))
 		) );
 
 		// Only trigger in the front-end view
@@ -127,12 +126,12 @@ HTML;
 				// Not on the home page
 				$homepageManageAssetsHref = Main::instance()->frontendShow()
 					? get_site_url().'#wpacu_wrap_assets'
-					: admin_url( 'admin.php?page=' . WPACU_PLUGIN_ID . '_assets_manager&wpacu_for=homepage' );
+					: esc_url(admin_url( 'admin.php?page=' . WPACU_PLUGIN_ID . '_assets_manager&wpacu_for=homepage' ));
 
 				$wp_admin_bar->add_menu(array(
 					'parent' => 'assetcleanup-parent',
 					'id'     => 'assetcleanup-homepage',
-					'title'  => __('Manage Homepage Assets', 'wp-asset-clean-up'),
+					'title'  => esc_html__('Manage Homepage Assets', 'wp-asset-clean-up'),
 					'href'   => $homepageManageAssetsHref
 				));
 			} else {
@@ -142,40 +141,57 @@ HTML;
 					$wp_admin_bar->add_menu( array(
 						'parent' => 'assetcleanup-parent',
 						'id'     => 'assetcleanup-homepage',
-						'title'  => __('Manage Page Assets', 'wp-asset-clean-up'),
-						'href'   => admin_url('admin.php?page=' . WPACU_PLUGIN_ID . '_assets_manager&wpacu_for=homepage')
+						'title'  => esc_html__('Manage Homepage Assets', 'wp-asset-clean-up'),
+						'href'   => esc_url(admin_url('admin.php?page=' . WPACU_PLUGIN_ID . '_assets_manager&wpacu_for=homepage')),
+						'meta'   => array('target' => '_blank')
 					) );
 				}
 			}
 		}
 
-		if (! is_admin() && Main::instance()->frontendShow()) {
-			$wp_admin_bar->add_menu(array(
-				'parent' => 'assetcleanup-parent',
-				'id'     => 'assetcleanup-jump-to-assets-list',
-				'title'  => __('Manage Page Assets', 'wp-asset-clean-up'),
-				'href'   => '#wpacu_wrap_assets'
-			));
+		if (! is_admin()) {
+			if (Main::instance()->frontendShow()) {
+				$wp_admin_bar->add_menu( array(
+					'parent' => 'assetcleanup-parent',
+					'id'     => 'assetcleanup-jump-to-assets-list',
+					 // language: alias of 'Manage Page Assets'
+					'title'  => esc_html__( 'Manage Current Page Assets', 'wp-asset-clean-up' ) . '&nbsp;<span style="vertical-align: sub;" class="dashicons dashicons-arrow-down-alt"></span>',
+					'href'   => '#wpacu_wrap_assets'
+				) );
+			} elseif (is_singular()) {
+				global $post;
+
+				if (isset($post->ID)) {
+					$wp_admin_bar->add_menu( array(
+						'parent' => 'assetcleanup-parent',
+						'id'     => 'assetcleanup-manage-page-assets-dashboard',
+						 // language: alias of 'Manage Page Assets'
+						'title'  => esc_html__('Manage Current Page Assets', 'wp-asset-clean-up'),
+						'href'   => esc_url(admin_url('admin.php?page=' . WPACU_PLUGIN_ID . '_assets_manager&wpacu_post_id='.$post->ID)),
+						'meta'   => array('target' => '_blank')
+					) );
+				}
+			}
 		}
 
 		$wp_admin_bar->add_menu(array(
 			'parent' => 'assetcleanup-parent',
 			'id'     => 'assetcleanup-bulk-unloaded',
-			'title'  => __('Bulk Changes', 'wp-asset-clean-up'),
-			'href'   => admin_url( 'admin.php?page=' . WPACU_PLUGIN_ID . '_bulk_unloads')
+			'title'  => esc_html__('Bulk Changes', 'wp-asset-clean-up'),
+			'href'   => esc_url(admin_url( 'admin.php?page=' . WPACU_PLUGIN_ID . '_bulk_unloads'))
 		));
 
 		$wp_admin_bar->add_menu( array(
 			'parent' => 'assetcleanup-parent',
 			'id'     => 'assetcleanup-overview',
-			'title'  => __('Overview', 'wp-asset-clean-up'),
-			'href'   => admin_url( 'admin.php?page=' . WPACU_PLUGIN_ID . '_overview')
+			'title'  => esc_html__('Overview', 'wp-asset-clean-up'),
+			'href'   => esc_url(admin_url( 'admin.php?page=' . WPACU_PLUGIN_ID . '_overview'))
 		) );
 
 		$wp_admin_bar->add_menu(array(
 			'parent' => 'assetcleanup-parent',
 			'id'     => 'assetcleanup-support-forum',
-			'title'  => __('Support Forum', 'wp-asset-clean-up'),
+			'title'  => esc_html__('Support Forum', 'wp-asset-clean-up'),
 			'href'   => 'https://wordpress.org/support/plugin/wp-asset-clean-up',
 			'meta'   => array('target' => '_blank')
 		));
@@ -200,7 +216,7 @@ HTML;
 					$wp_admin_bar->add_menu(array(
 						'parent' => 'assetcleanup-asset-unload-rules-notice',
 						'id'     => 'assetcleanup-asset-unload-rules-css',
-						'title'  => 'CSS ('.count( $markedCssListForUnload ).')',
+						'title'  => esc_html__('CSS', 'wp-asset-clean-up'). ' ('.count( $markedCssListForUnload ).')',
 						'href'   => '#'
 					));
 					sort($markedCssListForUnload);
@@ -210,7 +226,7 @@ HTML;
 							'parent' => 'assetcleanup-asset-unload-rules-css',
 							'id'     => 'assetcleanup-asset-unload-rules-css-'.$cssHandle,
 							'title'  => $cssHandle,
-							'href'   => admin_url('admin.php?page=wpassetcleanup_overview#wpacu-overview-css-'.$cssHandle)
+							'href'   => esc_url(admin_url('admin.php?page=wpassetcleanup_overview#wpacu-overview-css-'.$cssHandle))
 						));
 					}
 				}
@@ -219,7 +235,7 @@ HTML;
 					$wp_admin_bar->add_menu(array(
 						'parent' => 'assetcleanup-asset-unload-rules-notice',
 						'id'     => 'assetcleanup-asset-unload-rules-js',
-						'title'  => 'JavaScript ('.count( $markedJsListForUnload ).')',
+						'title'  => esc_html__('JavaScript', 'wp-asset-clean-up'). ' ('.count( $markedJsListForUnload ).')',
 						'href'   => '#'
 					));
 					sort($markedJsListForUnload);
@@ -229,7 +245,7 @@ HTML;
 							'parent' => 'assetcleanup-asset-unload-rules-js',
 							'id'     => 'assetcleanup-asset-unload-rules-js-'.$jsHandle,
 							'title'  => $jsHandle,
-							'href'   => admin_url('admin.php?page=wpassetcleanup_overview#wpacu-overview-js-'.$jsHandle)
+							'href'   => esc_url(admin_url('admin.php?page=wpassetcleanup_overview#wpacu-overview-js-'.$jsHandle))
 						));
 					}
 					}

@@ -2,7 +2,7 @@
 /*
  * No direct access to this file
  */
-if (! isset($data)) {
+if (! isset($data, $selectedTabArea, $selectedSubTabArea)) {
 	exit;
 }
 
@@ -17,7 +17,7 @@ $ddOptions = array(
     'optional' => 'optional'
 );
 ?>
-<div id="<?php echo $tabIdArea; ?>" class="wpacu-settings-tab-content" <?php echo $styleTabContent; ?>>
+<div id="<?php echo esc_attr($tabIdArea); ?>" class="wpacu-settings-tab-content" <?php echo wp_kses($styleTabContent, array('style' => array())); ?>>
 	<h2 class="wpacu-settings-area-title"><?php _e('Google Fonts: Load Optimizer', 'wp-asset-clean-up'); ?></h2>
 
     <div class="wpacu-sub-tabs-wrap"> <!-- Sub-tabs wrap -->

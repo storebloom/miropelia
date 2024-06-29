@@ -1,3 +1,4 @@
+// phpcs:ignoreFile
 /* global wp:wp */
 
 /**

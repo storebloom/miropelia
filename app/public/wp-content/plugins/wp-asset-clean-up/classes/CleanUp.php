@@ -36,7 +36,7 @@ class CleanUp
 		$settings = Main::instance()->settings;
 
 		// Remove "Really Simple Discovery (RSD)" link?
-		if ($settings['remove_rsd_link'] == 1) {
+		if ($settings['remove_rsd_link'] == 1 || $settings['disable_xmlrpc'] === 'disable_all') {
 			// <link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://yourwebsite.com/xmlrpc.php?rsd" />
 			remove_action('wp_head', 'rsd_link');
 		}
@@ -79,6 +79,10 @@ class CleanUp
 
 			// also hide it from RSS
 			add_filter('the_generator', '__return_false');
+		}
+
+		if ($settings['disable_rss_feed']) {
+			$this->doDisableRssFeed();
 		}
 
 		// Remove Main RSS Feed Link?
@@ -154,91 +158,49 @@ class CleanUp
 	{
 		$fetchMethod = 'dom'; // 'regex' or 'dom'
 
-		if ($fetchMethod === 'regex') {
-			preg_match_all(
-				'/<meta.*name=(|\'|")generator(\\1).*content=(|\'|")(.*?)(|\'|").*?>/i',
-				$htmlSource,
-				$matchesSourcesFromTags,
-				PREG_SET_ORDER
-			);
-
-			preg_match_all(
-				'/<meta.*content=(|\'|")(.*?)(\\1).*name=(|\'|")generator(\\2).*?>/i',
-				$htmlSource,
-				$matchesSourcesFromTagsTwo,
-				PREG_SET_ORDER
-			);
-
-			$matchesSourcesFromTags = array_merge($matchesSourcesFromTags, $matchesSourcesFromTagsTwo);
-
-			if (empty($matchesSourcesFromTags)) {
-				return $htmlSource;
-			}
+		if ( $fetchMethod === 'dom' && Misc::isDOMDocumentOn() && $htmlSource ) {
+			$domTag = OptimizeCommon::getDomLoadedTag($htmlSource, 'removeMetaGenerators');
 
 			$metaTagsToStrip = array();
 
-			foreach ($matchesSourcesFromTags as $matchesResults) {
-				if (isset($matchesResults[0]) && ($matchedTag = $matchesResults[0])) {
-					if (strip_tags($matchedTag) !== '') { // Needs to be a proper match (very rare cases, but it can happen)
-						continue;
+			foreach ( $domTag->getElementsByTagName( 'meta' ) as $tagObject ) {
+				$nameAttrValue = $tagObject->getAttribute( 'name' );
+
+				if ( $nameAttrValue === 'generator' ) {
+					$outerTag = $outerTagRegExp = trim( Misc::getOuterHTML( $tagObject ) );
+
+					// As DOMDocument doesn't retrieve the exact string, some alterations to the RegEx have to be made
+					// Leave no room for errors as all sort of characters can be within the "content" attribute
+					$last2Chars = substr( $outerTag, - 2 );
+
+					if ( $last2Chars === '">' || $last2Chars === "'>" ) {
+						$tagWithoutLastChar = substr( $outerTag, 0, - 1 );
+						$outerTagRegExp     = preg_quote( $tagWithoutLastChar, '/' ) . '(.*?)>';
 					}
 
-					$metaTagsToStrip[$matchedTag] = '';
+					$outerTagRegExp = str_replace(
+						array( '"', '&lt;', '&gt;' ),
+						array( '("|\'|)', '(<|&lt;)', '(>|&gt;)' ),
+						$outerTagRegExp
+					);
+
+					if ( strpos( $outerTagRegExp, '<meta' ) !== false ) {
+						$outerTagRegExp = str_replace('#', '\#', $outerTagRegExp);
+						preg_match_all( '#' . $outerTagRegExp . '#si', $htmlSource, $matches );
+
+						if ( isset( $matches[0][0] ) && ! empty( $matches[0][0] ) && strip_tags( $matches[0][0] ) === '' ) {
+							$metaTagsToStrip[$matches[0][0]] = '';
+						}
+					}
 				}
 			}
 
 			$htmlSource = strtr($htmlSource, $metaTagsToStrip);
-		} elseif ($fetchMethod === 'dom') {
-			if ( function_exists( 'libxml_use_internal_errors' ) && function_exists( 'libxml_clear_errors' ) && class_exists( '\DOMDocument' ) ) {
-				if ($htmlSource === '') {
-					return $htmlSource;
-				}
 
-				$domTag = OptimizeCommon::getDomLoadedTag($htmlSource, 'removeMetaGenerators');
-
-				$metaTagsToStrip = array();
-
-				foreach ( $domTag->getElementsByTagName( 'meta' ) as $tagObject ) {
-					$nameAttrValue = $tagObject->getAttribute( 'name' );
-
-					if ( $nameAttrValue === 'generator' ) {
-						$outerTag = $outerTagRegExp = trim( self::getOuterHTML( $tagObject ) );
-
-						// As DOMDocument doesn't retrieve the exact string, some alterations to the RegEx have to be made
-						// Leave no room for errors as all sort of characters can be within the "content" attribute
-						$last2Chars = substr( $outerTag, - 2 );
-
-						if ( $last2Chars === '">' || $last2Chars === "'>" ) {
-							$tagWithoutLastChar = substr( $outerTag, 0, - 1 );
-							$outerTagRegExp     = preg_quote( $tagWithoutLastChar, '/' ) . '(.*?)>';
-						}
-
-						$outerTagRegExp = str_replace(
-							array( '"', '&lt;', '&gt;' ),
-							array( '("|\'|)', '(<|&lt;)', '(>|&gt;)' ),
-							$outerTagRegExp
-						);
-
-						if ( strpos( $outerTagRegExp, '<meta' ) !== false ) {
-							$outerTagRegExp = str_replace('#', '\#', $outerTagRegExp);
-							preg_match_all( '#' . $outerTagRegExp . '#si', $htmlSource, $matches );
-
-							if ( isset( $matches[0][0] ) && ! empty( $matches[0][0] ) && strip_tags( $matches[0][0] ) === '' ) {
-								$metaTagsToStrip[$matches[0][0]] = '';
-							}
-						}
-					}
-				}
-
-				$htmlSource = strtr($htmlSource, $metaTagsToStrip);
-
-				libxml_clear_errors();
-			}
+			libxml_clear_errors();
 		}
 
-		/* [wpacu_timing] */
-		Misc::scriptExecTimer( 'alter_html_source_for_remove_meta_generators',
-			'end' ); /* [/wpacu_timing] */
+		/* [wpacu_timing] */ Misc::scriptExecTimer( 'alter_html_source_for_remove_meta_generators', 'end' ); /* [/wpacu_timing] */
 		return $htmlSource;
 	}
 
@@ -251,12 +213,7 @@ class CleanUp
 	 */
 	public static function removeHtmlComments($htmlSource, $ignoreExceptions = false)
 	{
-		// No comments? Do not continue
-		if (strpos($htmlSource, '<!--') === false) {
-			return $htmlSource;
-		}
-
-		if (! (function_exists('libxml_use_internal_errors') && function_exists('libxml_clear_errors') && class_exists('\DOMDocument'))) {
+		if ( strpos($htmlSource, '<!--') === false || ! Misc::isDOMDocumentOn() ) {
 			return $htmlSource;
 		}
 
@@ -351,21 +308,6 @@ class CleanUp
 		}
 
 		return $htmlSource;
-	}
-
-	/**
-	 * @param $e
-	 *
-	 * @return mixed
-	 */
-	public static function getOuterHTML($e)
-	{
-		$doc = new \DOMDocument();
-		libxml_use_internal_errors( true );
-
-		$doc->appendChild($doc->importNode($e, true));
-
-		return trim($doc->saveHTML());
 	}
 
 	/**
@@ -514,9 +456,11 @@ class CleanUp
 
 			// Remove all embeds rewrite rules.
 			add_filter('rewrite_rules_array', static function ($rules) {
-				foreach($rules as $rule => $rewrite) {
-					if (false !== strpos($rewrite, 'embed=true')) {
-						unset($rules[$rule]);
+				if ( ! empty($rules) ) {
+					foreach ( $rules as $rule => $rewrite ) {
+						if ( is_string($rewrite) && false !== strpos( $rewrite, 'embed=true' ) ) {
+							unset( $rules[ $rule ] );
+						}
 					}
 				}
 				return $rules;
@@ -525,6 +469,33 @@ class CleanUp
 			// Remove filter of the oEmbed result before any HTTP requests are made.
 			remove_filter('pre_oembed_result', 'wp_filter_pre_oembed_result');
 		}, 9999 );
+	}
+
+	/**
+	 *
+	 */
+	public function doDisableRssFeed()
+	{
+		add_action('do_feed',               array($this, 'disabledRssFeedMsg'), 1);
+		add_action('do_feed_rdf',           array($this, 'disabledRssFeedMsg'), 1);
+		add_action('do_feed_rss',           array($this, 'disabledRssFeedMsg'), 1);
+		add_action('do_feed_rss2',          array($this, 'disabledRssFeedMsg'), 1);
+		add_action('do_feed_atom',          array($this, 'disabledRssFeedMsg'), 1);
+		add_action('do_feed_rss2_comments', array($this, 'disabledRssFeedMsg'), 1);
+		add_action('do_feed_atom_comments', array($this, 'disabledRssFeedMsg'), 1);
+	}
+
+	/**
+	 *
+	 */
+	public function disabledRssFeedMsg()
+	{
+		$wpacuSettings = new Settings();
+		$settingsArray = $wpacuSettings->getAll();
+
+		$feedDisableMsg = isset($settingsArray['disable_rss_feed_message']) ? $settingsArray['disable_rss_feed_message'] : '';
+
+		wp_die( __($feedDisableMsg, 'wp-asset-clean-up') );
 	}
 
 	/**
@@ -556,11 +527,11 @@ class CleanUp
 		}, PHP_INT_MAX);
 
 		// No WP Rocket (Minify / Concatenate)
-		add_filter('get_rocket_option_minify_css', '__return_false');
-		add_filter('get_rocket_option_minify_concatenate_css', '__return_false');
+		add_filter( 'get_rocket_option_minify_css',             '__return_false' );
+		add_filter( 'get_rocket_option_minify_concatenate_css', '__return_false' );
 
-		add_filter('get_rocket_option_minify_js', '__return_false');
-		add_filter('get_rocket_option_minify_concatenate_js', '__return_false');
+		add_filter( 'get_rocket_option_minify_js',              '__return_false' );
+		add_filter( 'get_rocket_option_minify_concatenate_js',  '__return_false' );
 
 		// No W3 Total Cache: Minify
 		add_filter('w3tc_minify_enable', '__return_false');

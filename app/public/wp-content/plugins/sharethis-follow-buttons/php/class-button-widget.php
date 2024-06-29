@@ -30,7 +30,7 @@ class Button_Widget extends \WP_Widget {
 		$this->plugin = $plugin;
 
 		$widget_options = array(
-			'classname' => 'st_follow_widget',
+			'classname'   => 'st_follow_widget',
 			'description' => esc_html__( 'Add ShareThis Follow Buttons to your sidebar or footer.', 'sharethis-follow-buttons' ),
 		);
 		parent::__construct(
@@ -57,7 +57,7 @@ class Button_Widget extends \WP_Widget {
 
 		// Add buttons.
 		?>
-		  <div class="sharethis-inline-follow-buttons"></div>
+		<div class="sharethis-inline-follow-buttons"></div>
 		<?php
 	}
 

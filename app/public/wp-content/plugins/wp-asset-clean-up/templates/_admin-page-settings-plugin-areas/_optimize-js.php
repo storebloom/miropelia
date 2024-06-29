@@ -13,18 +13,8 @@ global $wp_version;
 
 $tabIdArea = 'wpacu-setting-optimize-js';
 $styleTabContent = ($selectedTabArea === $tabIdArea) ? 'style="display: table-cell;"' : '';
-
-// [wpacu_lite]
-$availableForProAppendInlineJsLink = WPACU_PLUGIN_GO_PRO_URL . '?utm_source=optimize_js&utm_medium=append_assoc_inline_to_combined_js';
-$availableForProInlineJsLink = WPACU_PLUGIN_GO_PRO_URL . '?utm_source=optimize_js&utm_medium=inline_chosen_js_files';
-$availableForProMoveScriptsToBodyLink = WPACU_PLUGIN_GO_PRO_URL . '?utm_source=optimize_js&utm_medium=move_scripts_to_body';
-
-$availableForProAppendInlineJs = '<a class="go-pro-link-no-style" target="_blank" href="'.$availableForProAppendInlineJsLink.'"><span class="wpacu-tooltip" style="width: 186px;">'.__('This is a feature available in the Pro version! Unlock it!', 'wp-asset-clean-up').'</span> <img style="opacity: 0.6;" width="20" height="20" src="'.WPACU_PLUGIN_URL.'/assets/icons/icon-lock.svg" valign="top" alt="" /></a>';
-$availableForProInlineJs       = '<a class="go-pro-link-no-style" target="_blank" href="'.$availableForProInlineJsLink.'"><span class="wpacu-tooltip" style="width: 186px;">'.__('This is a feature available in the Pro version! Unlock it!', 'wp-asset-clean-up').'</span> <img style="opacity: 0.6;" width="20" height="20" src="'.WPACU_PLUGIN_URL.'/assets/icons/icon-lock.svg" valign="top" alt="" /></a>';
-$availableForProMoveScriptsToBody = '<a class="go-pro-link-no-style" target="_blank" href="'.$availableForProMoveScriptsToBodyLink.'"><span class="wpacu-tooltip" style="width: 186px;">'.__('This is a feature available in the Pro version! Unlock it!', 'wp-asset-clean-up').'</span> <img style="opacity: 0.6;" width="20" height="20" src="'.WPACU_PLUGIN_URL.'/assets/icons/icon-lock.svg" valign="top" alt="" /></a>';
-// [/wpacu_lite]
 ?>
-<div id="<?php echo $tabIdArea; ?>" class="wpacu-settings-tab-content" <?php echo $styleTabContent; ?>>
+<div id="<?php echo esc_attr($tabIdArea); ?>" class="wpacu-settings-tab-content" <?php echo wp_kses($styleTabContent, array('style' => array())); ?>>
     <h2 class="wpacu-settings-area-title"><?php _e('Minify / Combine loaded JavaScript files to reduce total page size and the number of HTTP requests', 'wp-asset-clean-up'); ?></h2>
 	<?php
 	if (Misc::isWpRocketMinifyHtmlEnabled()) {
@@ -63,7 +53,7 @@ $availableForProMoveScriptsToBody = '<a class="go-pro-link-no-style" target="_bl
                     <div style="border-left: 4px solid green; background: #f2faf2; padding: 10px; margin-top: 10px;">
                         <ul style="margin: 0;">
                             <li>This option is locked as optimize/minify JavaScript (JS) is already enabled in the following plugins: <strong><?php echo implode(', ', $data['is_optimize_js_enabled_by_other_party']); ?></strong>. <?php echo WPACU_PLUGIN_TITLE; ?> works together with the mentioned plugin(s).</li>
-                            <li>Eliminate the bloat first via <a href="<?php echo admin_url('admin.php?page=wpassetcleanup_assets_manager'); ?>">CSS & JAVASCRIPT LOAD MANAGER</a>, then minify the remaining JS with any plugin you prefer.</li>
+                            <li>Eliminate the bloat first via <a href="<?php echo esc_url(admin_url('admin.php?page=wpassetcleanup_assets_manager')); ?>">CSS & JAVASCRIPT LOAD MANAGER</a>, then minify the remaining JS with any plugin you prefer.</li>
                         </ul>
                     </div>
 					<?php
@@ -71,9 +61,7 @@ $availableForProMoveScriptsToBody = '<a class="go-pro-link-no-style" target="_bl
 
 				$minifyJsExceptionsAreaStyle = empty($data['is_optimize_js_enabled_by_other_party']) && ($data['minify_loaded_js'] == 1) ? 'opacity: 1;' : 'opacity: 0.4;';
 				?>
-                <div id="wpacu_minify_js_area" style="<?php echo $minifyJsExceptionsAreaStyle; ?>">
-                    <!-- -->
-
+                <div id="wpacu_minify_js_area" style="<?php echo esc_attr($minifyJsExceptionsAreaStyle); ?>">
                     <div style="margin-top: 8px; padding: 12px; background: #f2faf2; border-radius: 10px;">
                         <ul style="margin: 0;">
                             <li style="float: left; margin-right: 30px; margin-bottom: 0; line-height: 32px;" class="wpacu-fancy-radio">
@@ -84,7 +72,7 @@ $availableForProMoveScriptsToBody = '<a class="go-pro-link-no-style" target="_bl
                                            type="radio"
                                            name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[minify_loaded_js_for]"
                                            value="src" />
-                                    &nbsp;<?php _e('SCRIPT tags with "src" attribute', 'wp-asset-clean-up'); ?> (<?php echo __('default', 'wp-asset-clean-up'); ?>)
+                                    &nbsp;<?php _e('SCRIPT tags with "src" attribute', 'wp-asset-clean-up'); ?> (<?php _e('default', 'wp-asset-clean-up'); ?>)
                                 </label>
                             </li>
                             <li style="float: left; margin-right: 30px; margin-bottom: 0; line-height: 32px;" class="wpacu-fancy-radio">
@@ -119,7 +107,7 @@ $availableForProMoveScriptsToBody = '<a class="go-pro-link-no-style" target="_bl
                                         <textarea style="width: 100%;"
                                                   rows="4"
                                                   id="wpacu_minify_js_exceptions"
-                                                  name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[minify_loaded_js_exceptions]"><?php echo $data['minify_loaded_js_exceptions']; ?></textarea>
+                                                  name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[minify_loaded_js_exceptions]"><?php echo esc_textarea($data['minify_loaded_js_exceptions']); ?></textarea>
                         </label>
                     </div>
                     <ul style="list-style: none; margin-left: 18px; margin-bottom: 0;">
@@ -140,7 +128,7 @@ $availableForProMoveScriptsToBody = '<a class="go-pro-link-no-style" target="_bl
         <tr>
             <td colspan="2" style="padding: 0;">
                 <div class="wpacu-combine-notice-default wpacu_hide" style="line-height: 22px; background: #f8f8f8; border-left: 4px solid #008f9c; padding: 10px; margin: 0 0 15px;">
-                    <strong><?php _e('NOTE', 'wp-asset-clean-up'); ?>:</strong> <?php echo __('Concatenating assets is no longer a recommended practice in HTTP/2', 'wp-asset-clean-up'); ?>. &nbsp; <a data-id="wpacu-http2-info-js" class="wpacu-http2-info-js-target" href="#wpacu-http2-info-js"><?php _e('Read more', 'wp-asset-clean-up'); ?></a> &nbsp;/&nbsp; <a class="wpacu_verify_http2_protocol" target="_blank" href="https://tools.keycdn.com/http2-test"><strong><?php _e('Verify if the website is delivered through the HTTP/2 network protocol', 'wp-asset-clean-up'); ?></strong></a>
+                    <strong><?php _e('NOTE', 'wp-asset-clean-up'); ?>:</strong> <?php _e('Concatenating assets is no longer a recommended practice in HTTP/2', 'wp-asset-clean-up'); ?>. &nbsp; <a data-id="wpacu-http2-info-js" class="wpacu-http2-info-js-target" href="#wpacu-http2-info-js"><?php _e('Read more', 'wp-asset-clean-up'); ?></a> &nbsp;/&nbsp; <a class="wpacu_verify_http2_protocol" target="_blank" href="https://tools.keycdn.com/http2-test"><strong><?php _e('Verify if the website is delivered through the HTTP/2 network protocol', 'wp-asset-clean-up'); ?></strong></a>
                 </div>
                 <div class="wpacu-combine-notice-http-2-detected wpacu_hide" style="line-height: 22px; background: #f8f8f8; border-left: 4px solid #008f9c; padding: 10px; margin: 0 0 15px;">
                     <span class="wpacu_http2_protocol_is_supported" style="color: green; font-weight: 400;"><span class="dashicons dashicons-yes-alt"></span> Your website `<span style="font-weight: 500;"><?php echo get_site_url(); ?></span>` is delivered through the HTTP/2 network protocol, thus the website will be as fast without using this feature which might require maintenance once in a while.</span> <a class="wpacu-http2-info-js-target" href="#wpacu-http2-info-js"><?php _e('Read more', 'wp-asset-clean-up'); ?></a>
@@ -148,19 +136,27 @@ $availableForProMoveScriptsToBody = '<a class="go-pro-link-no-style" target="_bl
             </td>
         </tr>
 
+        <?php
+        $wpRocketIsEnabledWithDelayJs = (defined('WPACU_WP_ROCKET_DELAY_JS_ENABLED') && WPACU_WP_ROCKET_DELAY_JS_ENABLED);
+        $combineJsIsDisabled = (! empty($data['is_optimize_js_enabled_by_other_party']) || $wpRocketIsEnabledWithDelayJs);
+        ?>
 		<tr valign="top">
 			<th scope="row" class="setting_title">
 				<label for="wpacu_combine_loaded_js_enable"><?php _e('Combine loaded JS (JavaScript) into fewer files', 'wp-asset-clean-up'); ?></label>
 				<p class="wpacu_subtitle"><small><em><?php _e('Helps reducing the number of HTTP Requests even further', 'wp-asset-clean-up'); ?></em></small></p>
 			</th>
 			<td>
-				<label class="wpacu_switch <?php if (! empty($data['is_optimize_js_enabled_by_other_party'])) { echo 'wpacu_disabled'; } ?>">
+				<label class="wpacu_switch <?php if ($combineJsIsDisabled) { echo 'wpacu_disabled'; } ?>">
 					<input id="wpacu_combine_loaded_js_enable"
                            data-target-opacity="wpacu_combine_loaded_js_info_area"
 					       type="checkbox"
-						<?php
-						echo (in_array($data['combine_loaded_js'], array('for_admin', 'for_all', 1)) ? 'checked="checked"' : '');
-						?>
+                            <?php
+                            if ($combineJsIsDisabled) {
+                                echo 'disabled="disabled"';
+                            } else {
+                                echo in_array( $data['combine_loaded_js'], array( 'for_admin', 'for_all', 1 ) ) ? 'checked="checked"' : '';
+                            }
+                            ?>
 						   name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[combine_loaded_js]"
 						   value="1" /> <span class="wpacu_slider wpacu_round"></span> </label>
 
@@ -172,14 +168,23 @@ $availableForProMoveScriptsToBody = '<a class="go-pro-link-no-style" target="_bl
                     <div style="border-left: 4px solid green; background: #f2faf2; padding: 10px; margin-top: 10px;">
                         <ul style="margin: 0;">
                             <li>This option is locked as optimize/minify JavaScript (JS) is already enabled in the following plugins: <strong><?php echo implode(', ', $data['is_optimize_js_enabled_by_other_party']); ?></strong>.</li>
-                            <li><?php echo WPACU_PLUGIN_TITLE; ?> works together with the mentioned plugin(s). Eliminate the bloat first via <a href="<?php echo admin_url('admin.php?page=wpassetcleanup_assets_manager'); ?>">CSS & JAVASCRIPT LOAD MANAGER</a>, then concatenate (if necessary) the JS using any plugin you prefer.</li>
+                            <li><?php echo WPACU_PLUGIN_TITLE; ?> works together with the mentioned plugin(s). Eliminate the bloat first via <a href="<?php echo esc_url(admin_url('admin.php?page=wpassetcleanup_assets_manager')); ?>">CSS & JAVASCRIPT LOAD MANAGER</a>, then concatenate (if necessary) the JS using any plugin you prefer.</li>
                         </ul>
                     </div>
 					<?php
-				}
+				} elseif ($wpRocketIsEnabledWithDelayJs) {
+                    ?>
+                    <div style="border-left: 4px solid green; background: #f2faf2; padding: 10px; margin-top: 10px;">
+                        <ul style="margin: 0;">
+                            <li>This option is locked to avoid any compatibility problems because a similar option is enabled in WP Rocket: <a target="_blank" href="<?php echo admin_url('options-general.php?page=wprocket#file_optimization'); ?>"><em>"FILE OPTIMIZATION" - "JavaScript Files" - "Delay JavaScript execution"</em></a>.</li>
+                            <li>Both WP Rocket &amp; <?php echo WPACU_PLUGIN_TITLE; ?> can be used together as long as features are not mixed.</li>
+                        </ul>
+                    </div>
+                    <?php
+                }
 				?>
 
-				<div id="wpacu_combine_loaded_js_info_area" <?php if (empty($data['is_optimize_js_enabled_by_other_party']) && in_array($data['combine_loaded_js'], array('for_admin', 'for_all', 1))) { ?> style="opacity: 1;" <?php } else { ?>style="opacity: 0.4;"<?php } ?>>
+				<div id="wpacu_combine_loaded_js_info_area" <?php if (empty($data['is_optimize_js_enabled_by_other_party'] || $wpRocketIsEnabledWithDelayJs) && in_array($data['combine_loaded_js'], array('for_admin', 'for_all', 1))) { ?> style="opacity: 1;" <?php } else { ?>style="opacity: 0.4;"<?php } ?>>
                     <div style="margin-top: 8px; padding: 12px; background: #f2faf2; border-radius: 10px;">
                         <ul style="margin: 0;">
                             <li style="float: left; margin-right: 30px; margin-bottom: 0; line-height: 32px;" class="wpacu-fancy-radio">
@@ -190,7 +195,7 @@ $availableForProMoveScriptsToBody = '<a class="go-pro-link-no-style" target="_bl
                                            type="radio"
                                            name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[combine_loaded_js_for]"
                                            value="guests" />
-                                    &nbsp;<?php _e('Apply it only for guest visitors', 'wp-asset-clean-up'); ?> (<?php echo __('default', 'wp-asset-clean-up'); ?>)
+                                    &nbsp;<?php _e('Apply it only for guest visitors', 'wp-asset-clean-up'); ?> (<?php _e('default', 'wp-asset-clean-up'); ?>)
                                 </label>
                             </li>
                             <li style="float: left; margin-bottom: 0; line-height: 32px;" class="wpacu-fancy-radio">
@@ -241,7 +246,7 @@ $availableForProMoveScriptsToBody = '<a class="go-pro-link-no-style" target="_bl
                                     <textarea style="width: 100%;"
                                               rows="4"
                                               id="combine_loaded_js_exceptions"
-                                              name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[combine_loaded_js_exceptions]"><?php echo $data['combine_loaded_js_exceptions']; ?></textarea>
+                                              name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[combine_loaded_js_exceptions]"><?php echo esc_textarea($data['combine_loaded_js_exceptions']); ?></textarea>
                         </label>
 
                         <p><?php _e('Pattern Examples (you don\'t have to add the full URL, as it\'s recommended to use relative paths)', 'wp-asset-clean-up'); ?>:</p>
@@ -291,8 +296,10 @@ $availableForProMoveScriptsToBody = '<a class="go-pro-link-no-style" target="_bl
 
         <tr valign="top">
             <th scope="row" class="setting_title">
-                <label for="wpacu_inline_js_files_enable"><?php _e('Inline JavaScript Files', 'wp-asset-clean-up'); ?> <?php echo $availableForProInlineJs; ?></label>
-                <p class="wpacu_subtitle"><small><em><?php _e('This will work for local (same domain) files. External requests tags will not be altered (e.g. cdnjs.cloudflare.com, ajax.googleapis.com etc.).', 'wp-asset-clean-up'); ?></em></small></p>
+                <label for="wpacu_inline_js_files_enable"><?php esc_html_e('Inline JavaScript Files', 'wp-asset-clean-up'); ?>
+                    <a class="go-pro-link-no-style" target="_blank" href="<?php echo apply_filters('wpacu_go_pro_affiliate_link', WPACU_PLUGIN_GO_PRO_URL.'?utm_source=optimize_js&utm_medium=inline_chosen_js_files'); ?>"><span class="wpacu-tooltip" style="width: 186px;"><?php esc_html_e('This is a feature available in the Pro version! Unlock it!', 'wp-asset-clean-up'); ?></span> <img style="opacity: 0.6;" width="20" height="20" src="<?php echo esc_url(WPACU_PLUGIN_URL.'/assets/icons/icon-lock.svg'); ?>" valign="top" alt="" /></a>
+                </label>
+                <p class="wpacu_subtitle"><small><em><?php esc_html_e('This will work for local (same domain) files. External requests tags will not be altered (e.g. cdnjs.cloudflare.com, ajax.googleapis.com etc.).', 'wp-asset-clean-up'); ?></em></small></p>
             </th>
             <td>
                 <label class="wpacu_switch wpacu_disabled"><!-- Disabled: Available only in the Pro version -->
@@ -312,7 +319,7 @@ $availableForProMoveScriptsToBody = '<a class="go-pro-link-no-style" target="_bl
                     <div style="border-left: 4px solid green; background: #f2faf2; padding: 10px; margin-top: 10px;">
                         <ul style="margin: 0;">
                             <li>This option is not available as optimize/minify JavaScript (JS) is already enabled in the following plugins: <strong><?php echo implode(', ', $data['is_optimize_js_enabled_by_other_party']); ?></strong>.</li>
-                            <li><?php echo WPACU_PLUGIN_TITLE; ?> works together with the mentioned plugin(s). Eliminate the bloat first via <a href="<?php echo admin_url('admin.php?page=wpassetcleanup_assets_manager'); ?>">CSS & JAVASCRIPT LOAD MANAGER</a>, then concatenate (if necessary) the JS using any plugin you prefer.</li>
+                            <li><?php echo WPACU_PLUGIN_TITLE; ?> works together with the mentioned plugin(s). Eliminate the bloat first via <a href="<?php echo esc_url(admin_url('admin.php?page=wpassetcleanup_assets_manager')); ?>">CSS & JAVASCRIPT LOAD MANAGER</a>, then concatenate (if necessary) the JS using any plugin you prefer.</li>
                         </ul>
                     </div>
                 <?php
@@ -342,7 +349,7 @@ $availableForProMoveScriptsToBody = '<a class="go-pro-link-no-style" target="_bl
                                     <textarea style="width: 100%;"
                                               rows="4"
                                               id="wpacu_inline_js_files_list"
-                                              name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[inline_js_files_list]"><?php echo $data['inline_js_files_list']; ?></textarea>
+                                              name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[inline_js_files_list]"><?php echo esc_textarea($data['inline_js_files_list']); ?></textarea>
                         </label>
                         <p style="margin-bottom: 6px;"><strong>Examples</strong> (you don't have to add the full URL, as it's recommended to use relative paths, especially if you use dev/staging environments or change the domain name of your website):</p>
                         <code>/wp-content/plugins/plugin-title/scripts/small-file.js<br />/wp-content/themes/my-wp-theme-dir/js/small.js</code>
@@ -371,7 +378,7 @@ $availableForProMoveScriptsToBody = '<a class="go-pro-link-no-style" target="_bl
 	            <?php
 	            $moveInlineJQueryAfterSrcTagStyle = ($data['move_inline_jquery_after_src_tag'] == 1) ? 'opacity: 1;' : 'opacity: 0.4;';
 	            ?>
-                <div id="wpacu_move_inline_jquery_after_src_tag_info_area" style="<?php echo $moveInlineJQueryAfterSrcTagStyle; ?>">
+                <div id="wpacu_move_inline_jquery_after_src_tag_info_area" style="<?php echo esc_attr($moveInlineJQueryAfterSrcTagStyle); ?>">
                     <p><?php _e('This feature moves any of these inline SCRIPT tags after the HTML tag that loads jQuery (generated for the "jquery-core" handle) aiming to fix "jQuery is undefined errors".', 'wp-asset-clean-up'); ?></p>
                     <p>The option should be enabled if any of the following applies:</p>
                     <ul style="list-style: disc; margin-left: 20px;">
@@ -385,7 +392,7 @@ $availableForProMoveScriptsToBody = '<a class="go-pro-link-no-style" target="_bl
         <!-- [wpacu_pro] -->
         <tr valign="top">
             <th scope="row" class="setting_title">
-                <label for="wpacu_move_scripts_to_body_enable"><?php _e('Move All <code>&lt;SCRIPT&gt;</code> tags From HEAD to BODY', 'wp-asset-clean-up'); ?> <?php echo $availableForProMoveScriptsToBody; ?></label>
+                <label for="wpacu_move_scripts_to_body_enable"><?php echo wp_kses(__('Move All <code>&lt;SCRIPT&gt;</code> tags From HEAD to BODY', 'wp-asset-clean-up'), array('code' => array())); ?> <a class="go-pro-link-no-style" target="_blank" href="<?php echo apply_filters('wpacu_go_pro_affiliate_link', WPACU_PLUGIN_GO_PRO_URL.'?utm_source=optimize_js&utm_medium=move_scripts_to_body'); ?>"><span class="wpacu-tooltip" style="width: 186px;"><?php esc_html_e('This is a feature available in the Pro version! Unlock it!', 'wp-asset-clean-up'); ?></span> <img style="opacity: 0.6;" width="20" height="20" src="<?php echo esc_url(WPACU_PLUGIN_URL); ?>/assets/icons/icon-lock.svg" valign="top" alt="" /></a></label>
                 <p class="wpacu_subtitle"><small><em><?php _e('This triggers late after all other optimizations are applied for maximum compatibility', 'wp-asset-clean-up'); ?>.</em></small></p>
             </th>
             <td>
@@ -403,7 +410,7 @@ $availableForProMoveScriptsToBody = '<a class="go-pro-link-no-style" target="_bl
 	            <?php
 	            $moveScriptsToBodyStyle = ($data['move_scripts_to_body'] == 1) ? 'opacity: 1;' : 'opacity: 0.4;';
 	            ?>
-                <div id="wpacu_move_scripts_to_body_info_area" style="<?php echo $moveScriptsToBodyStyle; ?>">
+                <div id="wpacu_move_scripts_to_body_info_area" style="<?php echo esc_attr($moveScriptsToBodyStyle); ?>">
                     <p>The option could be enabled if any of the following applies:</p>
                     <ul style="list-style: disc; margin-left: 20px;">
                         <li>There are a few SCRIPT tags left in the HEAD (usually hardcoded and not manageable in the CSS/JS list) and you are sure they can be moved to the BODY without any issues.</li>
@@ -414,7 +421,7 @@ $availableForProMoveScriptsToBody = '<a class="go-pro-link-no-style" target="_bl
                         <textarea style="width: 100%;"
                                   rows="4"
                                   id="wpacu_move_scripts_to_body_exceptions"
-                                  name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[move_scripts_to_body_exceptions]"><?php echo $data['move_scripts_to_body_exceptions']; ?></textarea>
+                                  name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[move_scripts_to_body_exceptions]"><?php echo esc_textarea($data['move_scripts_to_body_exceptions']); ?></textarea>
                     </label>
                     <p><small><strong>Note:</strong> A situation when SCRIPT tags should be loaded in the <code>&lt;HEAD&gt;</code> is when the page gets loaded as an AMP (Accelerated Mobile Page) via various plugins. If have SCRIPT tags loading .js from cdn.ampproject.org, you can add a unique string to the exclusion such as <code>//cdn.ampproject.org/</code> which will detects tags like <code>&lt;script type='text/javascript' src='https://cdn.ampproject.org/v0.js' async&gt;&lt;/script&gt;</code> and keep them in the &lt;HEAD&gt;</small></p>
                 </div>
@@ -439,12 +446,12 @@ $availableForProMoveScriptsToBody = '<a class="go-pro-link-no-style" target="_bl
                            value="1" /> <span class="wpacu_slider wpacu_round"></span> </label>
 
                 &nbsp;<?php _e('Avoid loading the whole WP environment whenever a dynamic request is made such as <code>/?custom-javascript=value_here</code>, or <code>/wp-content/plugins/plugin-name-here/js/generate-script-output.php?ver=1</code>', 'wp-asset-clean-up'); ?>
-                <p>e.g. <code>&lt;script type="text/javascript" src="//yourwebsite.com/wp-content/plugins/plugin-name-here/js/generate-script-output.php?ver=<?php echo $wp_version; ?>"&gt;&lt;/script&gt;</code></p>
+                <p>e.g. <code>&lt;script type="text/javascript" src="//yourwebsite.com/wp-content/plugins/plugin-name-here/js/generate-script-output.php?ver=<?php echo esc_html($wp_version); ?>"&gt;&lt;/script&gt;</code></p>
                 <hr />
 			    <?php
 			    $cacheDynamicLoadedJsAreaStyle = ($data['cache_dynamic_loaded_js'] == 1) ? 'opacity: 1;' : 'opacity: 0.4;';
 			    ?>
-                <div id="wpacu_cache_dynamic_loaded_js_info_area" style="<?php echo $cacheDynamicLoadedJsAreaStyle; ?>">
+                <div id="wpacu_cache_dynamic_loaded_js_info_area" style="<?php echo esc_attr($cacheDynamicLoadedJsAreaStyle); ?>">
                     <p>Some plugins and themes have options to create your own layout / customise specific functionality settings and save the changes from the Dashboard. Instead of creating static JS files from the saved settings, the changes you made are retrieved from the database and the JavaScript content is created "on the fly", thus using more resources by loading the whole WP environment and make MySQL (or whatever database type if used) requests in order to print the JavaScript content. <?php echo WPACU_PLUGIN_TITLE; ?> detects such requests and caches the output for faster retrieval. This very important especially if your website has lots of visits (imagine WordPress loading several times only from one visitor) and you're on a shared environment with limited resources. This will also make the user experience better by decreasing the page rendering time.</p>
                 </div>
             </td>

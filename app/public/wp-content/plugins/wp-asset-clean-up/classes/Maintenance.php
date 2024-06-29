@@ -18,7 +18,7 @@ class Maintenance
 		add_action('wp',   array($this, 'scheduleEvents'));
 		add_action('init', array($this, 'scheduleTrigger'));
 
-		if (is_admin() && isset($_GET['page']) && strpos($_GET['page'], WPACU_PLUGIN_ID.'_') === 0) {
+		if (is_admin() && Menu::isPluginPage()) {
 			add_action('admin_init', static function() {
 				Maintenance::cleanUnusedAssetsFromInfoArea();
 				Maintenance::combineNewOptionUpdate(); // Since v1.1.7.3 (Pro) & v1.3.6.4 (Lite)
@@ -210,7 +210,7 @@ class Maintenance
 			}
 		}
 
-		Misc::addUpdateOption($optionToUpdate, json_encode(Misc::filterList($existingList)));
+		Misc::addUpdateOption($optionToUpdate, wp_json_encode(Misc::filterList($existingList)));
 	}
 
 	/**
@@ -241,7 +241,7 @@ class Maintenance
 
 				Misc::addUpdateOption(
 					WPACU_PLUGIN_ID . '_front_page_load_exceptions',
-					json_encode(Misc::filterList($wpacuFrontPageLoadExceptionsArray))
+					wp_json_encode(Misc::filterList($wpacuFrontPageLoadExceptionsArray))
 				);
 			}
 		}
@@ -266,7 +266,7 @@ class Maintenance
 
 			Misc::addUpdateOption(
 				WPACU_PLUGIN_ID . '_post_type_load_exceptions',
-				json_encode(Misc::filterList($wpacuPostTypeLoadExceptionsArray))
+				wp_json_encode(Misc::filterList($wpacuPostTypeLoadExceptionsArray))
 			);
 		}
 
@@ -299,7 +299,7 @@ SQL;
 					continue; // no point in re-updating the database with the same values
 				}
 
-				$newList = json_encode(Misc::filterList($decodedValues));
+				$newList = wp_json_encode(Misc::filterList($decodedValues));
 
 				if ( $tableName === $wpdb->postmeta ) {
 					update_post_meta($wpacuValues['post_id'], '_'.$wpacuPluginId.'_load_exceptions', $newList);
@@ -329,7 +329,7 @@ SQL;
 
 					Misc::addUpdateOption(
 						WPACU_PLUGIN_ID . '_extras_load_exceptions',
-						json_encode( Misc::filterList( $wpacuExtrasLoadExceptionsArray ) )
+						wp_json_encode( Misc::filterList( $wpacuExtrasLoadExceptionsArray ) )
 					);
 				}
 			}
@@ -354,7 +354,7 @@ SQL;
 
 					Misc::addUpdateOption(
 						WPACU_PLUGIN_ID . '_global_data',
-						json_encode( Misc::filterList( $dbList ) )
+						wp_json_encode( Misc::filterList( $dbList ) )
 					);
 				}
 			}
@@ -397,7 +397,7 @@ SQL;
 
 		Misc::addUpdateOption(
 			WPACU_PLUGIN_ID . '_global_data',
-			json_encode( Misc::filterList( $wpacuGlobalDataArray ) )
+			wp_json_encode( Misc::filterList( $wpacuGlobalDataArray ) )
 		);
 
 		/*
@@ -413,7 +413,7 @@ SQL;
 
 			Misc::addUpdateOption(
 				WPACU_PLUGIN_ID . '_global_unload',
-				json_encode( Misc::filterList( $wpacuGlobalUnloadDataArray ) )
+				wp_json_encode( Misc::filterList( $wpacuGlobalUnloadDataArray ) )
 			);
 		}
 
@@ -458,7 +458,7 @@ SQL;
 
 			Misc::addUpdateOption(
 				WPACU_PLUGIN_ID . '_bulk_unload',
-				json_encode( Misc::filterList( $wpacuBulkUnloadDataArray ) )
+				wp_json_encode( Misc::filterList( $wpacuBulkUnloadDataArray ) )
 			);
 		}
 
@@ -478,7 +478,7 @@ SQL;
 
 			Misc::addUpdateOption(
 				WPACU_PLUGIN_ID . '_front_page_no_load',
-				json_encode( Misc::filterList( $wpacuFrontPageUnloadsArray ) )
+				wp_json_encode( Misc::filterList( $wpacuFrontPageUnloadsArray ) )
 			);
 		}
 
@@ -501,7 +501,7 @@ SQL;
 
 			Misc::addUpdateOption(
 				WPACU_PLUGIN_ID . '_front_page_data',
-				json_encode( Misc::filterList( $wpacuFrontPageDataArray ) )
+				wp_json_encode( Misc::filterList( $wpacuFrontPageDataArray ) )
 			);
 		}
 
@@ -530,11 +530,11 @@ SQL;
 					unset($decodedValues[$assetType][$targetKey]);
 
 					if ($tableName === $wpdb->postmeta) {
-						update_post_meta($wpacuValues['post_id'], '_' . $wpacuPluginId . '_no_load', json_encode( Misc::filterList( $decodedValues ) ) );
+						update_post_meta($wpacuValues['post_id'], '_' . $wpacuPluginId . '_no_load', wp_json_encode( Misc::filterList( $decodedValues ) ) );
 					} elseif ($tableName === $wpdb->termmeta) {
-						update_term_meta($wpacuValues['term_id'], '_' . $wpacuPluginId . '_no_load', json_encode( Misc::filterList( $decodedValues ) ) );
+						update_term_meta($wpacuValues['term_id'], '_' . $wpacuPluginId . '_no_load', wp_json_encode( Misc::filterList( $decodedValues ) ) );
 					} elseif ($tableName === $wpdb->usermeta) {
-						update_user_meta($wpacuValues['user_id'], '_' . $wpacuPluginId . '_no_load', json_encode( Misc::filterList( $decodedValues ) ) );
+						update_user_meta($wpacuValues['user_id'], '_' . $wpacuPluginId . '_no_load', wp_json_encode( Misc::filterList( $decodedValues ) ) );
 					}
 				}
 
@@ -550,11 +550,11 @@ SQL;
 					}
 
 					if ($tableName === $wpdb->postmeta) {
-						update_post_meta($wpacuValues['post_id'], '_' . $wpacuPluginId . '_data', json_encode( Misc::filterList( $decodedValues ) ) );
+						update_post_meta($wpacuValues['post_id'], '_' . $wpacuPluginId . '_data', wp_json_encode( Misc::filterList( $decodedValues ) ) );
 					} elseif ($tableName === $wpdb->termmeta) {
-						update_term_meta($wpacuValues['term_id'], '_' . $wpacuPluginId . '_data', json_encode( Misc::filterList( $decodedValues ) ) );
+						update_term_meta($wpacuValues['term_id'], '_' . $wpacuPluginId . '_data', wp_json_encode( Misc::filterList( $decodedValues ) ) );
 					} elseif ($tableName === $wpdb->usermeta) {
-						update_user_meta($wpacuValues['user_id'], '_' . $wpacuPluginId . '_data', json_encode( Misc::filterList( $decodedValues ) ) );
+						update_user_meta($wpacuValues['user_id'], '_' . $wpacuPluginId . '_data', wp_json_encode( Misc::filterList( $decodedValues ) ) );
 					}
 				}
 			}
@@ -585,7 +585,7 @@ SQL;
 
 			Misc::addUpdateOption(
 				WPACU_PLUGIN_ID . '_front_page_no_load',
-				json_encode( Misc::filterList( $wpacuFrontPageUnloadsArray ) )
+				wp_json_encode( Misc::filterList( $wpacuFrontPageUnloadsArray ) )
 			);
 		}
 
@@ -604,6 +604,13 @@ SQL;
 						if (in_array($assetHandle, $assetHandles)) {
 							$targetKey = array_search($assetHandle, $assetHandles);
 							unset($wpacuBulkUnloadDataArray[$assetType][$unloadBulkType][$postType][$targetKey]);
+						}
+					}
+				// [Any Pro left overs]
+				} elseif ($unloadBulkType === 'post_type_via_tax') {
+					foreach ($unloadBulkValues as $postType => $assetHandlesValues) {
+						if (isset($assetHandlesValues[$assetHandle]) && is_array($assetHandlesValues[$assetHandle])) {
+							unset($wpacuBulkUnloadDataArray[$assetType][$unloadBulkType][$postType][$assetHandle]);
 						}
 					}
 				} elseif (in_array($unloadBulkType, array('date', '404', 'search')) || (strpos($unloadBulkType, 'custom_post_type_archive_') !== false)) {
@@ -626,11 +633,12 @@ SQL;
 						}
 					}
 				}
+				// [/Any Pro left overs]
 			}
 
 			Misc::addUpdateOption(
 				WPACU_PLUGIN_ID . '_bulk_unload',
-				json_encode( Misc::filterList( $wpacuBulkUnloadDataArray ) )
+				wp_json_encode( Misc::filterList( $wpacuBulkUnloadDataArray ) )
 			);
 		}
 
@@ -657,11 +665,11 @@ SQL;
 					unset($decodedValues[$assetType][$targetKey]);
 
 					if ($tableName === $wpdb->postmeta) {
-						update_post_meta($wpacuValues['post_id'], '_' . $wpacuPluginId . '_no_load', json_encode( Misc::filterList( $decodedValues ) ) );
+						update_post_meta($wpacuValues['post_id'], '_' . $wpacuPluginId . '_no_load', wp_json_encode( Misc::filterList( $decodedValues ) ) );
 					} elseif ($tableName === $wpdb->termmeta) {
-						update_term_meta($wpacuValues['term_id'], '_' . $wpacuPluginId . '_no_load', json_encode( Misc::filterList( $decodedValues ) ) );
+						update_term_meta($wpacuValues['term_id'], '_' . $wpacuPluginId . '_no_load', wp_json_encode( Misc::filterList( $decodedValues ) ) );
 					} elseif ($tableName === $wpdb->usermeta) {
-						update_user_meta($wpacuValues['user_id'], '_' . $wpacuPluginId . '_no_load', json_encode( Misc::filterList( $decodedValues ) ) );
+						update_user_meta($wpacuValues['user_id'], '_' . $wpacuPluginId . '_no_load', wp_json_encode( Misc::filterList( $decodedValues ) ) );
 					}
 				}
 			}
@@ -682,7 +690,7 @@ SQL;
 
 		Misc::addUpdateOption(
 			WPACU_PLUGIN_ID . '_global_data',
-			json_encode( Misc::filterList( $wpacuGlobalDataArray ) )
+			wp_json_encode( Misc::filterList( $wpacuGlobalDataArray ) )
 		);
 	}
 }

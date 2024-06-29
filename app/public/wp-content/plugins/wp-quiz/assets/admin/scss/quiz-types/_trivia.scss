@@ -1,0 +1,284 @@
+// main: ../meta-boxes.scss
+
+.wp-quiz-trivia-backend {
+	.wp-quiz-questions {
+		margin-bottom: 30px;
+	}
+
+	.wp-quiz-question {
+		padding: 15px;
+
+		border: 1px solid #e5e5e5;
+		background: #fff;
+
+		&[data-media-type='image'] {
+			.wp-quiz-question-video {
+				display: none;
+			}
+
+			.wp-quiz-question-types button[data-type='image'] {
+				color: #111;
+				background-color: #fff;
+			}
+		}
+
+		&[data-media-type='video'] {
+			.wp-quiz-question-image {
+				display: none;
+			}
+
+			.wp-quiz-question-types button[data-type='video'] {
+				color: #111;
+				background-color: #fff;
+			}
+		}
+	}
+
+	.wp-quiz-question-heading {
+		display: -webkit-box;
+		display: -ms-flexbox;
+		display: flex;
+
+		margin-bottom: 10px;
+
+		align-items: flex-end;
+		-webkit-box-align: end;
+		-webkit-box-pack: justify;
+		-ms-flex-align: end;
+		-ms-flex-pack: justify;
+		justify-content: space-between;
+	}
+
+	.wp-quiz-question-types {
+		@extend %clear-float-after;
+
+		button {
+			float: left;
+
+			width: 40px;
+			height: 40px;
+
+			cursor: pointer;
+
+			color: #bbb;
+			border: 1px solid #ddd;
+			outline: 0;
+			background-color: #f0f0f0;
+
+			&:not(:last-child) {
+				border-right: 0;
+			}
+
+			&:hover,
+			&:focus {
+				color: #111;
+				background-color: #fff;
+			}
+
+			&.wp-quiz-remove-question-btn {
+				font-size: 2em;
+				line-height: 35px;
+
+				padding: 0 0 5px;
+			}
+		}
+	}
+
+	.wp-quiz-video-upload-url-wrapper,
+	.wp-quiz-image-upload-url-wrapper {
+		display: -webkit-box;
+		display: -ms-flexbox;
+		display: flex;
+
+		margin-top: 1em;
+		margin-bottom: 1em;
+
+		input[type='text'],
+		input[type='url'] {
+			-webkit-box-flex: 1;
+			-ms-flex: auto;
+					flex: auto;
+		}
+	}
+
+	.wp-quiz-question-desc {
+		width: 100%;
+		height: 55px;
+	}
+
+	.wp-quiz-answers {
+		&[data-type='text'] {
+			.wp-quiz-answer-type-btns button[data-type='text'] {
+				color: #111;
+				background-color: #fff;
+			}
+
+			.wp-quiz-answer-image {
+				display: none;
+			}
+		}
+
+		&[data-type='image'] {
+			.wp-quiz-answer-type-btns button[data-type='image'] {
+				color: #111;
+				background-color: #fff;
+			}
+		}
+	}
+
+	.wp-quiz-answers-heading {
+		display: -webkit-box;
+		display: -ms-flexbox;
+		display: flex;
+
+		margin-bottom: 20px;
+
+		border-bottom: 1px solid #ddd;
+
+		align-items: center;
+		-webkit-box-align: center;
+		-webkit-box-pack: justify;
+		-ms-flex-align: center;
+		-ms-flex-pack: justify;
+		justify-content: space-between;
+
+		h3 {
+			font-weight: bold;
+
+			margin: 0;
+			padding: 0;
+		}
+	}
+
+	.wp-quiz-answer-type-btns {
+		@extend %clear-float-after;
+
+		button {
+			float: left;
+
+			width: 30px;
+			height: 30px;
+			padding: 0;
+
+			cursor: pointer;
+
+			color: #bbb;
+			border: 1px solid #ddd;
+			border-bottom: 0;
+			outline: 0;
+			background-color: #f0f0f0;
+
+			&:not(:last-child) {
+				border-right: 0;
+			}
+
+			&:hover,
+			&:focus {
+				color: #111;
+				background-color: #fff;
+			}
+		}
+	}
+
+	.wp-quiz-answers-list,
+	.wp-quiz-results-list {
+		@extend %clear-float-after;
+	}
+
+	.wp-quiz-answer,
+	.wp-quiz-result {
+		font-size: 13px;
+
+		position: relative;
+
+		float: left;
+
+		-webkit-box-sizing: border-box;
+						box-sizing: border-box;
+		width: 32%;
+		margin-bottom: 20px;
+		margin-left: 2%;
+		padding: 15px;
+
+		border: 1px solid #e5e5e5;
+		background: #fff;
+
+		&-placeholder {
+			border-style: dashed;
+		}
+
+		&:nth-of-type(3n+1) {
+			clear: both;
+
+			margin-left: 0;
+		}
+
+		p {
+			margin: 5px 0;
+		}
+
+		&:hover {
+			.wp-quiz-remove-answer-btn,
+			.wp-quiz-remove-result-btn {
+				opacity: 1;
+			}
+		}
+	}
+
+	.wp-quiz-result {
+		width: 100%;
+		margin-left: 0;
+
+		.wp-quiz-result-title {
+			height: 36px;
+		}
+
+		.wp-quiz-result-desc {
+			height: 55px;
+		}
+	}
+
+	.wp-quiz-remove-answer-btn,
+	.wp-quiz-remove-result-btn {
+		font-size: 16px;
+		line-height: 16px;
+
+		position: absolute;
+		top: -1px;
+		right: -1px;
+
+		width: 18px;
+		height: 18px;
+		padding: 0 0 4px;
+
+		cursor: pointer;
+
+		opacity: 0;
+		color: #fff;
+		border: none;
+		outline: 0;
+		background: #ff6667;
+	}
+
+	.wp-quiz-result-range {
+		margin-top: 1em;
+		margin-bottom: 1em;
+
+		@extend %clear-float-after;
+
+		> label {
+			display: block;
+			float: left;
+
+			width: 48%;
+
+			&:last-child {
+				float: right;
+			}
+		}
+
+		input {
+			width: 100%;
+		}
+	}
+}

@@ -12,8 +12,8 @@ namespace ShareThisShareButtons;
  *
  * @package ShareThisShareButtons
  */
-class Minute_Control
-{
+class Minute_Control {
+
 
 	/**
 	 * Plugin instance.
@@ -55,14 +55,20 @@ class Minute_Control
 
 		// Enqueue the assets on editor pages.
 		if ( in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) {
-			wp_enqueue_style( "{$this->plugin->assets_prefix}-meta-box" );
-			wp_enqueue_script( "{$this->plugin->assets_prefix}-meta-box" );
-			wp_add_inline_script( "{$this->plugin->assets_prefix}-meta-box", sprintf( 'MinuteControl.boot( %s );',
-				wp_json_encode( array(
-					'postid' => $post->ID,
-					'nonce' => wp_create_nonce( $this->plugin->meta_prefix ),
-				) )
-			) );
+			wp_enqueue_style( ASSET_PREFIX . '-meta-box' );
+			wp_enqueue_script( ASSET_PREFIX . '-meta-box' );
+			wp_add_inline_script(
+				ASSET_PREFIX . '-meta-box',
+				sprintf(
+					'MinuteControl.boot( %s );',
+					wp_json_encode(
+						array(
+							'postid' => $post->ID,
+							'nonce'  => wp_create_nonce( META_PREFIX ),
+						)
+					)
+				)
+			);
 		}
 	}
 
@@ -73,10 +79,6 @@ class Minute_Control
 		global $post_type;
 
 		switch ( $post_type ) {
-			case 'post':
-				$iptype = 'post_';
-				$sptype = 'posts';
-				break;
 			case 'page':
 				$iptype = 'page_';
 				$sptype = 'pages';
@@ -90,11 +92,11 @@ class Minute_Control
 		// Get all needed options for meta boxes.
 		$inline_options = get_option( 'sharethis_inline_settings' );
 		$sticky_options = get_option( 'sharethis_sticky_settings' );
-		$inline_enable = get_option( 'sharethis_inline' );
-		$sticky_enable = get_option( 'sharethis_sticky' );
+		$inline_enable  = get_option( 'sharethis_inline' );
+		$sticky_enable  = get_option( 'sharethis_sticky' );
 
 		// Include the meta box template.
-		include_once( "{$this->plugin->dir_path}/templates/minute-control/meta-box.php" );
+		include_once DIR_PATH . 'templates/minute-control/meta-box.php';
 	}
 
 	/**
@@ -110,23 +112,23 @@ class Minute_Control
 		}
 
 		// Set and sanitize post values.
-		$type = sanitize_text_field( wp_unslash( $_POST['type'] ) ); // WPCS: input var okay.
-		$onoff = 'true' === sanitize_text_field( wp_unslash( $_POST['checked'] ) ) ? 'on' : 'off'; // WPCS: input var okay.
-		$opposite = 'true' === sanitize_text_field( wp_unslash( $_POST['checked'] ) ) ? 'off' : 'on'; // WPCS: input var okay.
+		$type      = sanitize_text_field( wp_unslash( $_POST['type'] ) ); // WPCS: input var okay.
+		$onoff     = 'true' === sanitize_text_field( wp_unslash( $_POST['checked'] ) ) ? 'on' : 'off'; // WPCS: input var okay.
+		$opposite  = 'true' === sanitize_text_field( wp_unslash( $_POST['checked'] ) ) ? 'off' : 'on'; // WPCS: input var okay.
 		$placement = '' !== sanitize_text_field( wp_unslash( $_POST['placement'] ) ) ? '_' . sanitize_text_field( wp_unslash( $_POST['placement'] ) ) : ''; // WPCS: input var okay.
-		$postid = intval( wp_unslash( $_POST['postid'] ) ); // WPCS: input var okay.
+		$postid    = intval( wp_unslash( $_POST['postid'] ) ); // WPCS: input var okay.
 
 		// Create remaining variables needed for list placement.
 		$post_info = get_post( $postid );
 		$post_type = $post_info->post_type;
-		$option = 'sharethis_' . $type . '_' . $post_type . $placement . '_' . $onoff;
-		$oppose = 'sharethis_' . $type . '_' . $post_type . $placement . '_' . $opposite;
-		$title = $post_info->post_title;
+		$option    = 'sharethis_' . $type . '_' . $post_type . $placement . '_' . $onoff;
+		$oppose    = 'sharethis_' . $type . '_' . $post_type . $placement . '_' . $opposite;
+		$title     = $post_info->post_title;
 
 		// Get current list and opposing list options.
-		$current_list = get_option( $option );
+		$current_list   = get_option( $option );
 		$current_oppose = get_option( $oppose );
-		$current_list = isset( $current_list ) && null !== $current_list && false !== $current_list ? $current_list : '';
+		$current_list   = isset( $current_list ) && null !== $current_list && false !== $current_list ? $current_list : '';
 		$current_oppose = isset( $current_oppose ) && null !== $current_oppose && false !== $current_oppose ? $current_oppose : '';
 
 		// Add post id and title to current list.
@@ -139,7 +141,7 @@ class Minute_Control
 		}
 
 		// Remove item from opposing list.
-		if ( is_array( $current_oppose ) && array() !== $current_oppose && in_array( (int) $postid, array_map( 'intval',  $current_oppose ), true ) ) {
+		if ( is_array( $current_oppose ) && array() !== $current_oppose && in_array( (int) $postid, array_map( 'intval', $current_oppose ), true ) ) {
 			unset( $current_oppose[ $title ] );
 			delete_option( $oppose );
 		}
@@ -165,11 +167,11 @@ class Minute_Control
 
 		$default_option = get_option( 'sharethis_' . $type . '_settings' );
 		$default_option = isset( $default_option ) && null !== $default_option && false !== $default_option ? $default_option : '';
-		$default = $default_option[ "sharethis_{$type}_{$post_type}{$placement}" ];
+		$default        = $default_option[ "sharethis_{$type}_{$post_type}{$placement}" ];
 
 		foreach ( $options as $answer => $option ) {
-			$current_list = get_option( $option );
-			$current_list = isset( $current_list ) && null !== $current_list && false !== $current_list ? $current_list : '';
+			$current_list  = get_option( $option );
+			$current_list  = isset( $current_list ) && null !== $current_list && false !== $current_list ? $current_list : '';
 			$answer_minute = (
 				is_array( $current_list )
 				&&
@@ -195,14 +197,14 @@ class Minute_Control
 	public function inline_shortcode( $atts ) {
 		global $post;
 
-		$data_url = isset( $atts['url'] ) ? esc_attr( 'data-url="' . $atts['url'] . '"' ) : '';
+		$data_url = isset( $atts['url'] ) ? $atts['url'] : '';
 
 		if ( is_archive() || is_front_page() || is_tag() ) {
-			$data_url = esc_attr( 'data-url=' . get_permalink( $post->ID ) );
+			$data_url = get_permalink( $post->ID );
 		}
 
 		// Build container.
-		return '<div class="sharethis-inline-share-buttons" ' . $data_url . '></div>';
+		return '<div class="sharethis-inline-share-buttons" ' . ( false === empty( $data_url ) ? 'data-url="' . esc_url( $data_url ) . '"' : '' ) . '></div>';
 	}
 
 	/**
@@ -219,7 +221,7 @@ class Minute_Control
 
 		// Get inline settings.
 		$inline_settings = get_option( 'sharethis_inline_settings' );
-		$excerpt = null !== $inline_settings && false !== $inline_settings && 'true' === $inline_settings['sharethis_excerpt'] ? true : false;
+		$excerpt         = null !== $inline_settings && false !== $inline_settings && 'true' === $inline_settings['sharethis_excerpt'] ? true : false;
 
 		if ( $excerpt && is_archive() || $excerpt && is_home() ) {
 			return $content . $this->get_inline_container( $inline_settings, 'sharethis_excerpt', $post );
@@ -227,7 +229,7 @@ class Minute_Control
 
 		if ( null !== $inline_settings && false !== $inline_settings && is_array( $inline_settings ) ) {
 			foreach ( $inline_settings as $type => $value ) {
-				$position = $this->get_position( $type, $value );
+				$position  = $this->get_position( $type, $value );
 				$container = $this->get_inline_container( $inline_settings, $type );
 
 				if ( '' !== $position ) {
@@ -259,7 +261,7 @@ class Minute_Control
 		$data_url = 'sharethis_excerpt' === $type && '' !== $post ? esc_attr( 'data-url=' . get_permalink( $post->ID ) ) : '';
 		$margin_t = isset( $settings[ "{$type}_margin_top" ] ) ? $settings[ "{$type}_margin_top" ] . 'px' : '';
 		$margin_b = isset( $settings[ "{$type}_margin_bottom" ] ) ? $settings[ "{$type}_margin_bottom" ] . 'px' : '';
-		$margin = '';
+		$margin   = '';
 
 		if ( ! in_array( '', array( $margin_t, $margin_b ), true ) ) {
 			$margin = 'margin-top: ' . $margin_t . '; margin-bottom: ' . $margin_b . ';';
@@ -275,11 +277,11 @@ class Minute_Control
 	 */
 	public function set_sticky_visibility() {
 		// Enqueue the blank style sheet.
-		wp_enqueue_style( "{$this->plugin->assets_prefix}-sticky" );
+		wp_enqueue_style( ASSET_PREFIX . '-sticky' );
 
 		// Get sticky settings.
-		$settings = get_option( 'sharethis_sticky_settings' );
-		$settings = null !== $settings && false !== $settings && is_array( $settings ) ? $settings : array();
+		$settings    = get_option( 'sharethis_sticky_settings' );
+		$settings    = null !== $settings && false !== $settings && is_array( $settings ) ? $settings : array();
 		$hide_sticky = '.st-sticky-share-buttons{ display: none!important; }';
 
 		// Get hide status.
@@ -287,7 +289,7 @@ class Minute_Control
 			$hide = $this->get_hide_status( $type, $value );
 
 			if ( $hide ) {
-				wp_add_inline_style( "{$this->plugin->assets_prefix}-sticky", $hide_sticky );
+				wp_add_inline_style( ASSET_PREFIX . '-sticky', $hide_sticky );
 			}
 		}
 	}
@@ -303,7 +305,7 @@ class Minute_Control
 	private function get_hide_status( $type, $value ) {
 		global $post;
 
-		if (!isset($post->ID)) {
+		if ( ! isset( $post->ID ) ) {
 			return false;
 		}
 
@@ -323,17 +325,17 @@ class Minute_Control
 			return $this->get_alternate_hide( $type, $value );
 		}
 
-		$page_option_on = get_option( $type . '_on' );
+		$page_option_on  = get_option( $type . '_on' );
 		$page_option_off = get_option( $type . '_off' );
 
-		if (!is_array($page_option_off) &&
-		     !is_array($page_option_on) &&
-		     'false' === $value &&
-		     $alternate_pages &&
-		     in_array($post->post_type, explode( '_', $type ), true)
+		if ( ! is_array( $page_option_off ) &&
+			! is_array( $page_option_on ) &&
+			'false' === $value &&
+			$alternate_pages &&
+			in_array( $post->post_type, explode( '_', $type ), true )
 		) {
 			$hide = true;
-		} elseif (isset($post->ID)) {
+		} elseif ( isset( $post->ID ) ) {
 			$hide = (
 				is_array( $page_option_on )
 				&&
@@ -376,16 +378,15 @@ class Minute_Control
 				}
 				break;
 			case 'sharethis_sticky_category':
-				$current_cats = get_option( 'sharethis_sticky_category_off' );
-				$current_cats = is_array( $current_cats ) ? $current_cats : array();
+				$current_cats   = get_option( 'sharethis_sticky_category_off' );
+				$current_cats   = is_array( $current_cats ) ? $current_cats : array();
 				$queried_object = get_queried_object();
 
-				if (true === is_archive()
-					 && true === is_object($queried_object)
-					 && true === property_exists($queried_object, 'term_id')
+				if ( true === is_archive()
+					&& true === is_object( $queried_object )
+					&& true === property_exists( $queried_object, 'term_id' )
 				) {
-					if (false === in_array((string)$queried_object->term_id, array_values($current_cats), true))
-					{
+					if ( false === in_array( (string) $queried_object->term_id, array_values( $current_cats ), true ) ) {
 						return $value;
 					} else {
 						return true;
@@ -422,13 +423,13 @@ class Minute_Control
 	public function set_inline_excerpt( $excerpt ) {
 		global $post;
 
-		if ( is_admin() && !wp_doing_ajax() ) {
+		if ( is_admin() && ! wp_doing_ajax() ) {
 			return;
 		}
 
 		// Get inline settings.
 		$inline_settings = get_option( 'sharethis_inline_settings' );
-		$container = $this->get_inline_container( $inline_settings, 'sharethis_excerpt', $post );
+		$container       = $this->get_inline_container( $inline_settings, 'sharethis_excerpt', $post );
 
 		if ( null === $inline_settings || false === $inline_settings || ! is_array( $inline_settings ) ) {
 			return $excerpt;
@@ -451,16 +452,16 @@ class Minute_Control
 	private function get_position( $type, $value ) {
 		global $post;
 
-		if ( !isset( $post->ID ) ) {
+		if ( ! isset( $post->ID ) ) {
 			return;
 		}
 
-		$page_option_on = get_option( $type . '_on' );
+		$page_option_on  = get_option( $type . '_on' );
 		$page_option_off = get_option( $type . '_off' );
-		$page_option_on = is_array( $page_option_on ) ? array_values( $page_option_on ) : array();
+		$page_option_on  = is_array( $page_option_on ) ? array_values( $page_option_on ) : array();
 		$page_option_off = is_array( $page_option_off ) ? array_values( $page_option_off ) : array();
-		$type_array = explode( '_', $type );
-		$position = '';
+		$type_array      = explode( '_', $type );
+		$position        = '';
 
 		$show = (
 			'true' === $value
@@ -488,25 +489,26 @@ class Minute_Control
 	 * @action enqueue_block_editor_assets
 	 */
 	public function enqueue_custom_blocks() {
-		wp_enqueue_script( "{$this->plugin->assets_prefix}-blocks", "{$this->plugin->dir_url}js/blocks.js", array( 'wp-blocks', 'wp-editor', 'wp-element', 'wp-components' ), time(), true );
+		wp_enqueue_script( ASSET_PREFIX . '-blocks', DIR_URL . 'js/blocks.js', array( 'wp-blocks', 'wp-editor', 'wp-element', 'wp-components' ), time(), true );
 	}
 
 	/**
 	 * Register new block category for share buttons.
 	 *
-	 * @param array $categories The current block categories.
+	 * @param array    $categories The current block categories.
+	 * @param \WP_Post $post       Post object.
 	 *
-	 * @filter block_categories
+	 * @filter block_categories_all
 	 */
 	public function st_block_category( $categories, $post ) {
 		return array_merge(
 			$categories,
-			[
-				[
+			array(
+				array(
 					'slug'  => 'st-blocks',
 					'title' => __( 'ShareThis Blocks', 'sharethis-share-buttons' ),
-				],
-			]
+				),
+			)
 		);
 	}
 }

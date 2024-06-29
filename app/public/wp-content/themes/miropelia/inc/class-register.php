@@ -43,6 +43,7 @@ class Register
     {
         if ('post.php' === $hook) {
             wp_enqueue_style($this->theme->assets_prefix . '-admin');
+            wp_enqueue_script($this->theme->assets_prefix . '-admin');
         }
     }
 
@@ -55,21 +56,34 @@ class Register
     {
 		global $post;
 
-		$explore_points = get_user_meta(get_current_user_id(), 'explore_points', true);
-		$explore_points = isset($explore_points) ? $explore_points: [];
-
 		wp_enqueue_style($this->theme->assets_prefix);
-        wp_enqueue_script($this->theme->assets_prefix);
         wp_enqueue_style("{$this->theme->assets_prefix}-font", 'https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400;600&display=swap');
 
         if (is_page(['register', 'explore'])) {
+	        $explore_points = get_user_meta(get_current_user_id(), 'explore_points', true);
+	        $explore_points = isset($explore_points) ? $explore_points: [];
+
+            if ('' === $explore_points) {
+                $explore_points = [
+                    'health' => ['points' => 100, 'positions' => []],
+                    'mana' => ['points' => 100, 'positions' => []],
+                    'point' => ['points' => 0, 'positions' => []],
+                    'gear' => ['positions' => []],
+                    'weapons' => ['positions' => []]
+                ];
+            }
+
             wp_add_inline_script(
-                $this->theme->assets_prefix,
+                'explore',
                 'const restApiKey ="' . REST_API_KEY . '";' .
                 'const currentUserId ="' . get_current_user_id() . '";' .
                 'const explorePoints = ' . wp_json_encode($explore_points) . ';' .
-                'const siteUrl = "' . get_home_url() . '";'
+                'const siteUrl = "' . get_home_url() . '";' .
+                'const wpThemeURL = "' . str_replace(['https://', 'http://', 'www'], '', get_home_url()) . '";' .
+                'const levelMaps = "' . wp_json_encode(Explore::getLevelMap()) . '";'
             );
+        } else {
+            wp_enqueue_script($this->theme->assets_prefix);
         }
 
         if (is_page('contact')) {
@@ -83,33 +97,6 @@ class Register
 	}
 
     /**
-     * Register post type for page components.
-     *
-     * @action init
-     */
-    public function registerPostType() {
-
-        $args = array(
-            'label'     => __( 'Explore Area', 'sharethis-custom' ),
-            'menu_icon' => 'dashicons-location-alt',
-            'public'             => false,
-            'publicly_queryable' => false,
-            'show_ui'            => true,
-            'show_in_menu'       => true,
-            'query_var'          => true,
-            'rewrite'            => array( 'slug' => 'explore-area' ),
-            'capability_type'    => 'page',
-            'has_archive'        => false,
-            'hierarchical'       => false,
-            'menu_position'      => null,
-            'show_in_rest' => true,
-            'supports'           => array( 'title', 'editor', 'author', 'thumbnail'),
-        );
-
-        register_post_type( 'explore-area', $args );
-    }
-
-	/**
      * Hide admin bar for non-admins and keep users out of admin.
      *
      * @action init
@@ -134,7 +121,12 @@ class Register
      */
     public function noLoginPage()
     {
-        wp_redirect(home_url());
+        if (is_admin() && !current_user_can('administrator') &&
+            ! (wp_doing_ajax())) {
+            $url = filter_input(INPUT_GET, 'redirect_to', FILTER_UNSAFE_RAW);
+            $url = false === empty($url) ? esc_url($url) : esc_url(home_url());
+            wp_redirect($url);
+        }
     }
 
     /**
@@ -144,23 +136,39 @@ class Register
      */
     public function logUserInOut()
     {
-        if (!isset($_GET['logoutuser']) && !isset($_GET['loginuser'])) {
+		$logout = filter_input(INPUT_GET, 'logoutuser', FILTER_SANITIZE_STRING);
+		$login = filter_input(INPUT_GET, 'loginuser', FILTER_SANITIZE_STRING);
+
+		if (false !== is_null($logout) && false !== is_null($login)) {
             return;
         }
 
-        $user = get_user_by('login', $_GET['loginuser']);
+		if (false === is_null($login)) {
+			$user = get_user_by( 'login', $login );
 
-        // If no error received, set the WP Cookie
-        if ( !is_wp_error( $user ) )
-        {
-            wp_clear_auth_cookie();
-            wp_set_current_user ( $user->ID ); // Set the current user detail
-            wp_set_auth_cookie  ( $user->ID ); // Set auth details in cookie
-        }
+			// If no error received, set the WP Cookie
+			if ( false === is_wp_error( $user ) ) {
+				wp_clear_auth_cookie();
+				wp_set_current_user( $user->ID ); // Set the current user detail
+				wp_set_auth_cookie( $user->ID ); // Set auth details in cookie
+			}
+		}
 
-        if (isset($_GET['logoutuser'])) {
+        if (false === is_null($logout)) {
             wp_logout();
             wp_safe_redirect('/');
+        }
+    }
+
+    /**
+     * Redirect if user gets to free chapters without query.
+     * @action wp_head
+     */
+    public function noChaptersForYou()
+    {
+        $free_chapters = filter_input(INPUT_GET, 'theyearnedit', FILTER_UNSAFE_RAW);
+        if (is_page('thank-you-for-signing-up-enjoy-the-first-two-chapters-or-orbem') && 'true' !== $free_chapters) {
+            wp_safe_redirect('/register');
         }
     }
 
@@ -180,9 +188,10 @@ class Register
      *
      * @shortcode register-form
      */
-    public function registerForm()
+    public function registerForm($atts = '')
     {
-        return '<div class="form-wrapper">
+        $explore = false === empty($atts['explore']) && 'true' === $atts['explore'];
+        $html = '<div class="form-wrapper">
                 <error class="error-message"></error>
 			    <p>
 				    <label for="user_login">Username</label>
@@ -196,78 +205,23 @@ class Register
 		            <label for="user_email">Password</label>
 		            <input type="password" name="user_password" id="user_password" placeholder="Enter Password..." class="input" value="" size="25">
 		        </p>
-		        <p class="submit">
+		        ';
+
+        if ( false === $explore ) {
+            $html .=
+                '<p>
+		            <label for="two_chapters" style="font-size: 20px;">Read the first two chapters of Orbem for FREE</label>
+		            <span style="display: flex;flex-wrap: nowrap;gap:.5rem;margin-bottom: .5rem;"><span style="flex-basis: 30px; font-size: 18px;">Yes</span><input style="width: 20px;" type="radio" name="two_chapters" value="yes"></span>
+		            <span style="display: flex;flex-wrap: nowrap;gap:.5rem;"><span style="flex-basis: 30px;">No</span><input style="width: 20px;font-size: 18px;" type="radio" name="two_chapters" value="no" checked="checked"></span>
+                </p>';
+        }
+
+        $html .= '<p class="submit">
 		            <button type="button" id="register-submit">' . esc_html('Join') . '</button>
 		        </p>
 		    </div>';
-    }
 
-    /**
-     * Register API field.
-     *
-     * @action rest_api_init
-     */
-    public function create_api_posts_meta_field()
-    {
-        $namespace = 'orbemorder/v1';
 
-        // Register route for getting event by location.
-        register_rest_route($namespace, '/add-explore-points/(?P<user>\d+)/(?P<position>[a-zA-Z0-9-]+)/(?P<point>\d+)/(?P<character>[a-zA-Z0-9-]+)', array(
-            'methods'  => 'GET',
-            'callback' => [$this, 'addCharacterPoints'],
-        ));
-
-        // Register route for getting event by location.
-        register_rest_route($namespace, '/area/(?P<position>[a-zA-Z0-9-]+)', array(
-            'methods'  => 'GET',
-            'callback' => [$this, 'getOrbemArea'],
-        ));
-    }
-
-    /**
-     * Call back function for rest route that adds points to user's explore game.
-     * @param object $return The arg values from rest route.
-     */
-    public function addCharacterPoints(object $return)
-    {
-        $user = isset($return['user']) ? intval($return['user']) : '';
-        $points = isset($return['point']) ? intval($return['point']) : '';
-        $character = isset($return['character']) ? sanitize_text_field(wp_unslash($return['character'])) : '';
-        $position = isset($return['position']) ? sanitize_text_field(wp_unslash($return['position'])) : '';
-
-        if (!in_array('', [$points, $character, $user, $position], true)) {
-            $current_explore_points             = get_user_meta($user, 'explore_points', true);
-            $current_points             = ! empty($current_explore_points[$character]['points']) ? intval($current_explore_points[$character]['points']) : 0;
-            $explore_points = !empty($current_explore_points) && is_array($current_explore_points) ? $current_explore_points : [];
-
-            $explore_points[$character]['points'] = ($points + $current_points);
-
-            // Add position to list of positions received points on.
-            if (!isset($explore_points[$character]['positions'])) {
-                $explore_points[$character]['positions'] = [$position];
-            } elseif(!isset($explore_points[$character]['positions'][$position])) {
-                array_push($explore_points[$character]['positions'], $position);
-            }
-
-            update_user_meta($user, 'explore_points', $explore_points);
-        }
-    }
-
-    /**
-     * Call back function for rest route that adds points to user's explore game.
-     * @param object $return The arg values from rest route.
-     */
-    public function getOrbemArea(object $return)
-    {
-        $position = isset($return['position']) ? sanitize_text_field(wp_unslash($return['position'])) : '';
-
-        // Get content from explore-area post type.
-        $area = get_posts(['post_type' => 'explore-area', 'slug' => $position]);
-
-        if (is_wp_error($area) || !isset($area[0])) {
-            return;
-        }
-
-        return $area[0]->post_content;
+        return $html;
     }
 }

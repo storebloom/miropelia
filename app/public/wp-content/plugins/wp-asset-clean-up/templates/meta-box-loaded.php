@@ -3,6 +3,8 @@
  * No direct access to this file
  * This content is placed inside #wpacu_meta_box_content meta box DIV element
  */
+use WpAssetCleanUp\Misc;
+
 if (! isset($data)) {
     exit;
 }
@@ -11,28 +13,27 @@ global $wp_version;
 
 $data['wp_version'] = $wp_version; // in case there is no version of a CSS/JS WordPress appends its latest version to "ver"
 
-$metaBoxLoadedFine = (! (isset($data['is_dashboard_view']) && $data['is_dashboard_view']
-                && isset($data['wp_remote_post']) && !empty($data['wp_remote_post'])));
+$metaBoxLoadedFine = (! (isset($data['is_dashboard_view'], $data['wp_remote_post']) && $data['is_dashboard_view'] && ! empty($data['wp_remote_post'])));
 
 if (! $metaBoxLoadedFine) {
     // Errors for "WP Remote Post"? Print them out
     ?>
     <div class="ajax-wp-remote-post-call-error-area">
         <p><span class="dashicons dashicons-warning"></span> <?php _e('It looks like "WP Remote Post" method for retrieving assets via the Dashboard is not working in this environment.', 'wp-asset-clean-up'); ?></p>
-        <p><?php _e('Since the server (from its IP) is making the call, it will not "behave" in the same way as the "Direct" method, which could bypass for instance any authentication request (you might use a staging website that is protected by login credentials).', 'wp-asset-clean-up'); ?></p>
-        <p><?php _e('Consider using "Direct" method. If that doesn\'t work either, use the "Manage in the Front-end" option (which should always work in any instance) and submit a ticket regarding the problem you\'re having. Here\'s the output received by the call:', 'wp-asset-clean-up'); ?></p>
+        <p><?php esc_html_e('Since the server (from its IP) is making the call, it will not "behave" in the same way as the "Direct" method, which could bypass for instance any authentication request (you might use a staging website that is protected by login credentials).', 'wp-asset-clean-up'); ?></p>
+        <p><?php esc_html_e('Consider using "Direct" method. If that doesn\'t work either, use the "Manage in the Front-end" option (which should always work in any instance) and submit a ticket regarding the problem you\'re having. Here\'s the output received by the call:', 'wp-asset-clean-up'); ?></p>
         <table class="table-data">
             <tr>
                 <td><strong><?php _e('CODE', 'wp-asset-clean-up'); ?>:</strong></td>
-                <td><?php echo $data['wp_remote_post']['response']['code']; ?></td>
+                <td><?php echo htmlspecialchars($data['wp_remote_post']['response']['code']); ?></td>
             </tr>
             <tr>
                 <td><strong><?php _e('MESSAGE', 'wp-asset-clean-up'); ?>:</strong></td>
-                <td><?php echo $data['wp_remote_post']['response']['message']; ?></td>
+                <td><?php echo htmlspecialchars($data['wp_remote_post']['response']['message']); ?></td>
             </tr>
             <tr>
                 <td valign="top"><strong><?php _e('OUTPUT', 'wp-asset-clean-up'); ?>:</strong></td>
-                <td><?php echo $data['wp_remote_post']['body']; ?></td>
+                <td><?php echo htmlspecialchars($data['wp_remote_post']['body']); ?></td>
             </tr>
         </table>
     </div>
@@ -48,21 +49,21 @@ if (is_admin()) {
     if (get_option('show_on_front') === 'page') {
         if (get_option('page_on_front') == $data['post_id']) {
         ?>
-            <p><span style="color: #0f6cab;" class="dashicons dashicons-admin-home"></span> <?php echo sprintf(__('This page was set as the home page in %s"Settings" &#10141; "Reading"%s.', 'wp-asset-clean-up'), '<a target="_blank" href="'.admin_url('options-reading.php').'">', '</a>'); ?></p>
+            <p><span style="color: #0f6cab;" class="dashicons dashicons-admin-home"></span> <?php echo sprintf(__('This page was set as the home page in %s"Settings" &#10141; "Reading"%s.', 'wp-asset-clean-up'), '<a target="_blank" href="'.esc_url(admin_url('options-reading.php')).'">', '</a>'); ?></p>
 	    <?php
         } elseif (get_option('page_for_posts') == $data['post_id']) {
         ?>
-            <p><span style="color: #0f6cab;" class="dashicons dashicons-admin-post"></span> <?php echo sprintf(__('This page was set to show the latest posts in %s"Settings" &#10141; "Reading"%s.', 'wp-asset-clean-up'), '<a target="_blank" href="'.admin_url('options-reading.php').'">', '</a>'); ?></p>
+            <p><span style="color: #0f6cab;" class="dashicons dashicons-admin-post"></span> <?php echo sprintf(__('This page was set to show the latest posts in %s"Settings" &#10141; "Reading"%s.', 'wp-asset-clean-up'), '<a target="_blank" href="'.esc_url(admin_url('options-reading.php')).'">', '</a>'); ?></p>
         <?php
         }
     }
 } else {
     // Front-end view
-    if (\WpAssetCleanUp\Misc::isBlogPage()) {
+    if (Misc::isBlogPage()) {
         ?>
         <p><span style="color: #0f6cab;" class="dashicons dashicons-admin-post"></span> <?php _e('You are currently viewing the page that shows your latest posts.', 'wp-asset-clean-up'); ?></p>
         <?php
-    } elseif (\WpAssetCleanUp\Misc::isHomePage()) {
+    } elseif (Misc::isHomePage()) {
         ?>
         <p><span style="color: #0f6cab;" class="dashicons dashicons-admin-home"></span> <?php _e('You are currently viewing the home page.', 'wp-asset-clean-up'); ?></p>
         <?php
@@ -101,9 +102,9 @@ if ($data['bulk_unloaded_type'] === 'post_type') {
     ?>
     <p>
 	<?php if ($isWooPage) { ?>
-        <img src="<?php echo $iconShown; ?>" alt="" style="height: 40px !important; margin-top: -6px; margin-right: 5px;" align="middle" /> <strong>WooCommerce</strong>
+        <img src="<?php echo esc_url($iconShown); ?>" alt="" style="height: 40px !important; margin-top: -6px; margin-right: 5px;" align="middle" /> <strong>WooCommerce</strong>
     <?php } ?>
-        <?php if (! $iconShown) { ?><span style="color: #0f6cab;" class="dashicons dashicons-admin-<?php echo $dashIconPart; ?>"></span> <?php } ?> <u><?php echo $data['post_type']; ?></u> <?php if ($data['post_type'] !== 'post') {  echo 'post'; } ?> type.
+        <?php if (! $iconShown) { ?><span style="color: #0f6cab;" class="dashicons dashicons-admin-<?php echo esc_attr($dashIconPart); ?>"></span> <?php } ?> <u><?php echo esc_html($data['post_type']); ?></u> <?php if ($data['post_type'] !== 'post') {  echo 'post'; } ?> type.
     </p>
     <?php
 }
@@ -112,7 +113,7 @@ if (! is_404()) {
     if (isset($data['post_type']) && $data['post_type'] && ! (isset($data['is_for_singular']) && $data['is_for_singular'])) {
 	?>
         <div class="wpacu_verified">
-            <strong>Page URL:</strong> <a target="_blank" href="<?php echo $data['fetch_url']; ?>"><span><?php echo $data['fetch_url']; ?></span></a>
+            <strong>Page URL:</strong> <a target="_blank" href="<?php echo esc_url($data['fetch_url']); ?>"><span><?php echo esc_url($data['fetch_url']); ?></span></a>
         </div>
 	<?php
     }
@@ -125,13 +126,13 @@ if (isset($data['page_template'])) {
             Template:</strong>
 		<?php
 		if (isset($data['all_page_templates'][$data['page_template']])) { ?>
-            <u><?php echo $data['all_page_templates'][$data['page_template']]; ?></u>
+            <u><?php echo esc_html($data['all_page_templates'][$data['page_template']]); ?></u>
 		<?php } ?>
 
-        (<?php echo $data['page_template'];
+        (<?php echo esc_html($data['page_template']);
 
 		if (isset($data['page_template_path'])) {
-			echo '&nbsp; &#10230; &nbsp;<em>'.$data['page_template_path'].'</em>';
+			echo '&nbsp; &#10230; &nbsp;<em>'.esc_html($data['page_template_path']).'</em>';
 		}
 		?>)
     </p>
@@ -177,27 +178,13 @@ $data['page_unload_text'] = __('Unload on this page', 'wp-asset-clean-up');
 if (is_singular()) {
     global $post;
     ?>
-    <input type="hidden" name="wpacu_is_singular_page" value="<?php echo $post->ID; ?>" />
+    <input type="hidden" name="wpacu_is_singular_page" value="<?php echo (int)$post->ID; ?>" />
     <?php
 }
 
-\WpAssetCleanUp\ObjectCache::wpacu_cache_set('wpacu_data_page_unload_text', $data['page_unload_text']);
-
-// Assets List Layout - added here to convenience - to avoid going to "Settings"
-// it could make debugging faster
-ob_start();
-?>
-<label for="wpacu_assets_list_layout"><strong>Assets List Layout:</strong></label> <small>* any new change will take effect after you use the "Update" button</small>
-<p style="margin: 8px 0;"><?php echo \WpAssetCleanUp\Settings::generateAssetsListLayoutDropDown($data['plugin_settings']['assets_list_layout'], 'wpacu_assets_list_layout'); ?></p>
-<?php
-$data['assets_list_layout_output'] = ob_get_clean();
 ?>
 <div class="<?php if ($data['plugin_settings']['input_style'] !== 'standard') { ?>wpacu-switch-enhanced<?php } else { ?>wpacu-switch-standard<?php } ?>">
     <?php
-    if (isset($data['is_frontend_view']) && $data['is_frontend_view']) {
-	    $hardcodedManageAreaHtml = \WpAssetCleanUp\HardcodedAssets::getHardCodedManageAreaForFrontEndView($data);
-    }
-
     include_once __DIR__.'/meta-box-loaded-assets/view-'.$viewAssetsMode.'.php';
     ?>
 </div>

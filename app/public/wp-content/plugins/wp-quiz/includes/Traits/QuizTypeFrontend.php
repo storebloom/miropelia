@@ -22,9 +22,19 @@ trait QuizTypeFrontend {
 	/**
 	 * Enqueues frontend scripts.
 	 *
-	 * @param Quiz $quiz Quzi object.
+	 * @param mixed $quiz Quiz object or null.
 	 */
-	public function enqueue_frontend_scripts( Quiz $quiz ) {
+	public function enqueue_frontend_scripts( $quiz = null ) {
+		// Make sure to run after wp_enqueue_scripts.
+		if ( ! did_action( 'wp_enqueue_scripts' ) ) {
+			$this->current_quiz = $quiz;
+			add_action( 'wp_head', array( $this, 'enqueue_frontend_scripts' ), 20 );
+			return;
+		}
+		if ( ! is_object( $quiz ) ) {
+			$quiz = $this->current_quiz;
+		}
+
 		wp_enqueue_script( 'wp-util' );
 		wp_enqueue_script( 'jquery.serialize-object' );
 //		wp_enqueue_script( 'wp-quiz-babel-helpers' );

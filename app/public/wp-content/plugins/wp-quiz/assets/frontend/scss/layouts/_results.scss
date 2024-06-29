@@ -1,0 +1,50 @@
+.wq-results {
+	font-size: 18px;
+
+	-webkit-box-sizing: border-box;
+
+	box-sizing: border-box;
+	width: 100%;
+	margin: 20px 0 15px;
+	padding: 10px 20px 20px 20px;
+
+	border: 1px solid #ececec;
+	background: #f9f9f9;
+
+	.wq_resultScoreCtr {
+		font-weight: bold;
+	}
+
+	.wq_quizTitle {
+		display: block;
+		margin-bottom: 10px;
+		font-weight: 700;
+	}
+
+	.wq_shareCtr {
+		padding-top: 0;
+	}
+
+	p {
+		margin-bottom: 0;
+	}
+
+	img {
+		width: 100%;
+	}
+
+}
+
+.wq_singleResultRow .wq_resultExplanation,
+.wq_resultExplanation .wq_resultExplanationLongDesc {
+	display: none;
+}
+
+img.wq_resultImg {
+	margin-bottom: 10px;
+}
+
+.show-played .wq-results,
+.wq-result.chosen {
+	display: block;
+}

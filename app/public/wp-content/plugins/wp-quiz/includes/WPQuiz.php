@@ -32,7 +32,7 @@ class WPQuiz {
 	 *
 	 * @var string
 	 */
-	public $version = '2.0.6';
+	public $version = '2.0.10';
 
 	/**
 	 * Plugin url.

@@ -1,7 +1,6 @@
 <?php
 namespace WpAssetCleanUp\OptimiseAssets;
 
-use WpAssetCleanUp\CleanUp;
 use WpAssetCleanUp\Main;
 use WpAssetCleanUp\Menu;
 use WpAssetCleanUp\MetaBoxes;
@@ -16,10 +15,11 @@ class MinifyCss
 	/**
 	 * @param $cssContent
 	 * @param bool $forInlineStyle
-	 *
+		 *
 	 * @return string
 	 */
-	public static function applyMinification($cssContent, $forInlineStyle = false)
+	public static function applyMinification($cssContent, $forInlineStyle = false
+		)
 	{
 		if (class_exists('\MatthiasMullie\Minify\CSS')) {
 				$sha1OriginalContent = sha1($cssContent);
@@ -48,19 +48,20 @@ class MinifyCss
 					}
 				}
 
-				// Fix: if the content is something like "calc(50% - 22px) calc(50% - 22px);" then leave it as it is
-				preg_match_all('#calc(.*?)(;|})#si', $cssContent, $cssCalcMatches);
+				// Fix: If the content is something like "calc(50% - 22px) calc(50% - 22px);" then leave it as it is
+				preg_match_all('#calc(|\s+)\((.*?)(;|})#si', $cssContent, $cssCalcMatches);
 
-				$multipleCalcMatches = array(); // over 1
+				$multipleOrSpecificCalcMatches = array(); // with multiple calc() or with at least one calc() that contains new lines
 
 				if (isset($cssCalcMatches[0]) && ! empty($cssCalcMatches[0])) {
 					foreach ($cssCalcMatches[0] as $cssCalcMatch) {
-						if (substr_count($cssCalcMatch, 'calc') > 1) {
+						if (substr_count($cssCalcMatch, 'calc') > 1 || strpos($cssCalcMatch, "\n") !== false) {
 							$cssContent = str_replace( $cssCalcMatch, '[wpacu]' . base64_encode( $cssCalcMatch ) . '[/wpacu]', $cssContent );
-							$multipleCalcMatches[] = $cssCalcMatch;
+							$multipleOrSpecificCalcMatches[] = $cssCalcMatch;
 						}
 					}
 				}
+
 				// [/CUSTOM BUG FIX]
 
 				$minifier = new \MatthiasMullie\Minify\CSS( $cssContent );
@@ -81,8 +82,8 @@ class MinifyCss
 					}
 				}
 
-				if ( ! empty($multipleCalcMatches) ) {
-					foreach ( $multipleCalcMatches as $cssCalcMatch ) {
+				if ( ! empty($multipleOrSpecificCalcMatches) ) {
+					foreach ( $multipleOrSpecificCalcMatches as $cssCalcMatch ) {
 						$originalCssCalcMatch = $cssCalcMatch;
 						$cssCalcMatch = preg_replace(array('#calc\(\s+#', '#\s+\);#'), array('calc(', ');'), $originalCssCalcMatch);
 						$cssCalcMatch = str_replace(' ) calc(', ') calc(', $cssCalcMatch);
@@ -145,16 +146,19 @@ class MinifyCss
 			'#/wp-content/plugins/woocommerce/assets/css/blocks/style.css#',
 			'#/wp-content/plugins/woocommerce/packages/woocommerce-blocks/build/style.css#',
 
+			// Google Site Kit: the files are already optimized
+			'#/wp-content/plugins/google-site-kit/#',
+
 			// Other libraries from the core that end in .min.css
 			'#/wp-includes/css/(.*?).min.css#',
 
 			// Files within /wp-content/uploads/ or /wp-content/cache/
-			// Could belong to plugins such as "Elementor, "Oxygen" etc.
+			// Could belong to plugins such as "Elementor", "Oxygen" etc.
 			'#/wp-content/uploads/elementor/(.*?).css#',
 			'#/wp-content/uploads/oxygen/css/(.*?)-(.*?).css#',
 			'#/wp-content/cache/(.*?).css#',
 
-			// Already minified and it also has a random name making the cache folder make bigger
+			// Already minified, and it also has a random name making the cache folder make bigger
 			'#/wp-content/bs-booster-cache/#',
 
 			);
@@ -211,60 +215,8 @@ class MinifyCss
 
 		$fetchType = 'regex';
 
-		if ($fetchType === 'dom') {
-			// DOMDocument extension has to be enabled, otherwise return the HTML source as was (no changes)
-			if (! (function_exists('libxml_use_internal_errors') && function_exists('libxml_clear_errors') && class_exists('\DOMDocument'))) {
-				return $htmlSource;
-			}
-
-			$domTag = OptimizeCommon::getDomLoadedTag($htmlSource, 'minifyInlineStyleTags');
-
-			$styleTagsObj = $domTag->getElementsByTagName( 'style' );
-
-			if ( $styleTagsObj === null ) {
-				return $htmlSource;
-			}
-
-			foreach ( $styleTagsObj as $styleTagObj ) {
-				$originalTag = CleanUp::getOuterHTML( $styleTagObj );
-
-				// No need to use extra resources as the tag is already minified
-				if ( preg_match( '(' . implode( '|', $skipTagsContaining ) . ')', $originalTag ) ) {
-					continue;
-				}
-
-				$originalTagContents = ( isset( $styleTagObj->nodeValue ) && trim( $styleTagObj->nodeValue ) !== '' ) ? $styleTagObj->nodeValue : false;
-
-				if ( $originalTagContents ) {
-					$newTagContents = OptimizeCss::maybeAlterContentForInlineStyleTag( $originalTagContents, true, array( 'just_minify' ) );
-
-					// Only comments or no content added to the inline STYLE tag? Strip it completely to reduce the number of DOM elements
-					if ( $newTagContents === '/**/' || ! $newTagContents ) {
-						$htmlSource = str_ireplace( '>' . $originalTagContents . '</style', '></style', $htmlSource );
-
-						preg_match( '#<style.*?>#si', $originalTag, $matchFromStyle );
-
-						if ( isset( $matchFromStyle[0] ) && $styleTagWithoutContent = $matchFromStyle[0] ) {
-							$styleTagWithoutContentAlt = str_replace( '"', '\'', $styleTagWithoutContent );
-							$htmlSource                = str_ireplace( array(
-								$styleTagWithoutContent . '</style>',
-								$styleTagWithoutContentAlt . '</style>'
-							), '', $htmlSource );
-						}
-					} else {
-						// It has content; do the replacement
-						$htmlSource = str_ireplace(
-							'>' . $originalTagContents . '</style>',
-							'>' . $newTagContents . '</style>',
-							$htmlSource
-						);
-					}
-					libxml_clear_errors();
-				}
-			}
-		} elseif ($fetchType === 'regex') {
+		if ( $fetchType === 'regex' ) {
 			preg_match_all( '@(<style[^>]*?>).*?</style>@si', $htmlSource, $matchesStyleTags, PREG_SET_ORDER );
-
 			if ( $matchesStyleTags === null ) {
 				return $htmlSource;
 			}
@@ -286,7 +238,7 @@ class MinifyCss
 					continue;
 				}
 
-				$tagOpen     = $matchedStyle[1];
+				$tagOpen = $matchedStyle[1];
 
 				$withTagOpenStripped = substr($originalTag, strlen($tagOpen));
 				$originalTagContents = substr($withTagOpenStripped, 0, -strlen('</style>'));

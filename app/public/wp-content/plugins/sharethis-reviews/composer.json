@@ -1,0 +1,30 @@
+{
+    "name": "sharethis/sharethis-reviews",
+    "description": "Integrate ShareThis reviews seamlessly into your Wordpress site.",
+    "type": "wordpress-plugin",
+    "license": "GPLv2+",
+    "authors": [
+        {
+            "name": "Scott Adrian",
+            "email": "scott@sharethis.com"
+        }
+    ],
+    "require": {},
+    "require-dev": {
+        "wp-coding-standards/wpcs": "*"
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "@php ./vendor/squizlabs/php_codesniffer/bin/phpcs --config-set installed_paths $PWD/vendor/wp-coding-standards/wpcs/ ."
+        ],
+        "post-update-cmd": [
+            "@php ./vendor/squizlabs/php_codesniffer/bin/phpcs --config-set installed_paths $PWD/vendor/wp-coding-standards/wpcs/ ."
+        ],
+        "lint": [
+            "@php ./vendor/squizlabs/php_codesniffer/bin/phpcs -p"
+        ],
+        "lint-fix": [
+            "@php ./vendor/squizlabs/php_codesniffer/bin/phpcbf"
+        ]
+    }
+}

@@ -7,7 +7,6 @@ use Yoast\WP\SEO\Conditionals\Migrations_Conditional;
 use Yoast\WP\SEO\Integrations\Integration_Interface;
 use Yoast\WP\SEO\Repositories\Indexable_Repository;
 
-// phpcs:disable Yoast.NamingConventions.ObjectNameDepth.MaxExceeded
 /**
  * Post type archive watcher to save the meta data to an Indexable.
  *
@@ -53,6 +52,8 @@ class Indexable_Post_Type_Archive_Watcher implements Integration_Interface {
 	 * Initializes the integration.
 	 *
 	 * This is the place to register hooks and filters.
+	 *
+	 * @return void
 	 */
 	public function register_hooks() {
 		\add_action( 'update_option_wpseo_titles', [ $this, 'check_option' ], 10, 2 );

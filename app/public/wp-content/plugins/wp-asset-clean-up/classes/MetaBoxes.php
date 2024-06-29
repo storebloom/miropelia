@@ -27,7 +27,10 @@ class MetaBoxes
 		'popupbuilder',
 
 		// "Datafeedr Product Sets" plugin
-		'datafeedr-productset'
+		'datafeedr-productset',
+
+		// Elementor
+		'elementor_library'
 	);
 
 	/**
@@ -176,17 +179,22 @@ class MetaBoxes
 		if ($isListFetchable) {
 			$data['fetch_url'] = Misc::getPageUrl($postId);
 
-			// Check if Asset CleanUp Pro is meant to be loaded in the targeted URL
-			if (assetCleanUpHasNoLoadMatches($data['fetch_url']) === 'is_set_in_settings') {
-				$isListFetchable = false;
-				$data['status'] = 5; // The rules from "Settings" -> "Plugin Usage Preferences" -> "Do not load the plugin on certain pages" will be checked
-			} elseif (assetCleanUpHasNoLoadMatches($data['fetch_url']) === 'is_set_in_page') {
-				$isListFetchable = false;
-				$data['status'] = 6; // The following option from "Page Options" (within the CSS/JS manager of the targeted page) is set: "Do not load Asset CleanUp Pro on this page (this will disable any functionality of the plugin)"
+			switch (assetCleanUpHasNoLoadMatches($data['fetch_url'])) {
+				case 'is_set_in_settings':
+					// The rules from "Settings" -> "Plugin Usage Preferences" -> "Do not load the plugin on certain pages" will be checked
+					$data['status']  = 5;
+					$isListFetchable = false;
+					break;
+
+				case 'is_set_in_page':
+					// The following option from "Page Options" (within the CSS/JS manager of the targeted page) is set: "Do not load Asset CleanUp Pro on this page (this will disable any functionality of the plugin)"
+					$data['status']  = 6;
+					$isListFetchable = false;
+					break;
 			}
 		}
 
-		$data['is_list_fetchable'] = $isListFetchable;
+		$data['is_list_fetchable']     = $isListFetchable;
 		$data['fetch_assets_on_click'] = false;
 
 		if ($isListFetchable) {
@@ -230,7 +238,7 @@ class MetaBoxes
 				$metaPageOptionsJson = get_post_meta( $postId, '_' . WPACU_PLUGIN_ID . '_page_options', true );
 				return @json_decode( $metaPageOptionsJson, ARRAY_A );
 			}
-		} elseif ($type === 'front_page') { // e.g. latest posts, not a chosen page ID (that's when $type as 'post' is used)
+		} elseif ($type === 'front_page') { // e.g. the latest posts, not a chosen page ID (that's when $type as 'post' is used)
 			$globalPageOptions = get_option(WPACU_PLUGIN_ID . '_global_data');
 
 			if ($globalPageOptions) {
@@ -268,7 +276,7 @@ class MetaBoxes
 	}
 
 	/**
-	 * @return mixed|void
+	 * @return array
 	 */
 	public static function hideMetaBoxesForPostTypes()
 	{

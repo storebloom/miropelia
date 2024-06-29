@@ -27,13 +27,13 @@ include_once '_top-area.php';
                         '<a style="text-decoration: none;" target="_blank" href="'.admin_url('plugin-install.php?tab=upload').'">', '</a>'
                     ); ?>
                     <div class="wpacu-image-area">
-                        <img src="<?php echo WPACU_PLUGIN_URL; ?>/assets/images/wpacu-upgrade-steps/wpacu-upgrade-step-1-choose-file.jpg" alt="" />
+                        <img src="<?php echo esc_url(WPACU_PLUGIN_URL); ?>/assets/images/wpacu-upgrade-steps/wpacu-upgrade-step-1-choose-file.jpg" alt="" />
                     </div>
                     <hr />
                 </li>
                 <li><strong>2)</strong> <?php _e('Finally, <strong>activate</strong> Asset CleanUp Pro! That\'s it', 'wp-asset-clean-up'); ?> <span class="dashicons dashicons-smiley"></span>
                     <div class="wpacu-image-area activate-plugin">
-                        <img src="<?php echo WPACU_PLUGIN_URL; ?>/assets/images/wpacu-upgrade-steps/wpacu-upgrade-step-2-activate-plugin.jpg" alt="" />
+                        <img src="<?php echo esc_url(WPACU_PLUGIN_URL); ?>/assets/images/wpacu-upgrade-steps/wpacu-upgrade-step-2-activate-plugin.jpg" alt="" />
                     </div>
                 </li>
             </ul>
@@ -60,7 +60,7 @@ include_once '_top-area.php';
                 <li>You choose the one you want to work with.</li>
             </ol>
 
-            <div class="wpacu-clearfix"></div>
+            <div class="wpacu_clearfix"></div>
             <hr /><br />
 
             <div class="wpacu-btns">

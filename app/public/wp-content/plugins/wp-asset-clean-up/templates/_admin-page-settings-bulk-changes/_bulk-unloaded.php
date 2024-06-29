@@ -17,20 +17,24 @@ if ( ! in_array($data['for'], $possibleWpacuFor) ) {
 }
 
 // [wpacu_lite]
-$availableForPro = '<span class="wpacu-tooltip">'.__('Available for Pro users', 'wp-asset-clean-up').'<br />'.__('Click to upgrade!', 'wp-asset-clean-up').'</span> <img style="opacity: 0.4;" width="20" height="20" src="'.WPACU_PLUGIN_URL.'/assets/icons/icon-lock.svg" valign="top" alt="" />';
+$availableForPro = '<span class="wpacu-tooltip">'
+        .esc_html__('Available for Pro users', 'wp-asset-clean-up').
+        '<br />'.esc_html__('Click to upgrade!', 'wp-asset-clean-up')
+  .'</span>'.
+  ' <img style="opacity: 0.4;" width="20" height="20" src="'.WPACU_PLUGIN_URL.'/assets/icons/icon-lock.svg" valign="top" alt="" />';
 // [/wpacu_lite]
 ?>
 <nav class="nav-tab-wrapper">
-	<a href="<?php echo admin_url('admin.php?page=wpassetcleanup_bulk_unloads'); ?>" class="nav-tab <?php if ($data['for'] === 'everywhere') { ?>nav-tab-active<?php } ?>"><?php _e('Everywhere', 'wp-asset-clean-up'); ?></a>
-	<a href="<?php echo admin_url('admin.php?page=wpassetcleanup_bulk_unloads&wpacu_for=post_types'); ?>" class="nav-tab <?php if ($data['for'] === 'post_types') { ?>nav-tab-active<?php } ?>">Posts, Pages &amp; Custom Post Types</a>
-	<a href="<?php echo WPACU_PLUGIN_GO_PRO_URL; ?>?utm_source=plugin_bulk_unloaded&utm_medium=tab_link" target="_blank" class="nav-tab go-pro-link-no-style no-transition"><?php echo $availableForPro; ?> &nbsp;Taxonomies</a>
-	<a href="<?php echo WPACU_PLUGIN_GO_PRO_URL; ?>?utm_source=plugin_bulk_unloaded&utm_medium=tab_link" target="_blank" class="nav-tab go-pro-link-no-style no-transition"><?php echo $availableForPro; ?> &nbsp;Authors</a>
-	<a href="<?php echo WPACU_PLUGIN_GO_PRO_URL; ?>?utm_source=plugin_bulk_unloaded&utm_medium=tab_link" target="_blank" class="nav-tab go-pro-link-no-style no-transition"><?php echo $availableForPro; ?> &nbsp;Search Results</a>
-	<a href="<?php echo WPACU_PLUGIN_GO_PRO_URL; ?>?utm_source=plugin_bulk_unloaded&utm_medium=tab_link" target="_blank" class="nav-tab go-pro-link-no-style no-transition"><?php echo $availableForPro; ?> &nbsp;Dates</a>
-	<a href="<?php echo WPACU_PLUGIN_GO_PRO_URL; ?>?utm_source=plugin_bulk_unloaded&utm_medium=tab_link" target="_blank" class="nav-tab go-pro-link-no-style no-transition"><?php echo $availableForPro; ?> &nbsp;404 Not Found</a>
+	<a href="<?php echo esc_url(admin_url('admin.php?page=wpassetcleanup_bulk_unloads')); ?>" class="nav-tab <?php if ($data['for'] === 'everywhere') { ?>nav-tab-active<?php } ?>"><?php esc_html_e('Everywhere', 'wp-asset-clean-up'); ?></a>
+	<a href="<?php echo esc_url(admin_url('admin.php?page=wpassetcleanup_bulk_unloads&wpacu_for=post_types')); ?>" class="nav-tab <?php if ($data['for'] === 'post_types') { ?>nav-tab-active<?php } ?>">Posts, Pages &amp; Custom Post Types</a>
+	<a href="<?php echo apply_filters('wpacu_go_pro_affiliate_link', WPACU_PLUGIN_GO_PRO_URL.'?utm_source=plugin_bulk_unloaded&utm_medium=tab_link'); ?>" target="_blank" class="nav-tab go-pro-link-no-style no-transition"><?php echo wp_kses($availableForPro, array('span' => array('class' => array()), 'br' => array(), 'img' => array('style' => array(), 'width' => array(), 'height' => array(), 'src' => array(), 'valign' => array(), 'alt' => array()))); ?> &nbsp;Taxonomies</a>
+	<a href="<?php echo apply_filters('wpacu_go_pro_affiliate_link', WPACU_PLUGIN_GO_PRO_URL.'?utm_source=plugin_bulk_unloaded&utm_medium=tab_link'); ?>" target="_blank" class="nav-tab go-pro-link-no-style no-transition"><?php echo wp_kses($availableForPro, array('span' => array('class' => array()), 'br' => array(), 'img' => array('style' => array(), 'width' => array(), 'height' => array(), 'src' => array(), 'valign' => array(), 'alt' => array()))); ?> &nbsp;Authors</a>
+	<a href="<?php echo apply_filters('wpacu_go_pro_affiliate_link', WPACU_PLUGIN_GO_PRO_URL.'?utm_source=plugin_bulk_unloaded&utm_medium=tab_link'); ?>" target="_blank" class="nav-tab go-pro-link-no-style no-transition"><?php echo wp_kses($availableForPro, array('span' => array('class' => array()), 'br' => array(), 'img' => array('style' => array(), 'width' => array(), 'height' => array(), 'src' => array(), 'valign' => array(), 'alt' => array()))); ?> &nbsp;Search Results</a>
+	<a href="<?php echo apply_filters('wpacu_go_pro_affiliate_link', WPACU_PLUGIN_GO_PRO_URL.'?utm_source=plugin_bulk_unloaded&utm_medium=tab_link'); ?>" target="_blank" class="nav-tab go-pro-link-no-style no-transition"><?php echo wp_kses($availableForPro, array('span' => array('class' => array()), 'br' => array(), 'img' => array('style' => array(), 'width' => array(), 'height' => array(), 'src' => array(), 'valign' => array(), 'alt' => array()))); ?> &nbsp;Dates</a>
+	<a href="<?php echo apply_filters('wpacu_go_pro_affiliate_link', WPACU_PLUGIN_GO_PRO_URL.'?utm_source=plugin_bulk_unloaded&utm_medium=tab_link'); ?>" target="_blank" class="nav-tab go-pro-link-no-style no-transition"><?php echo wp_kses($availableForPro, array('span' => array('class' => array()), 'br' => array(), 'img' => array('style' => array(), 'width' => array(), 'height' => array(), 'src' => array(), 'valign' => array(), 'alt' => array()))); ?> &nbsp;404 Not Found</a>
 </nav>
 
-<div class="wpacu-clearfix"></div>
+<div class="wpacu_clearfix"></div>
 
 <?php
 do_action('wpacu_admin_notices');
@@ -38,16 +42,12 @@ do_action('wpacu_admin_notices');
 if ($data['for'] === 'post_types') {
 	?>
     <div style="margin: 15px 0;">
-        <form id="wpacu_post_type_form" method="get" action="<?php echo admin_url('admin.php'); ?>">
+        <form id="wpacu_post_type_form" method="get" action="<?php echo esc_url(admin_url('admin.php')); ?>">
             <input type="hidden" name="page" value="wpassetcleanup_bulk_unloads" />
             <input type="hidden" name="wpacu_for" value="post_types" />
 
             <div style="margin: 0 0 10px 0;">Select the page or post type (including custom ones) for which you want to see the unloaded scripts &amp; styles:</div>
-            <select id="wpacu_post_type_select" name="wpacu_post_type">
-				<?php foreach ($data['post_types_list'] as $postTypeKey => $postTypeValue) { ?>
-                    <option <?php if ($data['post_type'] === $postTypeKey) { echo 'selected="selected"'; } ?> value="<?php echo $postTypeKey; ?>"><?php echo $postTypeValue; ?></option>
-				<?php } ?>
-            </select>
+            <?php \WpAssetCleanUp\BulkChanges::buildPostTypesListDd($data['post_types_list'], $data['post_type']); ?>
         </form>
     </div>
 	<?php
@@ -58,7 +58,7 @@ if ($data['for'] === 'post_types') {
 	<?php
 	if ($data['for'] === 'everywhere') {
 		?>
-        <div class="wpacu-clearfix"></div>
+        <div class="wpacu_clearfix"></div>
 
         <div class="alert">
             <p>This is the list of the assets that are <strong>unloaded everywhere</strong> (site-wide) on all pages (including home page). &nbsp;&nbsp;<a id="wpacu-add-bulk-rules-info-target" href="#wpacu-add-bulk-rules-info" style="text-decoration: none;"><span class="dashicons dashicons-info"></span> How the list below gets filled with site-wide rules?</a></p>
@@ -71,7 +71,7 @@ if ($data['for'] === 'post_types') {
             </div>
         </div>
 
-        <div class="wpacu-clearfix"></div>
+        <div class="wpacu_clearfix"></div>
 
 		<div style="padding: 0 10px 0 0;">
 			<p style="margin-bottom: 10px;"><strong><?php _e('Stylesheets (.css) Unloaded', 'wp-asset-clean-up'); ?></strong></p>
@@ -93,7 +93,7 @@ if ($data['for'] === 'post_types') {
                             <td>
                                 <label><input type="checkbox"
                                               class="wpacu_bulk_rule_checkbox"
-                                              name="wpacu_options_styles[<?php echo $handle; ?>]"
+                                              name="wpacu_options_styles[<?php echo esc_attr($handle); ?>]"
                                               value="remove" /> Remove site-wide rule</label>
                             </td>
                         </tr>
@@ -130,7 +130,7 @@ if ($data['for'] === 'post_types') {
                             <td>
                                 <label><input type="checkbox"
                                               class="wpacu_bulk_rule_checkbox"
-                                              name="wpacu_options_scripts[<?php echo $handle; ?>]"
+                                              name="wpacu_options_scripts[<?php echo esc_attr($handle); ?>]"
                                               value="remove" /> Remove site-wide rule</label>
                             </td>
                         </tr>
@@ -151,20 +151,20 @@ if ($data['for'] === 'post_types') {
 
 	if ($data['for'] === 'post_types') {
 		?>
-        <div class="wpacu-clearfix"></div>
+        <div class="wpacu_clearfix"></div>
 
         <div class="alert">
-            <p>This is the list of the assets that are <strong>unloaded</strong> on all pages belonging to the <strong><u><?php echo $data['post_type']; ?></u></strong> post type. &nbsp;&nbsp;<a id="wpacu-add-bulk-rules-info-target" href="#wpacu-add-bulk-rules-info" style="text-decoration: none;"><span class="dashicons dashicons-info"></span> How the list below gets filled with site-wide rules?</a></p>
+            <p>This is the list of the assets that are <strong>unloaded</strong> on all pages belonging to the <strong><u><?php echo esc_html($data['post_type']); ?></u></strong> post type. &nbsp;&nbsp;<a id="wpacu-add-bulk-rules-info-target" href="#wpacu-add-bulk-rules-info" style="text-decoration: none;"><span class="dashicons dashicons-info"></span> How the list below gets filled with site-wide rules?</a></p>
             <p>If you want to make an asset load again, use the "Remove bulk rule" checkbox.</p>
             <div style="margin: 0; background: white; padding: 10px; border: 1px solid #ccc; width: auto; display: inline-block;">
                 <ul>
-                    <li>This list fills once you select "<em>Unload on All Pages of <strong><?php echo $data['post_type']; ?></strong> post type</em>" when you edit posts/pages for the assets that you want to prevent from loading.</li>
-                    <li>On this page you can only remove the global rules that were added while editing <strong><?php echo $data['post_type']; ?></strong> post types.</li>
+                    <li>This list fills once you select "<em>Unload on All Pages of <strong><?php echo esc_html($data['post_type']); ?></strong> post type</em>" when you edit posts/pages for the assets that you want to prevent from loading.</li>
+                    <li>On this page you can only remove the global rules that were added while editing <strong><?php echo esc_html($data['post_type']); ?></strong> post types.</li>
                 </ul>
             </div>
         </div>
 
-		<div class="wpacu-clearfix"></div>
+		<div class="wpacu_clearfix"></div>
 
 		<div style="padding: 0 10px 0 0;">
             <p style="margin-bottom: 10px;"><strong><?php _e('Stylesheets (.css) Unloaded', 'wp-asset-clean-up'); ?></strong></p>
@@ -184,7 +184,7 @@ if ($data['for'] === 'post_types') {
                             <td>
                                 <label><input type="checkbox"
                                               class="wpacu_bulk_rule_checkbox"
-                                              name="wpacu_options_post_type_styles[<?php echo $handle; ?>]"
+                                              name="wpacu_options_post_type_styles[<?php echo esc_attr($handle); ?>]"
                                               value="remove" /> Remove bulk rule</label>
                             </td>
                         </tr>
@@ -195,7 +195,7 @@ if ($data['for'] === 'post_types') {
 				<?php
 			} else {
 				?>
-                <p>There are no bulk unloaded styles for the <strong><?php echo $data['post_type']; ?></strong> post type.</p>
+                <p>There are no bulk unloaded styles for the <strong><?php echo esc_html($data['post_type']); ?></strong> post type.</p>
 				<?php
 			}
 			?>
@@ -220,7 +220,7 @@ if ($data['for'] === 'post_types') {
                             <td>
                                 <label><input type="checkbox"
                                               class="wpacu_bulk_rule_checkbox"
-                                              name="wpacu_options_post_type_scripts[<?php echo $handle; ?>]"
+                                              name="wpacu_options_post_type_scripts[<?php echo esc_attr($handle); ?>]"
                                               value="remove" /> Remove bulk rule</label>
                             </td>
                         </tr>
@@ -231,7 +231,7 @@ if ($data['for'] === 'post_types') {
 				<?php
 			} else {
 				?>
-                <p>There are no bulk unloaded scripts for the <strong><?php echo $data['post_type']; ?></strong> post type.</p>
+                <p>There are no bulk unloaded scripts for the <strong><?php echo esc_html($data['post_type']); ?></strong> post type.</p>
 				<?php
 			}
 			?>
@@ -243,18 +243,18 @@ if ($data['for'] === 'post_types') {
 	?>
 	<?php wp_nonce_field($data['nonce_action'], $data['nonce_name']); ?>
 
-    <input type="hidden" name="wpacu_for" value="<?php echo $data['for']; ?>" />
+    <input type="hidden" name="wpacu_for" value="<?php echo esc_attr($data['for']); ?>" />
     <input type="hidden" name="wpacu_update" value="1" />
 
 	<?php
 	if ($data['for'] === 'post_types' && isset($data['post_type'])) {
 		?>
-        <input type="hidden" name="wpacu_post_type" value="<?php echo $data['post_type']; ?>" />
+        <input type="hidden" name="wpacu_post_type" value="<?php echo esc_attr($data['post_type']); ?>" />
 		<?php
 	}
 	?>
 
-    <div class="wpacu-clearfix"></div>
+    <div class="wpacu_clearfix"></div>
 
     <div id="wpacu-update-button-area" class="no-left-margin">
         <p class="submit">
@@ -278,7 +278,7 @@ if ($data['for'] === 'post_types') {
 			?>
         </p>
         <div id="wpacu-updating-settings" style="margin-left: 150px;">
-            <img src="<?php echo admin_url('images/spinner.gif'); ?>" align="top" width="20" height="20" alt="" />
+            <img src="<?php echo esc_url(admin_url('images/spinner.gif')); ?>" align="top" width="20" height="20" alt="" />
         </div>
     </div>
 </form>
@@ -295,7 +295,7 @@ if ($data['for'] === 'post_types') {
             <li>Unload on All Pages of `product_cat` taxonomy type etc.</li>
         </ul>
 
-        <p>A bulk change is considered anything that is applied once and it has effect on multiple pages of the same kind or site-wide.</p>
+        <p>A bulk change is considered anything that is applied once, and it has effect on multiple pages of the same kind or site-wide.</p>
     </div>
 </div>
 <!-- End Site-Wide Modal -->

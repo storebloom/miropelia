@@ -7,8 +7,8 @@ if ( ! isset($data, $isCoreFile, $hideCoreFiles, $childHandles) ) {
 	exit; // no direct access
 }
 ?>
-<div class="wpacu_handle" style="margin: 0 0 -8px;">
-	<label for="style_<?php echo $data['row']['obj']->handle; ?>"><?php _e('Handle:', 'wp-asset-clean-up'); ?> <strong><span style="color: green;"><?php echo $data['row']['obj']->handle; ?></span></strong></label>
+<div class="wpacu_handle">
+	<label for="style_<?php echo htmlentities(esc_attr($data['row']['obj']->handle), ENT_QUOTES); ?>"><?php _e('Handle:', 'wp-asset-clean-up'); ?> <strong><span style="color: green;"><?php echo esc_attr($data['row']['obj']->handle); ?></span></strong></label>
 	&nbsp;<em>* Stylesheet (.css)</em>
 	<?php
 	if ($data['row']['obj']->handle === 'wp-block-library') {
@@ -39,6 +39,7 @@ if ( ! isset($data, $isCoreFile, $hideCoreFiles, $childHandles) ) {
 </div>
 <?php
 $ignoreChild = (isset($data['ignore_child']['styles'][$data['row']['obj']->handle]) && $data['ignore_child']['styles'][$data['row']['obj']->handle]);
+if ($ignoreChild) { $data['row']['at_least_one_rule_set'] = true; }
 
 if (! empty($childHandles)) {
 ?>
@@ -61,11 +62,11 @@ if (! empty($childHandles)) {
             echo trim($childHandlesOutput, ', ');
             ?>
 		</em>
-		<label for="style_<?php echo $data['row']['obj']->handle; ?>_ignore_children">
-			&#10230; <input id="style_<?php echo $data['row']['obj']->handle; ?>_ignore_children"
+		<label for="style_<?php echo htmlentities(esc_attr($data['row']['obj']->handle), ENT_QUOTES); ?>_ignore_children">
+			&#10230; <input id="style_<?php echo htmlentities(esc_attr($data['row']['obj']->handle), ENT_QUOTES); ?>_ignore_children"
 			                type="checkbox"
 			                <?php if ($ignoreChild) { ?>checked="checked"<?php } ?>
-			                name="<?php echo WPACU_FORM_ASSETS_POST_KEY; ?>[styles][<?php echo $data['row']['obj']->handle; ?>][ignore_child]"
+			                name="<?php echo WPACU_FORM_ASSETS_POST_KEY; ?>[styles][<?php echo htmlentities(esc_attr($data['row']['obj']->handle), ENT_QUOTES); ?>][ignore_child]"
 			                value="1" /> <small><?php _e('Ignore dependency rule and keep the "children" loaded', 'wp-asset-clean-up'); ?>
 				<?php if (in_array($data['row']['obj']->handle, \WpAssetCleanUp\Main::instance()->keepChildrenLoadedForHandles['css'])) { echo '(recommended)'; } ?>
             </small>
@@ -75,6 +76,6 @@ if (! empty($childHandles)) {
 } elseif ($ignoreChild) {
 	// Keep the option enabled in case ignoring other dependencies was already chosen in a different page (e.g. in some pages a handle can have a dependency, in others it might not have any)
     ?>
-    <input type="hidden" name="<?php echo WPACU_FORM_ASSETS_POST_KEY; ?>[styles][<?php echo $data['row']['obj']->handle; ?>][ignore_child]" value="1" />
+    <input type="hidden" name="<?php echo WPACU_FORM_ASSETS_POST_KEY; ?>[styles][<?php echo htmlentities(esc_attr($data['row']['obj']->handle), ENT_QUOTES); ?>][ignore_child]" value="1" />
     <?php
 }

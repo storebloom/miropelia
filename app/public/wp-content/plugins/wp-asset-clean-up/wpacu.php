@@ -2,10 +2,12 @@
 /*
  * Plugin Name: Asset CleanUp: Page Speed Booster
  * Plugin URI: https://wordpress.org/plugins/wp-asset-clean-up/
- * Version: 1.3.8.5
+ * Version: 1.3.9.3
+ * Requires at least: 4.5
+ * Requires PHP: 5.6
  * Description: Unload Chosen Scripts & Styles from Posts/Pages to reduce HTTP Requests, Combine/Minify CSS/JS files
  * Author: Gabe Livan
- * Author URI: http://gabelivan.com/
+ * Author URI: http://www.gabelivan.com/
  * Text Domain: wp-asset-clean-up
  * Domain Path: /languages
 */
@@ -27,7 +29,7 @@ if ( (defined('WPACU_PRO_NO_LITE_NEEDED') && WPACU_PRO_NO_LITE_NEEDED !== false 
 
 // Is the Pro version triggered before the Lite one and are both plugins active?
 if (! defined('WPACU_PLUGIN_VERSION')) {
-	define('WPACU_PLUGIN_VERSION', '1.3.8.5');
+	define('WPACU_PLUGIN_VERSION', '1.3.9.3');
 }
 
 // Exit if accessed directly
@@ -39,18 +41,18 @@ if (! defined('WPACU_PLUGIN_ID')) {
 	define( 'WPACU_PLUGIN_ID', 'wpassetcleanup' ); // unique prefix (same plugin ID name for 'lite' and 'pro')
 }
 
-if ( ! defined('WPACU_PLUGIN_TITLE') ) {
-	define( 'WPACU_PLUGIN_TITLE', 'Asset CleanUp' ); // a short version of the plugin name
+if (! defined('WPACU_PLUGIN_SLUG')) {
+	define( 'WPACU_PLUGIN_SLUG', 'wp-asset-clean-up' ); // useful to detect which functions to trigger (e.g. JS files)
 }
 
-require_once __DIR__.'/early-triggers.php';
+require_once __DIR__ . '/early-triggers.php';
 
 if (assetCleanUpNoLoad()) {
 	return; // do not continue
 }
 
-define('WPACU_PLUGIN_FILE', __FILE__);
-define('WPACU_PLUGIN_BASE', plugin_basename(WPACU_PLUGIN_FILE));
+define('WPACU_PLUGIN_FILE',         __FILE__);
+define('WPACU_PLUGIN_BASE',         plugin_basename(WPACU_PLUGIN_FILE));
 
 define('WPACU_ADMIN_PAGE_ID_START', WPACU_PLUGIN_ID . '_getting_started');
 
@@ -68,16 +70,16 @@ if ($wpacuWrongPhp && is_admin()) { // Dashboard
 	    /**
 	     * Print the message to the user after the plugin was deactivated
 	     */
-	    echo '<div class="error is-dismissible"><p>'.
+	    echo '<div class="wpacu-error is-dismissible"><p>'.
 
 	         sprintf(
-		         __('%1$s requires %2$s PHP version installed. You have %3$s.', 'wp-asset-clean-up'),
+		         esc_html__('%1$s requires %2$s PHP version installed. You have %3$s.', 'wp-asset-clean-up'),
 		         '<strong>'.WPACU_PLUGIN_TITLE.'</strong>',
 		         '<span style="color: green;"><strong>5.6+</strong></span>',
 		         '<strong>'.PHP_VERSION.'</strong>'
 	         ) . ' '.
-	         __('If your website is compatible with PHP 7+ (e.g. you can check with your developers or contact the hosting company), it\'s strongly recommended to upgrade to a newer PHP version for a better performance.', 'wp-asset-clean-up').' '.
-	         __('Thus, the plugin will not trigger on the front-end view to avoid any possible errors.', 'wp-asset-clean-up').
+	         esc_html__('If your website is compatible with PHP 7+ (e.g. you can check with your developers or contact the hosting company), it\'s strongly recommended to upgrade to a newer PHP version for a better performance.', 'wp-asset-clean-up').' '.
+	         esc_html__('Thus, the plugin will not trigger on the front-end view to avoid any possible errors.', 'wp-asset-clean-up').
 
 	         '</p></div>';
 
@@ -94,7 +96,7 @@ define('WPACU_PLUGIN_CLASSES_PATH', WPACU_PLUGIN_DIR.'/classes/');
 define('WPACU_PLUGIN_URL',          plugins_url('', WPACU_PLUGIN_FILE));
 
 // Upgrade to Pro Sales Page
-define('WPACU_PLUGIN_GO_PRO_URL',   'https://www.gabelivan.com/items/wp-asset-cleanup-pro/');
+define('WPACU_PLUGIN_GO_PRO_URL',   'https://www.gabelivan.com/items/wp-asset-cleanup-pro/'); // no query strings to be added
 
 // Global Values
 define('WPACU_LOAD_ASSETS_REQ_KEY',  WPACU_PLUGIN_ID . '_load');
@@ -149,4 +151,10 @@ add_action('setup_theme', static function() {
 		}
 	}
 });
+
+// "Transliterator - WordPress Transliteration" breaks the HTML content in Asset CleanUp's admin pages
+// by converting characters such as &lt; (that should stay as they are) to < thus, a fix is attempted to be made here
+if (isset($_GET['page']) && (strpos($_GET['page'], WPACU_PLUGIN_ID.'_') !== false) && is_admin() && method_exists('Serbian_Transliteration_Cache', 'set')) {
+	Serbian_Transliteration_Cache::set('is_editor', true);
+}
 

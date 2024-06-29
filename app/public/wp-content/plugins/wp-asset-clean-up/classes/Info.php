@@ -119,23 +119,18 @@ class Info
 	 */
 	public function pluginNotice($plugin)
 	{
-		$output = '';
-
 		// Elementor, Elementor Pro
 		if (in_array($plugin, array('elementor', 'elementor-pro'))) {
 			$wpacuPluginTitle = WPACU_PLUGIN_TITLE;
-
-			$output = <<<HTML
-<tr class="wpacu_asset_row wpacu_notice_row">
-	<td valign="top">
-		<div class="wpacu-warning">
-			<p style="margin: 0 0 4px !important;"><small><span class="dashicons dashicons-warning"></span> Most (if not all) of this plugin's files are linked (child &amp; parent) for maximum compatibility. Unloading one Elementor CSS/JS will likely trigger the unloading of other "children" associated with it.  <strong>To avoid breaking the Elementor editor, {$wpacuPluginTitle} is deactivated in the page builder's edit &amp; preview mode. If this page is not edited via Elementor and you don't need any of the plugin's functionality (widgets, templates etc.) here, you can unload the files below making sure to test the page after you updated it.</strong></small></p>
-		</div>
-	</td>
-</tr>
-HTML;
+		?>
+		<tr class="wpacu_asset_row wpacu_notice_row">
+			<td valign="top">
+				<div class="wpacu-warning">
+					<p style="margin: 0 0 4px !important;"><small><span class="dashicons dashicons-warning"></span> Most (if not all) of this plugin's files are linked (child &amp; parent) for maximum compatibility. Unloading one Elementor CSS/JS will likely trigger the unloading of other "children" associated with it.  <strong>To avoid breaking the Elementor editor, <?php echo esc_html($wpacuPluginTitle); ?> is deactivated in the page builder's edit &amp; preview mode. If this page is not edited via Elementor and you don't need any of the plugin's functionality (widgets, templates etc.) here, you can unload the files below making sure to test the page after you updated it.</strong></small></p>
+				</div>
+			</td>
+		</tr>
+		<?php
 		}
-
-		echo $output;
 	}
 }

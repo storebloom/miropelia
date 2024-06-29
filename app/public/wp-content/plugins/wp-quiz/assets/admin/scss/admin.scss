@@ -1,0 +1,14 @@
+// compileCompressed: ../css/$1.css
+
+@import "util";
+@import "base";
+
+@import "components/box";
+@import "components/image-upload";
+@import "components/video-insert";
+@import "components/sortable";
+
+@import "layouts/cmb2";
+@import "layouts/settings-page";
+@import "layouts/admin";
+@import "../../frontend/scss/layouts/embed";

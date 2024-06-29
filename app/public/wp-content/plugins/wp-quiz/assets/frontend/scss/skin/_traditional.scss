@@ -1,0 +1,110 @@
+.wq-skin-traditional .wq_IsSwiperResult h3 {
+	border-radius: 0;
+	background: #4CAF50;
+}
+
+.wq-skin-traditional .wq_singleAnswerCtr {
+	background-color: var(--wq-background-color, #f2f2f2);
+	color: var(--wq-font-color);
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	padding: 7px 7px 8px;
+	margin: 0 0 15px 0;
+	line-height: 30px;
+}
+
+.wq-skin-traditional .wq_singleAnswerCtr:last-of-type {
+	margin-bottom: 0;
+}
+
+.wq-skin-traditional .wq_questionTextCtr {
+	background-color: var(--wq-background-color, #f2f2f2);
+}
+
+.wq_singleAnswerCtr:hover,
+.wq_singleAnswerCtr.chosen,
+.wq_singleAnswerCtr.wq_answerSelected {
+	background: #fff195;
+	color: #000;
+	-webkit-transition: background 550ms ease-out;
+	transition: background 550ms ease-out;
+	cursor: pointer;
+}
+
+.wq-skin-traditional .wq_singleAnswerCtr.wq_answerSelected {
+	background: #4CAF50;
+	color: #fff;
+}
+
+.wq-skin-traditional .wq_singleAnswerCtr.wq_correctAnswer {
+	background: #4CAF50;
+	border-color: #409444;
+	color: #fff;
+	opacity: 0.5;
+}
+
+.wq-skin-traditional .wq_singleAnswerCtr.wq_incorrectAnswer {
+	background: #F44336;
+	border-color: #CE392E;
+	color: #fff;
+	opacity: 0.8;
+}
+
+.wq-skin-traditional .wq_questionAnswered .wq_singleAnswerCtr {
+	opacity: 0.5;
+}
+
+.wq-skin-traditional .wq_questionAnswered .wq_singleAnswerCtr.chosen {
+	opacity: 1;
+}
+
+.wq-skin-traditional {
+	.chosen .wq_answerTxtCtr,
+	.wq_answerSelected .wq_answerTxtCtr {
+		&:after {
+			background: #fff;
+		}
+	}
+}
+
+.wq-skin-traditional .wq_correctExplanationHead {
+	color: #4CAF50;
+	font-weight: bold;
+	font-size: 1.2em;
+}
+
+.wq-skin-traditional .wq_wrongExplanationHead {
+	color: #F44336;
+	font-weight: bold;
+	font-size: 1.2em;
+}
+
+.wq-skin-traditional .wq_quizForceActionCtr {
+	background: #f2f2f2;
+	padding: 30px 20px;
+	border: 1px solid #dddddd;
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+	margin: 30px 0 15px;
+}
+
+.wq-skin-traditional {
+	.wq_IsSwiperResult .wq_retakeSwiperWrapper,
+	.wq-results.wq_IsSwiperResult .wq_shareCtr {
+		background: #f2f2f2;
+		border-right: 1px solid #ddd;
+		border-left: 1px solid #ddd;
+	}
+}
+
+.wq-skin-traditional {
+	.wq_IsSwiperResult .resultImageWrapper .indexWrapper,
+	.wq_IsSwiperResult .userVote, .wq_retakeSwiperBtn:hover {
+		background: #4CAF50;
+		border-color: #4CAF50;
+		border-radius: 0;
+	}
+}
+
+.wq-skin-traditional .wq_IsSwiperResult .userVote.negativeVote {
+	background: #F44336;
+}

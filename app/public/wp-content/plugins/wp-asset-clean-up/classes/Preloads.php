@@ -22,7 +22,7 @@ class Preloads
 	/**
 	 * @var array
 	 */
-	public $preloads = array();
+	public $preloads = array('styles' => array(), 'scripts' => array());
 
 	/**
 	 * @var Preloads|null
@@ -97,10 +97,10 @@ class Preloads
             return $htmlSource;
         }
 
-	    $preloads = $this->getPreloads();
+	    $this->preloads = $this->getPreloads();
 
-	    if (isset($preloads['styles']) && ! empty($preloads['styles'])) {
-		    $htmlSource = self::appendPreloadsForStylesToHead($htmlSource, array_keys($preloads['styles']));
+	    if (isset($this->preloads['styles']) && ! empty($this->preloads['styles'])) {
+		    $htmlSource = self::appendPreloadsForStylesToHead($htmlSource);
 	    }
 
 	    return $htmlSource;
@@ -116,11 +116,9 @@ class Preloads
 	        return false;
         }
 
-	    if ($for === 'css' && ! (isset($this->preloads['styles']) && ! empty($this->preloads['styles']))) {
-			return false;
-		}
+	    $assetType = ($for === 'css') ? 'styles' : 'scripts';
 
-		if ($for === 'js' && ! (isset($this->preloads['scripts']) && ! empty($this->preloads['scripts']))) {
+	    if (! (isset($this->preloads[$assetType]) && ! empty($this->preloads[$assetType]))) {
 			return false;
 		}
 
@@ -183,12 +181,6 @@ class Preloads
 	 */
 	public function getPreloads()
 	{
-		if (array_key_exists('styles', $this->preloads) && array_key_exists('scripts', $this->preloads)) {
-			return $this->preloads;
-		}
-
-		$preloads = array('styles' => array(), 'scripts' => array());
-
 		$preloadsListJson = get_option(WPACU_PLUGIN_ID . '_global_data');
 
 		if ($preloadsListJson) {
@@ -196,18 +188,16 @@ class Preloads
 
 			// Issues with decoding the JSON file? Return an empty list
 			if (Misc::jsonLastError() !== JSON_ERROR_NONE) {
-				return $preloads;
+				return $this->preloads;
 			}
 
 			// Are new positions set for styles and scripts?
 			foreach (array('styles', 'scripts') as $assetKey) {
 				if ( isset( $preloadsList[$assetKey]['preloads'] ) && ! empty( $preloadsList[$assetKey]['preloads'] ) ) {
-					$preloads[$assetKey] = $preloadsList[$assetKey]['preloads'];
+					$this->preloads[$assetKey] = $preloadsList[$assetKey]['preloads'];
 				}
 			}
 		}
-
-		$this->preloads = $preloads;
 
 		return $this->preloads;
 	}
@@ -239,7 +229,7 @@ class Preloads
 		}
 
 		if (array_key_exists($handle, $this->preloads['styles']) && $this->preloads['styles'][$handle]) {
-            if (isset($_GET['wpacu_no_css_preload_basic'])) { // do not apply it for debugging purposes
+            if (isset($_REQUEST['wpacu_no_css_preload_basic'])) { // do not apply it for debugging purposes
 	            return str_replace('<link ', '<link data-wpacu-skip-preload=\'1\' ', $htmlTag);
             }
 
@@ -261,7 +251,7 @@ class Preloads
 			return $htmlTag;
 		}
 
-		if (isset($_GET['wpacu_no_js_preload_basic'])) {
+		if (isset($_REQUEST['wpacu_no_js_preload_basic'])) {
 			return str_replace('<script ', '<script data-wpacu-skip-preload=\'1\' ', $htmlTag);
         }
 
@@ -288,11 +278,10 @@ class Preloads
 
 	/**
 	 * @param $htmlSource
-	 * @param $preloadedHandles
 	 *
 	 * @return mixed
 	 */
-	public static function appendPreloadsForStylesToHead($htmlSource, $preloadedHandles)
+	public static function appendPreloadsForStylesToHead($htmlSource)
 	{
 	    if (self::preventPreload()) {
 	        return $htmlSource;
@@ -303,66 +292,101 @@ class Preloads
 			return $htmlSource;
 		}
 
-		// Use the RegEx as it's much faster and very accurate in this situation
-		// If there are issues, fallback to DOMDocument
-		$strContainsFormat = preg_quote('data-wpacu-to-be-preloaded-basic', '/');
-		preg_match_all('#<link[^>]*'.$strContainsFormat.'[^>]*' . '\shref=(\'|"|)(.*)(\\1?\s)' . '.*(>)#Usmi', $htmlSource, $matchesSourcesFromLinkTags, PREG_SET_ORDER);
-
+        $allHrefs = array();
 		$stickToRegEx = true; // default
 
-		foreach ($matchesSourcesFromLinkTags as $linkTagArray) {
-			$linkTag = $linkTagArray[0];
-
-			preg_match_all('#id=([\'"])(.*?)(\\1)#', $linkTag, $matchId);
-			$matchedCssId = isset($matchId[2][0]) ? $matchId[2][0] : '';
-			$matchedCssHandle = substr($matchedCssId, 0, -4);
-
-			if (! in_array($matchedCssHandle, $preloadedHandles)) {
-				$stickToRegEx = false;
-				break;
-			}
-		}
-
 		// Something might not be right with the RegEx; Fallback to DOMDocument, more accurate, but slower
-		if (! $stickToRegEx && function_exists('libxml_use_internal_errors') && function_exists('libxml_clear_errors') && class_exists('\DOMDocument')) {
-			$documentForCSS = new \DOMDocument();
-			libxml_use_internal_errors(true);
+		if ( Misc::isDOMDocumentOn() ) {
+			$documentForCSS = Misc::initDOMDocument();
 
 			$htmlSourceAlt = preg_replace( '@<(noscript|style|script)[^>]*?>.*?</\\1>@si', '', $htmlSource );
 			$documentForCSS->loadHTML($htmlSourceAlt);
 
             $linkTags = $documentForCSS->getElementsByTagName( 'link' );
 
-			$matchesSourcesFromLinkTags = array(); // reset its value; new fetch method was used
+			if ( count($linkTags) > 0 ) {
+	            $matchesSourcesFromLinkTags = array(); // reset its value; new fetch method was used
 
-			foreach ( $linkTags as $tagObject ) {
-				if (empty($tagObject->attributes)) { continue; }
+	            foreach ( $linkTags as $tagObject ) {
+		            if ( empty( $tagObject->attributes ) ) {
+			            continue;
+		            }
 
-				$linkAttributes = array();
+		            $linkAttributes = array();
 
-				foreach ($tagObject->attributes as $attrObj) {
-					$linkAttributes[$attrObj->nodeName] = trim($attrObj->nodeValue);
-				}
+		            foreach ( $tagObject->attributes as $attrObj ) {
+			            $linkAttributes[ $attrObj->nodeName ] = trim( $attrObj->nodeValue );
+		            }
 
-				if (isset($linkAttributes['data-wpacu-to-be-preloaded-basic'], $linkAttributes['href'])) {
-					$matchesSourcesFromLinkTags[][2] = $linkAttributes['href'];
-                }
-			}
+		            if ( ! isset( $linkAttributes['data-wpacu-to-be-preloaded-basic'], $linkAttributes['href'] ) ) {
+                        continue;
+                    }
+
+		            if (strpos($htmlSourceAlt, $linkAttributes['href']) === false) {
+			            $stickToRegEx = true; // the source value is not the same as in the HTML source (e.g. altered by the DOM) / fallback to RegEx
+			            break;
+		            }
+
+                    $linkTag = Misc::getOuterHTML( $tagObject );
+
+                    $allHrefs[$linkTag] = $linkAttributes['href'];
+	            }
+            }
 
 			libxml_clear_errors();
         }
 
-		foreach ($matchesSourcesFromLinkTags as $linkTagArray) {
-			$linkHref = isset($linkTagArray[2]) ? $linkTagArray[2] : false;
+        if ($stickToRegEx) {
+	        // Use the RegEx as it's much faster and very accurate in this situation
+	        $strContainsFormat = preg_quote('data-wpacu-to-be-preloaded-basic', '/');
+	        preg_match_all('#<link[^>]*'.$strContainsFormat.'[^>]*' . '\shref(\s+|)=(\s+|)(\'|"|)(.*)(\\3)' . '.*(>)#Usmi', $htmlSource, $matchesSourcesFromLinkTags, PREG_SET_ORDER);
 
-			if (! $linkHref) {
-				continue;
-			}
+	        if ( ! empty($matchesSourcesFromLinkTags) ) {
+		        foreach ( $matchesSourcesFromLinkTags as $linkTagArray ) {
+                    $linkTag = isset( $linkTagArray[0] ) ? $linkTagArray[0] : false;
 
-			$linkPreload = self::linkPreloadCssFormat($linkHref);
+                    if ($linkTag) {
+	                    $linkHref = isset( $linkTagArray[0] ) ? Misc::getValueFromTag( $linkTag ) : false;
 
-			$htmlSource = str_replace(self::DEL_STYLES_PRELOADS, $linkPreload . self::DEL_STYLES_PRELOADS, $htmlSource);
-		}
+	                    if ( $linkHref ) {
+		                    $allHrefs[$linkTag] = $linkHref;
+	                    }
+                    }
+		        }
+	        }
+        }
+
+		$allHrefs = array_unique($allHrefs);
+
+		if ( ! empty($allHrefs) ) {
+	        foreach ( $allHrefs as $linkTag => $linkHref ) {
+                $condBefore = $condAfter = '';
+
+		        // Any IE comments around the tag?
+		        $scriptIdAttr = Misc::getValueFromTag($linkTag, 'id');
+
+		        if ($scriptIdAttr && substr( $scriptIdAttr, -4 ) === '-css') {
+                    $linkHandle = substr( $scriptIdAttr, 0, -4 );
+
+                    $linkObj = isset(Main::instance()->wpAllStyles['registered'][$linkHandle]) ? Main::instance()->wpAllStyles['registered'][$linkHandle] : false;
+
+                    if ($linkObj) {
+	                    $conditional = isset($linkObj->extra['conditional']) ? $linkObj->extra['conditional'] : '';
+
+	                    if ($conditional) {
+		                    $condBefore = "<!--[if {$conditional}]>\n";
+		                    $condAfter  = "<![endif]-->\n";
+	                    }
+                    }
+		        }
+
+                $linkPreload  = $condBefore;
+                $linkPreload .= self::linkPreloadCssFormat( $linkHref );
+                $linkPreload .= $condAfter;
+
+                $htmlSource = str_replace( self::DEL_STYLES_PRELOADS, $linkPreload . self::DEL_STYLES_PRELOADS, $htmlSource );
+	        }
+        }
 
 		return $htmlSource;
 	}
@@ -379,10 +403,8 @@ class Preloads
         }
 
         if (OptimizeCss::wpfcMinifyCssEnabledOnly()) {
-		    // [wpacu_lite]
             return '<link rel=\'preload\' data-from-rel=\'stylesheet\' as=\'style\' data-href-before=\''.$linkHref.'\' href=\''.esc_attr($linkHref).'\' data-wpacu-preload-css-basic=\'1\' />' . "\n";
-		    // [/wpacu_lite]
-		}
+        }
 
 		return '<link rel=\'preload\' as=\'style\' href=\''.esc_attr($linkHref).'\' data-wpacu-preload-css-basic=\'1\' />'."\n";
 	}
@@ -400,20 +422,46 @@ class Preloads
 
 		$strContainsFormat = preg_quote('data-wpacu-to-be-preloaded-basic=\'1\'', '/');
 
-		preg_match_all('#<script[^>]*'.$strContainsFormat.'[^>]*' . 'src=([\'"])(.*)([\'"])' . '.*(>)#Usmi', $htmlSource, $matchesSourcesFromScriptTags, PREG_SET_ORDER);
+		preg_match_all('#<script[^>]*'.$strContainsFormat.'[^>]*' . 'src(\s+|)=(\s+|)(\'|"|)(.*)(\\3)' . '.*(>)#Usmi', $htmlSource, $matchesSourcesFromScriptTags, PREG_SET_ORDER);
 
 		if (empty($matchesSourcesFromScriptTags)) {
 			return $htmlSource;
 		}
 
 		foreach ($matchesSourcesFromScriptTags as $scriptTagArray) {
-			$scriptSrc = isset($scriptTagArray[2]) ? $scriptTagArray[2] : false;
+            $scriptTag = isset($scriptTagArray[0]) ? $scriptTagArray[0] : false;
 
-			if (! $scriptSrc) {
+			if (! $scriptTag) {
 				continue;
 			}
 
-			$linkPreload = '<link rel=\'preload\' as=\'script\' href=\''.esc_attr($scriptSrc).'\' data-wpacu-preload-js=\'1\'>'."\n";
+            $scriptSrc = Misc::getValueFromTag($scriptTag);
+
+            $condBefore = $condAfter = '';
+
+            // Any IE comments around the tag?
+            $scriptIdAttr = Misc::getValueFromTag($scriptTag, 'id');
+
+            if ($scriptIdAttr && strpos($scriptTag, '-js') !== false) {
+	            $scriptHandle = rtrim($scriptIdAttr, '-js');
+
+                if ($scriptHandle) {
+                    $scriptObj = isset(Main::instance()->wpAllScripts['registered'][$scriptHandle]) ? Main::instance()->wpAllScripts['registered'][$scriptHandle] : false;
+
+                    if ($scriptObj) {
+	                    $conditional = isset($scriptObj->extra['conditional']) ? $scriptObj->extra['conditional'] : '';
+
+	                    if ($conditional) {
+		                    $condBefore = "<!--[if {$conditional}]>\n";
+		                    $condAfter  = "<![endif]-->\n";
+	                    }
+                    }
+                }
+            }
+
+            $linkPreload  = $condBefore;
+			$linkPreload .= '<link rel=\'preload\' as=\'script\' href=\''.esc_attr($scriptSrc).'\' data-wpacu-preload-js=\'1\'>'."\n";
+			$linkPreload .= $condAfter;
 
 			$htmlSource = str_replace(self::DEL_SCRIPTS_PRELOADS, $linkPreload . self::DEL_SCRIPTS_PRELOADS, $htmlSource);
 		}
@@ -426,16 +474,24 @@ class Preloads
 	 */
 	public static function updatePreloads()
 	{
+		$useGlobalPost = false;
+
 		if ( (isset($_POST[WPACU_FORM_ASSETS_POST_KEY]['styles']) && ! empty($_POST[WPACU_FORM_ASSETS_POST_KEY]['styles']))
 		     || (isset($_POST[WPACU_FORM_ASSETS_POST_KEY]['scripts']) && ! empty($_POST[WPACU_FORM_ASSETS_POST_KEY]['scripts'])) ) {
 			$mainVarToUse = self::updatePreloadsAdapt($_POST[WPACU_FORM_ASSETS_POST_KEY]); // New form fields (starting from v1.1.9.9)
 		} elseif (Misc::isValidRequest('post', 'wpacu_preloads')) {
-			$mainVarToUse = $_POST;
+			$useGlobalPost = true;
 		} else {
 			return;
 		}
 
-		if (! isset($mainVarToUse['wpacu_preloads']['styles']) && ! isset($mainVarToUse['wpacu_preloads']['scripts'])) {
+		if (! $useGlobalPost && isset($mainVarToUse['wpacu_preloads'])) {
+			$bucketToUse = $mainVarToUse['wpacu_preloads'];
+		} else if (isset($_POST['wpacu_preloads'])) {
+			$bucketToUse = $_POST['wpacu_preloads'];
+		}
+
+		if (! isset($bucketToUse['styles']) && ! isset($bucketToUse['scripts'])) {
 			return;
 		}
 
@@ -448,31 +504,21 @@ class Preloads
 		$existingListData = Main::instance()->existingList($existingListJson, $existingListEmpty);
 		$existingList = $existingListData['list'];
 
-		if ( isset( $mainVarToUse['wpacu_preloads']['styles'] ) && ! empty( $mainVarToUse['wpacu_preloads']['styles'] ) ) {
-			foreach ( $mainVarToUse['wpacu_preloads']['styles'] as $styleHandle => $stylePreload ) {
-				$stylePreload = trim( $stylePreload );
+		foreach (array('styles', 'scripts') as $assetType) {
+			if ( isset( $bucketToUse[$assetType] ) && ! empty( $bucketToUse[$assetType] ) ) {
+				foreach ( $bucketToUse[$assetType] as $assetHandle => $assetPreload ) {
+					$assetPreload = trim( $assetPreload );
 
-				if ( $stylePreload === '' && isset( $existingList['styles'][ $globalKey ][ $styleHandle ] ) ) {
-					unset( $existingList['styles'][ $globalKey ][ $styleHandle ] );
-				} elseif ( $stylePreload !== '' ) {
-					$existingList['styles'][ $globalKey ][ $styleHandle ] = $stylePreload;
+					if ( $assetPreload === '' && isset( $existingList[$assetType][ $globalKey ][ $assetHandle ] ) ) {
+						unset( $existingList[$assetType][ $globalKey ][ $assetHandle ] );
+					} elseif ( $assetPreload !== '' ) {
+						$existingList[$assetType][ $globalKey ][ $assetHandle ] = $assetPreload;
+					}
 				}
 			}
 		}
 
-		if ( isset( $mainVarToUse['wpacu_preloads']['scripts'] ) && ! empty( $mainVarToUse['wpacu_preloads']['scripts'] ) ) {
-			foreach ( $mainVarToUse['wpacu_preloads']['scripts'] as $scriptHandle => $scriptPreload ) {
-				$scriptPreload = trim( $scriptPreload );
-
-				if ( $scriptPreload === '' && isset( $existingList['scripts'][ $globalKey ][ $scriptHandle ] ) ) {
-					unset( $existingList['scripts'][ $globalKey ][ $scriptHandle ] );
-				} elseif ( $scriptPreload !== '' ) {
-					$existingList['scripts'][ $globalKey ][ $scriptHandle ] = $scriptPreload;
-				}
-			}
-		}
-
-		Misc::addUpdateOption($optionToUpdate, json_encode(Misc::filterList($existingList)));
+		Misc::addUpdateOption($optionToUpdate, wp_json_encode(Misc::filterList($existingList)));
 	}
 
 	/**
@@ -541,7 +587,7 @@ class Preloads
 			}
 		}
 
-		Misc::addUpdateOption($optionToUpdate, json_encode(Misc::filterList($existingList)));
+		Misc::addUpdateOption($optionToUpdate, wp_json_encode(Misc::filterList($existingList)));
 
 		set_transient('wpacu_preloads_just_removed', 1, 30);
 
