@@ -188,14 +188,15 @@ header {
       padding: 0;
 
       @media only screen and (max-width: $small) {
-        align-items: flex-end;
         background: white;
         box-shadow: 5px 5px 5px 0 #cdcdcd;
         flex-direction: column;
-        margin-left: auto;
-        padding: 0 2rem 1rem;
+        justify-content: center;
+        margin-left: 0;
+        margin-right: 0;
         right: 0;
-        width: 85vw;
+        text-align: center;
+        width: 100%;
         z-index: 2;
       }
 
@@ -203,7 +204,9 @@ header {
         list-style: none;
 
         @media only screen and (max-width: $small) {
+          border-bottom: 1px solid black;
           margin-bottom: .5rem;
+          width: 100%;
         }
 
         a {
@@ -211,6 +214,13 @@ header {
           color: #000;
           cursor: pointer;
           text-decoration: none;
+
+          @media only screen and (max-width: $small) {
+            display: block;
+            padding: 1rem 0;
+            font-size: 1.5rem;
+            width: 100%;
+          }
         }
       }
 
@@ -225,17 +235,17 @@ header {
         padding: 5px 0 25px 20px;
         position: absolute;
         transition: opacity .3s;
-        z-index: 3;
+        z-index: -1;
 
         -webkit-animation-name: flip-in; /* Chrome, Safari, Opera */
-        -webkit-animation-duration: .7s ; /* Chrome, Safari, Opera */
+        -webkit-animation-duration: .7s; /* Chrome, Safari, Opera */
         -webkit-animation-iteration-count: 1;
         animation-name: flip-in;
-        animation-duration: .7s ;
+        animation-duration: .7s;
         animation-iteration-count: 1;
-        transform-origin:0 0;
-        -webkit-transform-origin:0 0;
-        -ms-transform-origin:0 0;
+        transform-origin: 0 0;
+        -webkit-transform-origin: 0 0;
+        -ms-transform-origin: 0 0;
 
         &:before {
           background: url('../../src/images/crop-sword.svg');
@@ -251,11 +261,12 @@ header {
 
       .engage + .sub-menu {
         opacity: 1;
+        z-index: 3;
 
         @media only screen and (max-width: $small) {
-          top: 0.5rem;
-          left: 3rem;
-          transform: scaleX(-1);
+          top: 2.78rem;
+          left: 6rem;
+          width: 47%;
         }
 
         li {
@@ -266,22 +277,17 @@ header {
           &:hover {
             border-bottom: 2px solid $light_blue;
           }
-
-          @media only screen and (max-width: $small) {
-            text-align: right;
-            transform: scaleX(-1);
-          }
         }
 
         -webkit-animation-name: flip-out; /* Chrome, Safari, Opera */
-        -webkit-animation-duration: .7s ; /* Chrome, Safari, Opera */
+        -webkit-animation-duration: .7s; /* Chrome, Safari, Opera */
         -webkit-animation-iteration-count: 1;
         animation-name: flip-out;
-        animation-duration: .7s ;
+        animation-duration: .7s;
         animation-iteration-count: 1;
-        transform-origin:0 0;
-        -webkit-transform-origin:0 0;
-        -ms-transform-origin:0 0;
+        transform-origin: 0 0;
+        -webkit-transform-origin: 0 0;
+        -ms-transform-origin: 0 0;
       }
 
       .menu-item-has-children {
@@ -297,6 +303,12 @@ header {
           right: -20px;
           transform: rotate(180deg);
           top: -5px;
+
+          @media only screen and (max-width: $small) {
+            font-size: 34px;
+            right: 12px;
+            top: 2px;
+          }
         }
       }
     }
@@ -308,16 +320,18 @@ header {
 
     .logout-user {
       opacity: 0;
-      position: absolute;
-      left: -20px;
-      top: 0;
       transition: all .5s;
       z-index: -1;
+
+      &:hover {
+        cursor: pointer;
+        font-weight: 600;
+        opacity: 1;
+      }
     }
 
     .display-name:hover + .logout-user {
       opacity: 1;
-      left: -52px;
       z-index: 1;
     }
   }

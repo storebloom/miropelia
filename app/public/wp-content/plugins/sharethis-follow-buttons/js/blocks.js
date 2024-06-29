@@ -14,6 +14,7 @@ const followicon = followcreateElement('div', { style: {
 	backgroundPosition: 'center',
 	backgroundColor: '#93d227'
 } } );
+
 /**
  * Share Buttons Block
  */

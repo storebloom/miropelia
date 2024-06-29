@@ -19,7 +19,7 @@
 	<?php
 		// translators: The list type singular.
 		printf( esc_html__( 'Search for a %1$s', 'sharethis-follow-buttons' ), esc_html( $type['single'] ) );
-		?>
+	?>
 	" size="40" autocomplete="off">
 	<span id="<?php echo esc_attr( $type['single'] ); ?>" class="search-st-icon"></span>
 	<ul id="<?php echo esc_attr( $type['single'] ); ?>-result-wrapper"></ul>

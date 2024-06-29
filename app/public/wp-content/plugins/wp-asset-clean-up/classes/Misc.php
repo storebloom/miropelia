@@ -14,7 +14,7 @@ class Misc
 	 * @var array
 	 */
 	public static $potentialCachePlugins = array(
-		'breeze/breeze.php', // Breeze – WordPress Cache Plugin
+		'breeze/breeze.php', // Breeze WordPress Cache Plugin
 		'cache-enabler/cache-enabler.php', // Cache Enabler
 		'cachify/cachify.php', // Cachify
 		'comet-cache/comet-cache.php', // Comet Cache
@@ -91,15 +91,25 @@ class Misc
 			return false;
 		}
 
-		return (substr_compare(
+		return substr_compare(
 			        $string,
 			        $endsWithString,
 			        $stringLen - $endsWithStringLen, $endsWithStringLen
-		        ) === 0);
+		        ) === 0;
 	}
 
 	/**
-	 * @return string
+	 * @param $content
+	 *
+	 * @return array|string|string[]|null
+	 */
+	public static function stripIrrelevantHtmlTags($content)
+	{
+		return preg_replace( '@<(script|style|iframe)[^>]*?>.*?</\\1>@si', '', $content );
+	}
+
+	/**
+	 * @return bool
 	 */
 	public static function isHttpsSecure()
 	{
@@ -169,7 +179,7 @@ class Misc
      */
     private static function _filterPageUrl($postUrl)
     {
-        // If we are in the Dashboard on a HTTPS connection,
+        // If we are in the Dashboard on an HTTPS connection,
         // then we will make the AJAX call over HTTPS as well for the front-end
         // to avoid blocking
         if (self::isHttpsSecure() && strpos($postUrl, 'http://') === 0) {
@@ -182,7 +192,7 @@ class Misc
 	/**
 	 * @param $postId
 	 *
-	 * @return array|false|string|string[]|\WP_Error
+	 * @return string
 	 */
 	public static function getPageUri($postId)
     {
@@ -193,6 +203,32 @@ class Misc
 
 	    return str_replace( $rootUrl, '', $dbPageUrl );
     }
+
+	/**
+	 * @param $postTypes
+	 *
+	 * @return mixed
+	 */
+	public static function filterPostTypesList($postTypes)
+	{
+		foreach ($postTypes as $postTypeKey => $postTypeValue) {
+			// Exclude irrelevant custom post types
+			if (in_array($postTypeKey, MetaBoxes::$noMetaBoxesForPostTypes)) {
+				unset($postTypes[$postTypeKey]);
+			}
+
+			// Polish existing values
+			if ($postTypeKey === 'product' && self::isPluginActive('woocommerce/woocommerce.php')) {
+				$postTypes[$postTypeKey] = 'product &#10230; WooCommerce';
+			}
+
+			if ($postTypeKey === 'download' && self::isPluginActive('easy-digital-downloads/easy-digital-downloads.php')) {
+				$postTypes[$postTypeKey] = 'download &#10230; Easy Digital Downloads';
+			}
+		}
+
+		return $postTypes;
+	}
 
 	/**
 	 * Note: If plugins are disabled via "Plugins Manager" -> "IN THE DASHBOARD /wp-admin/"
@@ -244,6 +280,19 @@ class Misc
 	}
 
 	/**
+	 * @return void
+	 */
+	public static function w3TotalCacheFlushObjectCache()
+	{
+		// Flush "W3 Total Cache" before printing the list as sometimes the old list shows after the CSS/JS manager is reloaded
+		if (function_exists('w3tc_objectcache_flush') && Misc::isPluginActive('w3-total-cache/w3-total-cache.php')) {
+			try {
+				w3tc_objectcache_flush();
+			} catch(\Exception $e) {}
+		}
+	}
+
+	/**
 	 * @return bool
 	 */
 	public static function isElementorMaintenanceModeOn()
@@ -286,7 +335,7 @@ class Misc
     }
 
     /**
-     * @return mixed
+     * @return bool
      */
     public static function isHomePage()
     {
@@ -357,25 +406,26 @@ class Misc
 	 * @return bool
 	 */
 	public static function isRootUrl()
-    {
-    	$siteUrl = get_bloginfo('url');
+	{
+		$siteUrl = get_bloginfo('url');
 
-	    $urlPath = parse_url($siteUrl, PHP_URL_PATH);
-	    $requestURI = $_SERVER['REQUEST_URI'];
+		$urlPath = (string)parse_url($siteUrl, PHP_URL_PATH);
 
-	    $urlPathNoForwardSlash = $urlPath;
-	    $requestURINoForwardSlash = $requestURI;
+		$requestURI = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
 
-	    if (substr($urlPath, -1) === '/') {
-	    	$urlPathNoForwardSlash = substr($urlPath, 0, -1);
-	    }
+		$urlPathNoForwardSlash = $urlPath;
+		$requestURINoForwardSlash = $requestURI;
 
-	    if (substr($requestURI, -1) === '/') {
-		    $requestURINoForwardSlash = substr($requestURI, 0, -1);
-	    }
+		if ($urlPath && substr($urlPath, -1) === '/') {
+			$urlPathNoForwardSlash = substr($urlPath, 0, -1);
+		}
 
-	    return ($urlPathNoForwardSlash === $requestURINoForwardSlash);
-    }
+		if ($requestURI && substr($requestURI, -1) === '/') {
+			$requestURINoForwardSlash = substr($requestURI, 0, -1);
+		}
+
+		return ($urlPathNoForwardSlash === $requestURINoForwardSlash);
+	}
 
 	/**
 	 * @param $handleData
@@ -467,7 +517,7 @@ class Misc
 	 */
 	public static function assetFromHrefToRelativeUri($src, $assetKey)
     {
-	    // Make the "src" relative in case the information will be imported from Staging to Live, it won't show the handle's link referencing to the staging URL in the "Overview" page and other similar pages as it's confusing
+	    // Make the "src" relative in case the information will be imported from Staging to Live, it won't show the handle's link referencing to the staging URL in the "Overview" page and other similar pages, as it's confusing
 	    $localAssetPath = OptimizeCommon::getLocalAssetPath($src, (($assetKey === 'styles') ? 'css' : 'js'));
 
 	    $relSrc = $src;
@@ -486,6 +536,166 @@ class Misc
 
 	    return $relSrc;
     }
+
+	/**
+	 * @param $tagOutput ('script', 'link')
+	 * @param $attribute
+	 *
+	 * @return false|string
+	 */
+	public static function getValueFromTag($tagOutput, $attribute = '', $method = 'regex')
+	{
+		$tagOutput = trim($tagOutput);
+
+		if ( strpos( $tagOutput, '<script' ) === 0 ) {
+			$tagNameToCheck = 'script';
+
+			if ($attribute === '') {
+				$attribute = 'src';
+			}
+		} elseif ( strpos( $tagOutput, '<link' ) === 0 ) {
+			$tagNameToCheck = 'link';
+
+			if ($attribute === '') {
+				$attribute = 'href';
+			}
+		} elseif ( strpos( $tagOutput, '<style' ) === 0 ) {
+			$tagNameToCheck = 'style';
+
+			if ($attribute === '') {
+				$attribute = 'type';
+			}
+		} else {
+			return false; // the tag it neither 'script' nor 'link'
+		}
+
+		if ($method === 'dom_with_fallback') {
+			if (self::isDOMDocumentOn()) {
+				$domForTag = self::initDOMDocument();
+
+				$domForTag->loadHTML( $tagOutput );
+
+				$scriptTagObj = $domForTag->getElementsByTagName( $tagNameToCheck )->item( 0 );
+
+				if ( $scriptTagObj === null ) {
+					return false;
+				}
+
+				if ( $scriptTagObj->hasAttributes() ) {
+					foreach ( $scriptTagObj->attributes as $attrObj ) {
+						if ( $attrObj->nodeName === $attribute ) {
+							return trim( $attrObj->nodeValue );
+						}
+					}
+				}
+			}
+
+			return self::getValueFromTagViaRegEx($tagOutput, $attribute);
+		}
+
+		if ($method === 'regex') {
+			return self::getValueFromTagViaRegEx($tagOutput, $attribute);
+		}
+
+		return false;
+	}
+
+	/**
+	 * @param $tagOutput
+	 * @param $attribute
+	 *
+	 * @return false|string
+	 */
+	public static function getValueFromTagViaRegEx($tagOutput, $attribute = '')
+	{
+		$tagOutput = trim( $tagOutput );
+
+		if ( strpos($tagOutput, '<script') === 0 ) {
+			if ( $attribute === '' ) {
+				$attribute = 'src';
+			}
+
+			// Perhaps the strung "src" is inside an inline JS tag which would make the source value irrelevant
+			// We only need the "src" attribute from a SCRIPT tag that loads a .js file (without any inline JS code)
+			$tagOutputNoTags = trim(strip_tags($tagOutput));
+
+			if ($tagOutputNoTags !== '' && stripos($tagOutputNoTags, 'src') !== false) {
+				// This is an inline tag such as the following:
+				// <script>j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;</script>
+				return false;
+			}
+
+			preg_match_all( '#<script.*?'.$attribute.'\s*=\s*(.*?)#Usmi', $tagOutput, $outputMatches );
+		}
+
+		if ( strpos($tagOutput, '<link') === 0 ) {
+			if ( $attribute === '' ) {
+				$attribute = 'href';
+			}
+
+			preg_match_all( '#<link.*?'.$attribute.'\s*=\s*(.*?)#Usmi', $tagOutput, $outputMatches );
+		}
+
+		if ( strpos($tagOutput, '<style') === 0 ) {
+			if ( $attribute === '' ) {
+				$attribute = 'type';
+			}
+
+			preg_match_all( '#<style.*?'.$attribute.'\s*=\s*(.*?)#Usmi', $tagOutput, $outputMatches );
+		}
+
+		if ( isset($outputMatches[1][0]) && $outputMatches[1][0] ) {
+			$scriptPart = trim($outputMatches[1][0]);
+
+			foreach ( array('"', "'") as $quoteType ) {
+				if ( $scriptPart[0] === $quoteType ) {
+					$scriptPartTwo = ltrim( $scriptPart, $quoteType );
+
+					$posEndingQuote = strpos( $scriptPartTwo, $quoteType );
+
+					if ( $posEndingQuote === false ) {
+						return false;
+					}
+
+					return substr( $scriptPartTwo, 0, $posEndingQuote );
+				}
+			}
+
+			if ( ! in_array($scriptPart[0], array('"', "'") ) ) { // no quotes, just space or no wrapper
+				$scriptPartTwo = ltrim( $scriptPart );
+
+				$posFirstSpace = strpos( $scriptPartTwo, ' ' );
+
+				if ($posFirstSpace === false ) {
+					return false;
+				}
+
+				return substr( $scriptPartTwo, 0, $posFirstSpace );
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * @param $postType
+	 *
+	 * @return false[]
+	 */
+	public static function isValidPostType($postType)
+	{
+		global $wpdb;
+
+		$status = array('has_records' => false); // default
+
+		$hasRecords = $wpdb->get_var('SELECT COUNT(*) FROM `'.$wpdb->posts.'` WHERE post_type=\''.$postType.'\'');
+
+		if ($hasRecords) {
+			$status['has_records'] = $hasRecords;
+		}
+
+		return $status;
+	}
 
 	/**
 	 * @return bool
@@ -534,7 +744,7 @@ class Misc
     }
 
 	/**
-	 * @return bool|mixed
+	 * @return bool
 	 */
 	public static function isWpRocketMinifyHtmlEnabled()
     {
@@ -578,13 +788,160 @@ class Misc
     }
 
 	/**
+	 *
+	 * @return array|string|void
+	 */
+	public static function getWpCoreCssHandlesFromWpIncludesBlocks()
+	{
+		$transientName = 'wpacu_wp_core_css_handles_from_wp_includes_blocks';
+
+		if ($transientValues = get_transient($transientName)) {
+			return $transientValues;
+		}
+
+		$blocksDir = ABSPATH.'wp-includes/blocks/';
+
+		$cssCoreHandlesList = array();
+
+		if (is_dir($blocksDir)) {
+			$list = scandir($blocksDir);
+
+			if ( ! empty($list) && count($list) > 2 ) {
+				foreach ($list as $fileOrDir) {
+					$targetJsonFile = $blocksDir.$fileOrDir.'/block.json';
+
+					if (is_dir($blocksDir.$fileOrDir) && is_file($targetJsonFile)) {
+						$jsonToArray = function_exists('wp_json_file_decode') ? wp_json_file_decode($targetJsonFile, array('associative' => true))
+						    : self::wpJsonFileDecode($targetJsonFile, array( 'associative' => true));
+
+						if (isset($jsonToArray['style'])) {
+							if ( is_array( $jsonToArray['style'] ) ) {
+								foreach ( $jsonToArray['style'] as $style ) {
+									$cssCoreHandlesList[] = $style;
+								}
+							} else {
+								$cssCoreHandlesList[] = $jsonToArray['style'];
+							}
+						}
+
+						if (isset($jsonToArray['editorStyle'])) {
+							if ( is_array( $jsonToArray['editorStyle'] ) ) {
+								foreach ( $jsonToArray['editorStyle'] as $editorStyle ) {
+									$cssCoreHandlesList[] = $editorStyle;
+								}
+							} else {
+								$cssCoreHandlesList[] = $jsonToArray['editorStyle'];
+							}
+						}
+					}
+				}
+
+				foreach ($cssCoreHandlesList as $style) {
+					if (self::endsWith($style, '-editor')) {
+						$cssCoreHandlesList[] = substr($style, 0, -strlen('-editor'));
+					}
+				}
+
+				$cssCoreHandlesList = array_unique($cssCoreHandlesList);
+			}
+		} else {
+			// Different WordPress version, perhaps no longer using that directory
+			set_transient($transientName, array(), 3600 * 24 * 7);
+
+			return array();
+		}
+
+		if ( ! empty($cssCoreHandlesList) ) {
+			set_transient($transientName, $cssCoreHandlesList, 3600 * 24 * 7);
+
+			return $cssCoreHandlesList;
+		}
+	}
+
+	/**
+	 * Fallback in the case the WordPress version is below 5.9.0
+	 *
+	 * @param $filename
+	 * @param $options
+	 *
+	 * @return mixed|null
+	 */
+	public static function wpJsonFileDecode( $filename, $options = array() )
+	{
+		$filename = wp_normalize_path( realpath( $filename ) );
+
+		if ( ! file_exists( $filename ) ) {
+			trigger_error(
+				sprintf(
+					/* translators: %s: Path to the JSON file. */
+					__( "File %s doesn't exist!" ),
+					$filename
+				)
+			);
+			return null;
+		}
+
+		$options      = wp_parse_args( $options, array( 'associative' => false ) );
+		$decoded_file = json_decode( file_get_contents( $filename ), $options['associative'] );
+
+		if ( JSON_ERROR_NONE !== json_last_error() ) {
+			trigger_error(
+				sprintf(
+				/* translators: 1: Path to the JSON file, 2: Error message. */
+					__( 'Error when decoding a JSON file at path %1$s: %2$s' ),
+					$filename,
+					json_last_error_msg()
+				)
+			);
+			return null;
+		}
+
+		return $decoded_file;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public static function isDOMDocumentOn()
+	{
+		return function_exists('libxml_use_internal_errors') && function_exists('libxml_clear_errors') && class_exists('\DOMDocument') && class_exists('\DOMXpath');
+	}
+
+	/**
+	 * @return \DOMDocument
+	 */
+	public static function initDOMDocument()
+	{
+		$dom = new \DOMDocument();
+
+		// Any document errors reported in the HTML source (lots of websites have them) are irrelevant for the functionality of the plugin
+		libxml_use_internal_errors(true);
+
+		return $dom;
+	}
+
+	/**
+	 * @param $e
+	 *
+	 * @return string
+	 */
+	public static function getOuterHTML( $e )
+	{
+		$doc = Misc::initDOMDocument();
+
+		$doc->appendChild( $doc->importNode( $e, true ) );
+
+		return trim( $doc->saveHTML() );
+	}
+
+	/**
 	 * @return array|string
 	 */
 	public static function getW3tcMasterConfig()
 	{
 		if (! ObjectCache::wpacu_cache_get('wpacu_w3tc_master_config')) {
 			$w3tcConfigMasterFile = WP_CONTENT_DIR . '/w3tc-config/master.php';
-			$w3tcMasterConfig = FileSystem::file_get_contents($w3tcConfigMasterFile);
+			$w3tcMasterConfig = FileSystem::fileGetContents($w3tcConfigMasterFile);
 			ObjectCache::wpacu_cache_set('wpacu_w3tc_master_config', trim($w3tcMasterConfig));
 		} else {
 			$w3tcMasterConfig = ObjectCache::wpacu_cache_get('wpacu_w3tc_master_config');
@@ -623,10 +980,10 @@ var sheets=doc.styleSheets;if(attributes){for(var attributeName in attributes){i
 ss.rel="stylesheet";ss.href=href;ss.media="only x";function ready(cb){if(doc.body){return cb()}
 setTimeout(function(){ready(cb)})}
 ready(function(){ref.parentNode.insertBefore(ss,(before?ref:ref.nextSibling))});var onwpaculoadcssdefined=function(cb){var resolvedHref=ss.href;var i=sheets.length;while(i--){if(sheets[i].href===resolvedHref){return cb()}}
-setTimeout(function(){onwpaculoadcssdefined(cb)})};function loadCB(){if(ss.addEventListener){ss.removeEventListener("load",loadCB)}
+setTimeout(function(){onwpaculoadcssdefined(cb)})};function wpacuLoadCB(){if(ss.addEventListener){ss.removeEventListener("load",wpacuLoadCB)}
 ss.media=media||"all"}
-if(ss.addEventListener){ss.addEventListener("load",loadCB)}
-ss.onwpaculoadcssdefined=onwpaculoadcssdefined;onwpaculoadcssdefined(loadCB);return ss};if(typeof exports!=="undefined"){exports.wpacuLoadCSS=wpacuLoadCSS}else{w.wpacuLoadCSS=wpacuLoadCSS}}(typeof global!=="undefined"?global:this))
+if(ss.addEventListener){ss.addEventListener("load",wpacuLoadCB)}
+ss.onwpaculoadcssdefined=onwpaculoadcssdefined;onwpaculoadcssdefined(wpacuLoadCB);return ss};if(typeof exports!=="undefined"){exports.wpacuLoadCSS=wpacuLoadCSS}else{w.wpacuLoadCSS=wpacuLoadCSS}}(typeof global!=="undefined"?global:this))
 </script>
 HTML;
 	}
@@ -634,7 +991,7 @@ HTML;
 	/**
 	 * @param $array
 	 *
-	 * @return mixed
+	 * @return string
 	 */
 	public static function arrayKeyFirst($array)
 	{
@@ -648,7 +1005,7 @@ HTML;
 	}
 
 	/**
-	 * @return bool|int
+	 * @return int
 	 */
 	public static function jsonLastError()
 	{
@@ -688,7 +1045,7 @@ HTML;
 	 * @param $requestMethod
 	 * @param $key
 	 *
-	 * @return bool|mixed
+	 * @return bool
 	 */
 	public static function isValidRequest($requestMethod, $key)
     {
@@ -713,7 +1070,7 @@ HTML;
     	    return;
 	    }
 
-	    $pageOptionsJson = json_encode(array(
+	    $pageOptionsJson = wp_json_encode(array(
 		    'no_css_minify'   => 1,
 		    'no_css_optimize' => 1,
 		    'no_js_minify'    => 1,
@@ -732,17 +1089,22 @@ HTML;
 	 */
 	public static function addUpdateOption($optionName, $optionValue, $autoload = 'no')
     {
-    	// Nothing in the database | Add it
-    	if (! get_option($optionName)) {
+		$optionValue = is_string($optionValue) ? trim($optionValue) : $optionValue;
+
+	    // Empty array encoded into JSON; No point in keeping the option in the database if it's already there
+	    if ($optionValue === '[]') {
+		    delete_option($optionName);
+		    return;
+	    }
+
+    	// Nothing in the database? Since option does not exist, add it
+    	if (get_option($optionName) === false) {
 		    add_option($optionName, $optionValue, '', $autoload);
 		    return;
 	    }
 
-    	// Empty array encoded into JSON; No point in keeping the option in the database
-    	if ($optionValue === '[]') {
-    		delete_option($optionName);
-    		return;
-	    }
+		// get_option($optionName) didn't return false, thus the option is either an empty string or it has a value
+	    // either way, it exists in the database and the update will be triggered
 
     	// Value is in the database already | Update it
     	update_option($optionName, $optionValue, $autoload);
@@ -841,9 +1203,18 @@ SQL;
 			$bulkUnloadArray  = @json_decode($bulkUnloadListJson, ARRAY_A);
 
 			$bulkUnloadedAllTypes = array('search', 'date', '404', 'taxonomy', 'post_type', 'author');
+			foreach (array('styles', 'scripts') as $assetType) {
+				if ( isset( $bulkUnloadArray[ $assetType ] ) ) {
+					foreach ( array_keys( $bulkUnloadArray[ $assetType ] ) as $dataType ) {
+						if ( strpos( $dataType, 'custom_post_type_archive_' ) !== false ) {
+							$bulkUnloadedAllTypes[] = $dataType;
+						}
+					}
+				}
+			}
 
-			foreach ($bulkUnloadedAllTypes as $bulkUnloadedType) {
-				if (in_array($bulkUnloadedType, array('search', 'date', '404'))) {
+			foreach ( $bulkUnloadedAllTypes as $bulkUnloadedType ) {
+				if (in_array($bulkUnloadedType, array('search', 'date', '404')) || (strpos($bulkUnloadedType, 'custom_post_type_archive_') !== false)) {
 					foreach (array('styles', 'scripts') as $assetType) {
 						if ( isset( $bulkUnloadArray[$assetType][ $bulkUnloadedType ] ) && ! empty( $bulkUnloadArray[$assetType][ $bulkUnloadedType ] ) ) {
 							$unloadedTotalAssets += count( $bulkUnloadArray[$assetType][ $bulkUnloadedType ] );
@@ -930,6 +1301,18 @@ SQL;
 	}
 
 	/**
+	 * @return string
+	 */
+	public static function getThemesDirRel()
+	{
+		$relPathCurrentTheme = str_replace( site_url(), '', get_template_directory_uri() );
+
+		$posLastForwardSlash = strrpos($relPathCurrentTheme,'/');
+
+		return substr($relPathCurrentTheme, 0, $posLastForwardSlash) . '/';
+	}
+
+	/**
 	 * Needed when the plugins' directory is different than the default one: /wp-content/plugins/
 	 *
 	 * @param $values
@@ -952,58 +1335,98 @@ SQL;
 	/**
 	 * @param $src
 	 *
-	 * @return bool|mixed
+	 * @return bool|array
 	 */
 	public static function maybeIsInactiveAsset($src)
 	{
-		// Quickest way
 		$pluginsDirRel = self::getPluginsDir();
-		preg_match_all('#/'.$pluginsDirRel.'/(.*?)/#', $src, $matches, PREG_PATTERN_ORDER);
-
-		if (isset($matches[1][0]) && $matches[1][0]) {
-			$pluginDirName = $matches[1][0];
-
-			$activePlugins = self::getActivePlugins();
-			$activePluginsStr = implode(',', $activePlugins);
-
-			if (strpos($activePluginsStr, $pluginDirName.'/') === false) {
-				return $pluginDirName; // it belongs to an inactive plugin
-			}
-		}
-
-		$relPluginsUrl = str_replace(site_url(), '', plugins_url());
 
 		$srcAlt = $src;
 
-		if (strpos($srcAlt, '//') === 0) {
-			$srcAlt = str_replace(
-				str_replace(array('http://', 'https://'),'//', site_url()),
-				'',
-				$srcAlt
-			);
+		if ( strpos( $srcAlt, '//' ) === 0 ) {
+			$srcAlt = str_replace( str_replace( array( 'http://', 'https://' ), '//', site_url() ), '', $srcAlt );
 		}
 
 		$relSrc = str_replace( site_url(), '', $srcAlt );
 
-		if (strpos($relSrc, '/'.$pluginsDirRel) !== false) {
-			list (,$relSrc) = explode('/'.$pluginsDirRel, $relSrc);
-		}
+		/*
+		 * [START] plugin path
+		 */
+		if (strpos($src, $pluginsDirRel) !== false) {
+			// Quickest way
+			preg_match_all( '#/' . $pluginsDirRel . '/(.*?)/#', $src, $matches, PREG_PATTERN_ORDER );
 
-		if (strpos($relSrc, $relPluginsUrl) !== false) {
-			// Determine the plugin behind the $src
-			$relSrc = trim(str_replace($relPluginsUrl, '', $relSrc), '/');
+			if ( isset( $matches[1][0] ) && $matches[1][0] ) {
+				$pluginDirName = $matches[1][0];
 
-			if (strpos($relSrc, '/') !== false) {
-				list ( $pluginDirName, ) = explode( '/', $relSrc );
+				$activePlugins    = self::getActivePlugins();
+				$activePluginsStr = implode( ',', $activePlugins );
 
-				$activePlugins = self::getActivePlugins();
-				$activePluginsStr = implode(',', $activePlugins);
+				if ( strpos( $activePluginsStr, $pluginDirName . '/' ) === false ) {
+					return array(
+						'from' => 'plugin',
+						'name' => $pluginDirName
+					); // it belongs to an inactive plugin
+				}
+			}
 
-				if (strpos($activePluginsStr, $pluginDirName.'/') === false) {
-					return $pluginDirName; // it belongs to an inactive plugin
+			$relPluginsUrl = str_replace( site_url(), '', plugins_url() );
+
+			if ( strpos( $relSrc, '/' . $pluginsDirRel ) !== false ) {
+				list ( , $relSrc ) = explode( '/' . $pluginsDirRel, $relSrc );
+			}
+
+			if ( strpos( $relSrc, $relPluginsUrl ) !== false ) {
+				// Determine the plugin behind the $src
+				$relSrc = trim( str_replace( $relPluginsUrl, '', $relSrc ), '/' );
+
+				if ( strpos( $relSrc, '/' ) !== false ) {
+					list ( $pluginDirName, ) = explode( '/', $relSrc );
+
+					$activePlugins    = self::getActivePlugins();
+					$activePluginsStr = implode( ',', $activePlugins );
+
+					if ( strpos( $activePluginsStr, $pluginDirName . '/' ) === false ) {
+						return array(
+							'from' => 'plugin',
+							'name' => $pluginDirName
+						); // it belongs to an inactive plugin
+					}
 				}
 			}
 		}
+		/*
+		 * [END] plugin path
+		 */
+
+		/*
+		 * [START] theme path
+		 */
+		$themesDirRel = self::getThemesDirRel();
+
+		if (strpos($relSrc, $themesDirRel) !== false) {
+			if ( strpos( $relSrc, $themesDirRel ) !== false ) {
+				list ( , $relSrc ) = explode( $themesDirRel, $relSrc );
+			}
+
+			if ( strpos( $relSrc, '/' ) !== false ) {
+				list ( $themeDirName, ) = explode( '/', $relSrc );
+			}
+
+			if (isset($themeDirName)) {
+				$activeThemes = self::getActiveThemes();
+
+				if ( ! empty( $activeThemes ) && ! in_array($themeDirName, $activeThemes) ) {
+					return array(
+						'from' => 'theme',
+						'name' => $themeDirName
+					);
+				}
+			}
+		}
+		/*
+		 * [END] theme path
+		 */
 
 		return false;
 	}
@@ -1034,31 +1457,65 @@ SQL;
 	}
 
 	/**
+	 * @return array
+	 */
+	public static function getActiveThemes()
+	{
+		$activeThemes     = array();
+		$currentThemeSlug = get_stylesheet();
+
+		if ( current_user_can( 'switch_themes' ) ) {
+			$themes = wp_get_themes( array( 'allowed' => true ) );
+		} else {
+			$themes = array( wp_get_theme() );
+		}
+
+		foreach ( $themes as $theme ) {
+			$themeSlug = $theme->get_stylesheet();
+
+			if ( $themeSlug === $currentThemeSlug ) {
+				// Make sure both the parent and the child theme are in the list of active themes
+				// in case there are references from
+				$activeThemes[] = $currentThemeSlug;
+
+				$childEndsWith = '-child';
+				if ( self::endsWith( $currentThemeSlug, $childEndsWith ) ) {
+					$activeThemes[] = substr( $currentThemeSlug, 0, - strlen( $childEndsWith ) );
+				} else {
+					$activeThemes[] = $currentThemeSlug . $childEndsWith;
+				}
+			}
+		}
+
+		return $activeThemes;
+	}
+
+	/**
+	 * @return array
+	 */
+	public static function getCachedActiveFreePluginsIcons()
+	{
+		$activePluginsIconsJson = get_transient( 'wpacu_active_plugins_icons' );
+
+		if ( $activePluginsIconsJson ) {
+			$activePluginsIcons = @json_decode( $activePluginsIconsJson, ARRAY_A );
+
+			if ( ! empty( $activePluginsIcons ) && is_array( $activePluginsIcons ) ) {
+				return $activePluginsIcons;
+			}
+		}
+
+		return array(); // default
+	}
+
+	/**
 	 * @param bool $onlyTransient
 	 * @param bool $forceDownload
 	 *
 	 * @return array|bool|mixed|object
 	 */
-	public static function fetchActiveFreePluginsIcons($onlyTransient = false, $forceDownload = false)
+	public static function fetchActiveFreePluginsIconsFromWordPressOrg()
     {
-    	// Check the transient if $forceDownload is set to false (default)
-    	if ( ! $forceDownload ) {
-		    $activePluginsIconsJson = get_transient( 'wpacu_active_plugins_icons' );
-
-		    if ( $activePluginsIconsJson ) {
-			    $activePluginsIcons = @json_decode( $activePluginsIconsJson, ARRAY_A );
-		    }
-
-		    if ( ! empty( $activePluginsIcons ) && is_array( $activePluginsIcons ) ) {
-			    return $activePluginsIcons;
-		    }
-
-		    // Do not fetch the icons from the WordPress.org repository if only transient was required
-		    if ( $onlyTransient ) {
-			    return array();
-		    }
-	    }
-
 	    $allActivePlugins = self::getActivePlugins();
 
 	    if (empty($allActivePlugins)) {
@@ -1143,13 +1600,13 @@ SQL;
 
 	    $expiresInSeconds = 604800; // one week
 
-	    set_transient('wpacu_active_plugins_icons', json_encode($activePluginsIcons), $expiresInSeconds);
+	    set_transient('wpacu_active_plugins_icons', wp_json_encode($activePluginsIcons), $expiresInSeconds);
 
 	    return $activePluginsIcons;
     }
 
 	/**
-	 * @return array|bool|mixed|object
+	 * @return array
 	 */
 	public static function getAllActivePluginsIcons()
     {
@@ -1166,7 +1623,7 @@ SQL;
 		    'wp-rocket'     => WPACU_PLUGIN_URL . '/assets/icons/premium-plugins/wp-rocket.png'
 	    );
 
-	    $allActivePluginsIcons = self::fetchActiveFreePluginsIcons(true) ?: array();
+	    $allActivePluginsIcons = self::getCachedActiveFreePluginsIcons();
 
 	    if ( ! is_array($allActivePluginsIcons) ) {
 		    $allActivePluginsIcons = array();
@@ -1225,7 +1682,7 @@ SQL;
 			$typeAttr = " type='text/css'";
 		}
 
-		return $typeAttr;
+		return wp_kses($typeAttr, array('type' => array()));
 	}
 
 	/**
@@ -1299,13 +1756,15 @@ SQL;
 	 * @param $size
 	 * @param int $precision
 	 * @param string $getItIn
+	 * @param bool $includeHtmlTags
 	 *
 	 * @return string
 	 */
-	public static function formatBytes($size, $precision = 2, $getItIn = '')
+	public static function formatBytes($size, $precision = 2, $getItIn = '', $includeHtmlTags = true)
 	{
 		if ((int)$size === 0) {
-			return '<span style="vertical-align: middle;" class="dashicons dashicons-warning"></span> '.__('The file appears to be empty', 'wp-asset-clean-up');
+			return (($includeHtmlTags) ? '<span style="vertical-align: middle;" class="dashicons dashicons-warning"></span> ' : '') .
+					__('The file appears to be empty', 'wp-asset-clean-up');
 		}
 
 		// In case a string is passed, make it to float
@@ -1342,7 +1801,7 @@ SQL;
 
 		$resultForPrint = $result;
 
-		if ($suffixes[$floorBase] === 'KB' && $floorBase !== 1) {
+		if ($includeHtmlTags && $suffixes[$floorBase] === 'KB' && $floorBase !== 1) {
 			$resultForPrint = str_replace('.', '<span style="font-size: 80%; font-weight: 200;">.', $result).'</span>';
 		}
 
@@ -1353,7 +1812,7 @@ SQL;
 			$output .= ' ('.number_format($result / 1024, 4).' MB)';
 		}
 
-		return $output;
+		return wp_kses($output, array('span' => array('style' => array(), 'class' => array())));
 	}
 
 	/**
@@ -1384,7 +1843,7 @@ SQL;
 	 * @param array $targetDirs
 	 * @param string $filterExt
 	 *
-	 * @return array|bool
+	 * @return array
 	 */
 	public static function getSizeOfDirectoryRootFiles($targetDirs = array(), $filterExt = '')
 	{
@@ -1491,7 +1950,7 @@ SQL;
 
 		foreach ($array as $key => $value) {
 			if (is_array($value) || is_object($value)) {
-				$array[$key] = self::arrayUnsetRecursive($array[$key]);
+				$array[$key] = self::arrayUnsetRecursive($value);
 			}
 
 			// Values such as '0' are not considered empty values
@@ -1619,5 +2078,18 @@ SQL;
 				$wpacuTimingFormatS . 's',
 			), // clean it up
 			$htmlSource );
+	}
+
+	/**
+	 * @param $value
+	 *
+	 * @return string
+	 */
+	public static function sanitizeValueForHtmlAttr($value)
+	{
+		// Keep a standard that is used for specific HTML attributes such as "id" and "for"
+		$value = str_replace(array('-', '/', '.'), array('_', '_', '_'), $value);
+
+		return esc_attr(sanitize_title_for_query($value));
 	}
 }

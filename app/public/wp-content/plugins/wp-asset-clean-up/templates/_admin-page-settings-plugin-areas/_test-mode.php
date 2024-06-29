@@ -2,14 +2,14 @@
 /*
  * No direct access to this file
  */
-if (! isset($data)) {
+if (! isset($data, $selectedTabArea)) {
 	exit;
 }
 
 $tabIdArea = 'wpacu-setting-test-mode';
 $styleTabContent = ($selectedTabArea === $tabIdArea) ? 'style="display: table-cell;"' : '';
 ?>
-<div id="<?php echo $tabIdArea; ?>" class="wpacu-settings-tab-content" <?php echo $styleTabContent; ?>>
+<div id="<?php echo esc_attr($tabIdArea); ?>" class="wpacu-settings-tab-content" <?php echo wp_kses($styleTabContent, array('style' => array())); ?>>
 	<h2 class="wpacu-settings-area-title"><?php _e('Test Mode', 'wp-asset-clean-up'); ?></h2>
 	<p><?php echo sprintf(__('Have your visitors load the website without any %s settings while you\'re going through the plugin setup and unloading the useless CSS &amp; JavaScript!', 'wp-asset-clean-up'), WPACU_PLUGIN_TITLE); ?></p>
 	<table class="wpacu-form-table">
@@ -31,7 +31,7 @@ $styleTabContent = ($selectedTabArea === $tabIdArea) ? 'style="display: table-ce
 
                 <div style="margin-top: 10px;" class="wpacu-warning">
                     <p style="margin-top: 0;"><?php _e('Your visitors will load the website with all the settings &amp; assets loaded (just like it was before you activated the plugin). Only YOU (the logged-in administrator) will see the plugin\'s settings &amp; unload rules applied.', 'wp-asset-clean-up'); ?></p>
-                    <p><?php _e('To view the website as a guest visitor, just make sure you access it from a browser where you\'re not logged in, or you can test it in Incognito (Private) mode.', 'wp-asset-clean-up'); ?> (e.g. to access it in Chrome yo go to <em>File -&gt; New Incognito Window</em>, while on Firefox &amp; Safari, you access it via <em>File -&gt; New Private Window</em>) <img src="<?php echo WPACU_PLUGIN_URL; ?>/assets/icons/icon-incognito.png" alt="" style="height: 22px; width: 22px; vertical-align: middle; margin-right: 5px;" /></p>
+                    <p><?php _e('To view the website as a guest visitor, just make sure you access it from a browser where you\'re not logged in, or you can test it in Incognito (Private) mode.', 'wp-asset-clean-up'); ?> (e.g. to access it in Chrome yo go to <em>File -&gt; New Incognito Window</em>, while on Firefox &amp; Safari, you access it via <em>File -&gt; New Private Window</em>) <img src="<?php echo esc_url(WPACU_PLUGIN_URL); ?>/assets/icons/icon-incognito.png" alt="" style="height: 22px; width: 22px; vertical-align: middle; margin-right: 5px;" /></p>
                 </div>
 
                     <p><strong><?php _e('Example', 'wp-asset-clean-up'); ?>:</strong> <?php _e('For instance, you have an eCommerce website (e.g. WooCommerce, Easy Digital Downloads), and you\'re worried that unloading one wrong asset could break the "add to cart" functionality or the layout of the product page. You can enable this option, do the unloading for the CSS &amp; JavaScript files you believe are not needed on certain pages, test to check if everything is alright, and then disable test mode to enable the unloading for your visitors too (not only the admin).', 'wp-asset-clean-up'); ?></p>

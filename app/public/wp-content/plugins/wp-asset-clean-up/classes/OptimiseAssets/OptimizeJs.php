@@ -72,7 +72,7 @@ class OptimizeJs
 						continue;
 					}
 
-					$cleanScriptSrcFromTagArray = OptimizeCommon::getLocalCleanSourceFromTag( $scriptSourceTag, 'src' );
+					$cleanScriptSrcFromTagArray = OptimizeCommon::getLocalCleanSourceFromTag( $scriptSourceTag );
 
 					if ( isset( $cleanScriptSrcFromTagArray['source'] ) && $cleanScriptSrcFromTagArray['source'] ) {
 						$allEnqueuedCleanScriptSrcs[] = $cleanScriptSrcFromTagArray['source'];
@@ -120,12 +120,10 @@ class OptimizeJs
 		$doFileMinify = true;
 
 		$isMinifyJsFilesEnabled = (isset($fileAlreadyChecked['is_minify_js_enabled']) && $fileAlreadyChecked['is_minify_js_enabled'])
-					? $fileAlreadyChecked['is_minify_js_enabled']
-					: MinifyJs::isMinifyJsEnabled() && in_array(Main::instance()->settings['minify_loaded_js_for'], array('src', 'all', ''));
+			? $fileAlreadyChecked['is_minify_js_enabled']
+			: MinifyJs::isMinifyJsEnabled() && in_array(Main::instance()->settings['minify_loaded_js_for'], array('src', 'all', ''));
 
-		if (! $isMinifyJsFilesEnabled) {
-			$doFileMinify = false;
-		} elseif (MinifyJs::skipMinify($src, $value->handle)) {
+		if ( ! $isMinifyJsFilesEnabled || MinifyJs::skipMinify($src, $value->handle) ) {
 			$doFileMinify = false;
 		}
 
@@ -150,9 +148,15 @@ class OptimizeJs
 			$isJsFile = true;
 		}
 
-		$handleDbStr = md5($value->handle);
+		if ($isJsFile) {
+			// This is the safest one as handle names for specific static can change on very page load
+			// as some developers have a habit of adding the UNIX time or other random string to a handle (e.g. for debugging)
+			$uniqueAssetStr = md5 ( str_replace(Misc::getWpRootDirPath(), '', $localAssetPath) );
+		} else {
+			$uniqueAssetStr = md5( $value->handle );
+		}
 
-		$transientName = 'wpacu_js_optimize_'.$handleDbStr;
+		$transientName = 'wpacu_js_optimize_'.$uniqueAssetStr;
 
 		$skipCache = false;
 
@@ -161,16 +165,7 @@ class OptimizeJs
 		}
 
 		if (! $skipCache) {
-			if (Main::instance()->settings['fetch_cached_files_details_from'] === 'db_disk') {
-				if ( ! isset( $GLOBALS['wpacu_from_location_inc'] ) ) {
-					$GLOBALS['wpacu_from_location_inc'] = 1;
-				}
-				$fromLocation = ( $GLOBALS['wpacu_from_location_inc'] % 2 ) ? 'db' : 'disk';
-			} else {
-				$fromLocation = Main::instance()->settings['fetch_cached_files_details_from'];
-			}
-
-			$savedValues = OptimizeCommon::getTransient($transientName, $fromLocation);
+			$savedValues = OptimizeCommon::getTransient($transientName);
 
 			if ( $savedValues ) {
 				$savedValuesArray = json_decode($savedValues, ARRAY_A);
@@ -217,7 +212,7 @@ class OptimizeJs
 		 * [START] JS Content Optimization
 		*/
 		if (Main::instance()->settings['cache_dynamic_loaded_js'] &&
-			((strpos($src, '/?') !== false) || strpos($src, '.php?') !== false || Misc::endsWith($src, '.php')) &&
+		    ((strpos($src, '/?') !== false) || strpos($src, '.php?') !== false || Misc::endsWith($src, '.php')) &&
 		    (strpos($src, site_url()) !== false)
 		) {
 			$pathToAssetDir = '';
@@ -237,7 +232,7 @@ class OptimizeJs
 			$pathToAssetDir = OptimizeCommon::getPathToAssetDir($value->src);
 			$sourceBeforeOptimization = str_replace(Misc::getWpRootDirPath(), '/', $localAssetPath);
 
-			$jsContent = $jsContentBefore = FileSystem::file_get_contents($localAssetPath);
+			$jsContent = FileSystem::fileGetContents($localAssetPath);
 		}
 
 		$hadToBeMinified = false;
@@ -293,11 +288,17 @@ class OptimizeJs
 		 * [END] JS Content Optimization
 		*/
 
+		if (isset($jsContentBeforeMin) && $jsContent === '/**/' && strpos($jsContentBeforeMin, '/*@cc_on') !== false && strpos($jsContentBeforeMin, '@*/') !== false) {
+			return array(); // Internet Explorer things, leave the file as it is
+		}
+
 		// Relative path to the new file
 		// Save it to /wp-content/cache/js/{OptimizeCommon::$optimizedSingleFilesDir}/
 		$fileVer = sha1($jsContent);
 
-		$newFilePathUri  = self::getRelPathJsCacheDir() . OptimizeCommon::$optimizedSingleFilesDir . '/' . sanitize_title($value->handle) . '-v' . $fileVer;
+		$uniqueCachedAssetName = OptimizeCommon::generateUniqueNameForCachedAsset($isJsFile, $localAssetPath, $value->handle, $fileVer);
+
+		$newFilePathUri  = self::getRelPathJsCacheDir() . OptimizeCommon::$optimizedSingleFilesDir . '/' . $uniqueCachedAssetName;
 		$newFilePathUri .= '.js';
 
 		if ($jsContent === '') {
@@ -312,11 +313,11 @@ class OptimizeJs
 		$newLocalPath    = WP_CONTENT_DIR . $newFilePathUri; // Ful Local path
 		$newLocalPathUrl = WP_CONTENT_URL . $newFilePathUri; // Full URL path
 
-		if ($jsContent && $jsContent !== '/**/') {
+		if ($jsContent && $jsContent !== '/**/' && apply_filters('wpacu_print_info_comments_in_cached_assets', true)) {
 			$jsContent = '/*!' . $sourceBeforeOptimization . '*/' . "\n" . $jsContent;
 		}
 
-		$saveFile = FileSystem::file_put_contents($newLocalPath, $jsContent);
+		$saveFile = FileSystem::filePutContents($newLocalPath, $jsContent);
 
 		if (! $saveFile || ! $jsContent) {
 			// Fallback to the original JS if the optimized version can't be created or updated
@@ -330,7 +331,7 @@ class OptimizeJs
 		);
 
 		// Add / Re-add (with new version) transient
-		OptimizeCommon::setTransient($transientName, json_encode($saveValues));
+		OptimizeCommon::setTransient($transientName, wp_json_encode($saveValues));
 
 		return array(
 			OptimizeCommon::getSourceRelPath($value->src), // Original SRC (Relative path)
@@ -420,7 +421,7 @@ class OptimizeJs
 					@unlink( $pathToInlineJsOptimizedItem );
 				} else {
 					// Not expired / Return its content from the cache in a faster way
-					$inlineJsStorageItemJsonContent = FileSystem::file_get_contents( $pathToInlineJsOptimizedItem );
+					$inlineJsStorageItemJsonContent = FileSystem::fileGetContents( $pathToInlineJsOptimizedItem );
 
 					if ( $inlineJsStorageItemJsonContent !== '' ) {
 						return $inlineJsStorageItemJsonContent;
@@ -444,7 +445,7 @@ class OptimizeJs
 
 		if ( $useCacheForInlineScript && isset($pathToInlineJsOptimizedItem) ) {
 			// Store the optimized content to the cached JS file which would be read quicker
-			FileSystem::file_put_contents( $pathToInlineJsOptimizedItem, $jsContent );
+			FileSystem::filePutContents( $pathToInlineJsOptimizedItem, $jsContent );
 		}
 
 		return $jsContent;
@@ -453,19 +454,43 @@ class OptimizeJs
 	/**
 	 * @param $htmlSource
 	 *
-	 * @return mixed
+	 * @return string
 	 */
 	public static function updateHtmlSourceOriginalToOptimizedJs($htmlSource)
 	{
+		$parseSiteUrlPath = (string)parse_url(site_url(), PHP_URL_PATH);
+
+		$siteUrlNoProtocol = str_replace(array('http://', 'https://'), '//', site_url());
+
 		$jsOptimizeList = ObjectCache::wpacu_cache_get('wpacu_js_optimize_list') ?: array();
-		$allEnqueuedCleanScriptSrcs = ObjectCache::wpacu_cache_get('wpacu_js_enqueued_srcs') ?: array();
+		$allEnqueuedCleanSources = ObjectCache::wpacu_cache_get('wpacu_js_enqueued_srcs') ?: array();
+
+		$allEnqueuedCleanSourcesIncludingTheirRelPaths = array();
+
+		foreach ($allEnqueuedCleanSources as $allEnqueuedCleanSource) {
+			$allEnqueuedCleanSourcesIncludingTheirRelPaths[] = $allEnqueuedCleanSource;
+
+			if (strpos($allEnqueuedCleanSource, 'http://') === 0 || strpos($allEnqueuedCleanSource, 'https://') === 0) {
+				$allEnqueuedCleanSourcesIncludingTheirRelPaths[] = str_replace(array('http://', 'https://'), '//', $allEnqueuedCleanSource);
+
+				// e.g. www.mysite.com/blog/
+				if ($parseSiteUrlPath !== '/' && strlen($parseSiteUrlPath) > 1) {
+					$allEnqueuedCleanSourcesIncludingTheirRelPaths[] = $parseSiteUrlPath . str_replace(site_url(), '', $allEnqueuedCleanSource);
+				}
+
+				// e.g. www.mysite.com/
+				if ($parseSiteUrlPath === '/' || ! $parseSiteUrlPath) {
+					$allEnqueuedCleanSourcesIncludingTheirRelPaths[] = str_replace(site_url(), '', $allEnqueuedCleanSource);
+				}
+			}
+		}
 
 		$cdnUrls = OptimizeCommon::getAnyCdnUrls();
 		$cdnUrlForJs = isset($cdnUrls['js']) ? $cdnUrls['js'] : false;
 
 		preg_match_all('#(<script[^>]*src(|\s+)=(|\s+)[^>]*>)|(<link[^>]*(as(\s+|)=(\s+|)(|"|\')script(|"|\'))[^>]*>)#Umi', $htmlSource, $matchesSourcesFromTags, PREG_SET_ORDER);
 
-		$scriptTagsToUpdate = array();
+		$jsOptimizeListHardcoded = $scriptTagsToUpdate = array();
 
 		foreach ($matchesSourcesFromTags as $matches) {
 			$scriptSourceTag = $matches[0];
@@ -475,8 +500,15 @@ class OptimizeJs
 				continue;
 			}
 
-			// Check if the CSS has any 'data-wpacu-skip' attribute; if it does, do not alter it
+			// Check if the JS has any 'data-wpacu-skip' attribute; if it does, do not alter it
 			if (preg_match('#data-wpacu-skip([=>/ ])#i', $scriptSourceTag)) {
+				continue;
+			}
+
+			$cleanScriptSrcFromTagArray = OptimizeCommon::getLocalCleanSourceFromTag($scriptSourceTag);
+
+			// Skip external links, no point in carrying on
+			if (! $cleanScriptSrcFromTagArray || ! is_array($cleanScriptSrcFromTagArray)) {
 				continue;
 			}
 
@@ -488,20 +520,15 @@ class OptimizeJs
 				$forAttr = 'href';
 			}
 
-			$cleanScriptSrcFromTagArray = OptimizeCommon::getLocalCleanSourceFromTag($scriptSourceTag, $forAttr);
-
-			// Skip external links, no point in carrying on
-			if (! $cleanScriptSrcFromTagArray || ! is_array($cleanScriptSrcFromTagArray)) {
-				continue;
-			}
-
 			// Is it a local JS? Check if it's hardcoded (not enqueued the WordPress way)
 			$cleanScriptSrcFromTag      = $cleanScriptSrcFromTagArray['source'];
 			$afterQuestionMark          = $cleanScriptSrcFromTagArray['after_question_mark'];
 
-			if (! in_array($cleanScriptSrcFromTag, $allEnqueuedCleanScriptSrcs)) {
+			$isHardcodedDetected = false;
+
+			if (! in_array($cleanScriptSrcFromTag, $allEnqueuedCleanSourcesIncludingTheirRelPaths)) {
 				// Not in the final enqueued list? Most likely hardcoded (not added via wp_enqueue_scripts())
-				// Emulate the object value (as the enqueued styles)
+				// Emulate the object value (as the enqueued scripts)
 				$generatedHandle = md5($cleanScriptSrcFromTag);
 
 				$value = (object)array(
@@ -514,18 +541,33 @@ class OptimizeJs
 				ObjectCache::wpacu_cache_set('wpacu_maybe_optimize_it_js_'.$generatedHandle, $optimizeValues);
 
 				if (! empty($optimizeValues)) {
-					$jsOptimizeList[] = $optimizeValues;
+					$isHardcodedDetected = true;
+					$jsOptimizeListHardcoded[] = $optimizeValues;
 				}
 			}
 
-			if (empty($jsOptimizeList)) {
+			if ( ! $isHardcodedDetected ) {
+				$listToParse = $jsOptimizeList;
+			} else {
+				$listToParse = $jsOptimizeListHardcoded;
+			}
+
+			if (empty($listToParse)) {
 				continue;
 			}
 
-			foreach ($jsOptimizeList as $jsItemIndex => $listValues) {
+			foreach ($listToParse as $listValues) {
 				// Index 0: Source URL (relative)
 				// Index 1: New Optimized URL (relative)
 				// Index 2: Source URL (as it is)
+
+				// if the relative path from the WP root does not match the value of the source from the tag, do not continue
+				// e.g. '/wp-content/plugins/my-plugin/script.js' has to be inside '<script src="/wp-content/plugins/my-plugin/script.js?ver=1.1"></script>'
+				if (strpos($cleanScriptSrcFromTag, $listValues[0]) === false) {
+					continue;
+				}
+
+				// The contents of the CSS file has been changed and thus, we will replace the source path from original tag with the cached (e.g. minified) one
 
 				// If the minified files are deleted (e.g. /wp-content/cache/ is cleared)
 				// do not replace the JS file path to avoid breaking the website
@@ -535,13 +577,24 @@ class OptimizeJs
 					continue;
 				}
 
-				// Make sure the source URL gets updated even if it starts with // (some plugins/theme strip the protocol when enqueuing JavaScript files)
-				$siteUrlNoProtocol = str_replace(array('http://', 'https://'), '//', site_url());
-
+				// Make sure the source URL gets updated even if it starts with // (some plugins/theme strip the protocol when enqueuing assets)
+				// If the first value fails to be replaced, the next one will be attempted for replacement
+				// the order of the elements in the array is very important
 				$sourceUrlList = array(
-					site_url() . $listValues[0],
-					$siteUrlNoProtocol . $listValues[0]
-				); // array
+					site_url() . $listValues[0], // with protocol
+					$siteUrlNoProtocol . $listValues[0], // without protocol
+				);
+
+				if ($parseSiteUrlPath && (strpos($listValues[0], $parseSiteUrlPath) === 0 || strpos($cleanScriptSrcFromTag, $parseSiteUrlPath) === 0)) {
+					$sourceUrlList[] = $cleanScriptSrcFromTag;
+				}
+
+				if ($parseSiteUrlPath && strpos($cleanScriptSrcFromTag, $parseSiteUrlPath) === 0 && strpos($cleanScriptSrcFromTag, $listValues[0]) !== false) {
+					$sourceUrlList[] = str_replace('//', '/', $parseSiteUrlPath.'/'.$listValues[0]);
+				}
+				elseif ( $cleanScriptSrcFromTag === $listValues[0] ) {
+					$sourceUrlList[] = $listValues[0];
+				}
 
 				if ($cdnUrlForJs) {
 					// Does it have a CDN?
@@ -567,17 +620,19 @@ class OptimizeJs
 
 					if ($isEmptyOptimizedFile) {
 						// Strip it as its content (after optimization, for instance) is empty; no point in having extra HTTP requests
-						$scriptTagsToUpdate[$scriptSourceTag.'</script>'] = '';
-
+						if ($forAttr === 'src') {
+							$scriptTagsToUpdate[ $scriptSourceTag . '</script>' ] = '';
+						} else {
+							$scriptTagsToUpdate[ $scriptSourceTag ] = ''; // LINK (e.g. preload of a JS file)
+						}
 						// Note: As for September 3, 2020, the inline JS associated with the handle is no longer removed if the main JS file is empty
 						// There could be cases when the main JS file is empty, but the inline JS tag associated with it has code that is needed
 
 						} else {
-						$newScriptSourceTag = self::updateOriginalToOptimizedTag( $scriptSourceTag, $sourceUrlList, $optimizeUrl );
+						$newScriptSourceTag = self::updateOriginalToOptimizedTag( $scriptSourceTag, $sourceUrlList, $optimizeUrl, $forAttr );
 						$scriptTagsToUpdate[$scriptSourceTag] = $newScriptSourceTag;
 					}
 
-					unset($jsOptimizeList[$jsItemIndex]); // item from the array is not needed anymore
 					break;
 				}
 			}
@@ -588,31 +643,45 @@ class OptimizeJs
 
 	/**
 	 * @param $scriptSourceTag string
-	 * @param $sourceUrl array
+	 * @param $sourceUrlList array
 	 * @param $optimizeUrl string
+	 * @param string $forAttr ('src' (default), or 'href' if it's preloaded)
 	 *
-	 * @return mixed
+	 * @return string
 	 */
-	public static function updateOriginalToOptimizedTag($scriptSourceTag, $sourceUrl, $optimizeUrl)
+	public static function updateOriginalToOptimizedTag($scriptSourceTag, $sourceUrlList, $optimizeUrl, $forAttr = 'src')
 	{
-		$newScriptSourceTag = str_replace($sourceUrl, $optimizeUrl, $scriptSourceTag);
-		$sourceUrlRel = is_array($sourceUrl) ? OptimizeCommon::getSourceRelPath($sourceUrl[0]) : OptimizeCommon::getSourceRelPath($sourceUrl);
-		$newScriptSourceTag = str_ireplace('<script ', '<script data-wpacu-script-rel-src-before="'.$sourceUrlRel.'" ', $newScriptSourceTag);
+		if (is_array($sourceUrlList) && ! empty($sourceUrlList)) {
+			foreach ($sourceUrlList as $sourceUrl) {
+				$newScriptSourceTag = str_replace($sourceUrl, $optimizeUrl, $scriptSourceTag);
 
-		preg_match_all( '#\ssrc=(["\'])(.*?)(["\'])#', $scriptSourceTag, $outputMatchesSrc );
+				if ($newScriptSourceTag !== $scriptSourceTag) {
+					break;
+				}
+			}
+		} else {
+			$newScriptSourceTag = str_replace( $sourceUrlList, $optimizeUrl, $scriptSourceTag );
+		}
+
+		$tagToCheck = ($forAttr === 'src') ? 'script' : 'link';
+
+		$sourceUrlRel = is_array($sourceUrlList) ? OptimizeCommon::getSourceRelPath($sourceUrlList[0]) : OptimizeCommon::getSourceRelPath($sourceUrlList);
+		$newScriptSourceTag = str_ireplace('<'.$tagToCheck.' ', '<'.$tagToCheck.' data-wpacu-script-rel-src-before="'.$sourceUrlRel.'" ', $newScriptSourceTag);
+
+		$sourceValue = Misc::getValueFromTag($scriptSourceTag);
 
 		// No space from the matching and ? should be there
-		if (isset( $outputMatchesSrc[2][0] ) && ( strpos( $outputMatchesSrc[2][0], ' ' ) === false )) {
-			if ( strpos( $outputMatchesSrc[2][0], '?' ) !== false ) {
+		if ($sourceValue && ( strpos( $sourceValue, ' ' ) === false )) {
+			if ( strpos( $sourceValue, '?' ) !== false ) {
 				// Strip things like ?ver=
-				list( , $toStrip ) = explode( '?', $outputMatchesSrc[2][0] );
+				list( , $toStrip ) = explode( '?', $sourceValue );
 				$toStrip            = '?' . trim( $toStrip );
 				$newScriptSourceTag = str_replace( $toStrip, '', $newScriptSourceTag );
 			}
 
-			if ( strpos( $outputMatchesSrc[2][0], '&#038;ver' ) !== false ) {
+			if ( strpos( $sourceValue, '&#038;ver' ) !== false ) {
 				// Replace any .js&#038;ver with .js
-				$toStrip = strrchr($outputMatchesSrc[2][0], '&#038;ver');
+				$toStrip = strrchr($sourceValue, '&#038;ver');
 				$newScriptSourceTag = str_replace( $toStrip, '', $newScriptSourceTag );
 			}
 		}
@@ -622,9 +691,7 @@ class OptimizeJs
 		$newScriptSourceTag = str_replace('.js&#038;ver='.$wp_version, '.js', $newScriptSourceTag);
 		$newScriptSourceTag = str_replace('.js&#038;ver=', '.js', $newScriptSourceTag);
 
-		$newScriptSourceTag = preg_replace('!\s+!', ' ', $newScriptSourceTag); // replace multiple spaces with only one space
-
-		return $newScriptSourceTag;
+		return preg_replace('!\s+!', ' ', $newScriptSourceTag); // replace multiple spaces with only one space
 	}
 
 	/**
@@ -658,6 +725,8 @@ class OptimizeJs
 			}
 		}
 
+		$htmlSource = self::stripAnyReferencesForUnloadedScripts($htmlSource);
+
 		/*
 		 * The JavaScript files only get cached if they are minified or are loaded like /?custom-js=version - /script.php?ver=1 etc.
 		 * #optimizing
@@ -680,13 +749,10 @@ class OptimizeJs
 				$htmlSource = Preloads::appendPreloadsForScriptsToHead($htmlSource);
 			}
 
-			$htmlSource = str_replace(Preloads::DEL_SCRIPTS_PRELOADS, '', $htmlSource);
 			/* [wpacu_timing] */ Misc::scriptExecTimer($wpacuTimingName, 'end'); /* [/wpacu_timing] */
 		}
 
-		/* [wpacu_timing] */ $wpacuTimingName = 'alter_html_source_for_combine_js';
-
-		Misc::scriptExecTimer($wpacuTimingName); /* [/wpacu_timing] */
+		/* [wpacu_timing] */ $wpacuTimingName = 'alter_html_source_for_combine_js'; Misc::scriptExecTimer($wpacuTimingName); /* [/wpacu_timing] */
 		$proceedWithCombineOnThisPage = true;
 
 		$isSingularPage = defined('WPACU_CURRENT_PAGE_ID') && WPACU_CURRENT_PAGE_ID > 0 && is_singular();
@@ -702,7 +768,7 @@ class OptimizeJs
 
 			// 'no_js_optimize' refers to avoid the combination of JS files
 			if ( (isset( $pageOptions['no_js_optimize'] )     && $pageOptions['no_js_optimize'])
-			  || (isset( $pageOptions['no_assets_settings'] ) && $pageOptions['no_assets_settings']) ) {
+			     || (isset( $pageOptions['no_assets_settings'] ) && $pageOptions['no_assets_settings']) ) {
 				$proceedWithCombineOnThisPage = false;
 			}
 		}
@@ -710,6 +776,9 @@ class OptimizeJs
 		if ($proceedWithCombineOnThisPage) {
 			/* [wpacu_timing] */ // Note: Load timing is checked within the method /* [/wpacu_timing] */
 			$htmlSource = CombineJs::doCombine($htmlSource);
+			if (defined('WPACU_REAPPLY_PRELOADING_FOR_COMBINED_JS') && WPACU_REAPPLY_PRELOADING_FOR_COMBINED_JS) {
+				$htmlSource = Preloads::appendPreloadsForScriptsToHead($htmlSource);
+			}
 		}
 		/* [wpacu_timing] */ Misc::scriptExecTimer($wpacuTimingName, 'end'); /* [/wpacu_timing] */
 
@@ -720,6 +789,8 @@ class OptimizeJs
 		}
 
 		// Final cleanups
+		$htmlSource = str_replace(Preloads::DEL_SCRIPTS_PRELOADS, '', $htmlSource);
+
 		$htmlSource = preg_replace('#(\s+|)(data-wpacu-jquery-core-handle=1|data-wpacu-jquery-migrate-handle=1)(\s+|)#Umi', ' ', $htmlSource);
 
 		$htmlSource = preg_replace('#(\s+|)data-wpacu-script-rel-src-before=(["\'])' . '(.*)' . '(\1)(\s+|)#Usmi', ' ', $htmlSource);
@@ -727,7 +798,7 @@ class OptimizeJs
 		$htmlSource = preg_replace('#<script(\s+)src=\'#Umi', '<script src=\'', $htmlSource);
 
 		// Clear possible empty SCRIPT tags (e.g. left from associated 'before' and 'after' tags after their content was stripped)
-		$htmlSource = preg_replace('#<script(\s+| )(type=\'text/javascript\'|)(\s+|)></script>#Umi', '', $htmlSource);
+		$htmlSource = preg_replace('#<script(\s+)(type=\'text/javascript\'|)(\s+|)></script>#Umi', '', $htmlSource);
 
 		/* [wpacu_timing] */ Misc::scriptExecTimer('alter_html_source_for_optimize_js', 'end'); /* [/wpacu_timing] */
 		return $htmlSource;
@@ -791,7 +862,7 @@ class OptimizeJs
 	 * @param $jsContent
 	 * @param $appendBefore
 	 *
-	 * @return mixed
+	 * @return string
 	 */
 	public static function maybeDoJsFixes($jsContent, $appendBefore)
 	{
@@ -821,18 +892,42 @@ class OptimizeJs
 	}
 
 	/**
+	 * e.g. if a script is unloaded, strip any LINK tag that preloads that script (e.g. added by other plugins)
+	 *
+	 * @param $htmlSource
+	 *
+	 * @return array|mixed|string|string[]
+	 */
+	public static function stripAnyReferencesForUnloadedScripts($htmlSource)
+	{
+		// Gather all SRCs of the unloaded scripts (if any)
+		$unloadedScriptRelSrcs = array();
+
+		if ( isset( Main::instance()->allUnloadedAssets['scripts'] ) && ! empty( Main::instance()->allUnloadedAssets['scripts'] ) ) {
+			foreach ( array_unique( Main::instance()->allUnloadedAssets['scripts'] ) as $scriptHandle ) {
+				if ( ! (isset(Main::instance()->wpAllScripts['registered'][ $scriptHandle ]->src) && Main::instance()->wpAllScripts['registered'][ $scriptHandle ]->src) ) {
+					continue; // does not have a "src" (e.g. inline JS)
+				}
+				$unloadedScriptRelSrcs[] = OptimizeCommon::getSourceRelPath( Main::instance()->wpAllScripts['registered'][ $scriptHandle ]->src );
+			}
+		}
+
+		if ( ! empty($unloadedScriptRelSrcs) ) {
+			$htmlSource = OptimizeCommon::matchAndReplaceLinkTags($htmlSource, array('as' => 'script', 'unloaded_assets_rel_sources' => $unloadedScriptRelSrcs));
+		}
+
+		return $htmlSource;
+	}
+
+	/**
 	 * @param $htmlSource
 	 *
 	 * @return false|mixed|string|void
 	 */
 	public static function moveInlinejQueryAfterjQuerySrc($htmlSource)
 	{
-		if (stripos($htmlSource, '<script') === false) {
-			return $htmlSource; // no SCRIPT tags, hmm
-		}
-
-		if (! (function_exists('libxml_use_internal_errors') && function_exists('libxml_clear_errors') && class_exists('\DOMDocument')) && class_exists('\DOMXpath')) {
-			return $htmlSource; // DOMDocument has to be enabled
+		if (stripos($htmlSource, '<script') === false || ! Misc::isDOMDocumentOn()) {
+			return $htmlSource;
 		}
 
 		$domTag = OptimizeCommon::getDomLoadedTag($htmlSource, 'moveInlinejQueryAfterjQuerySrc');
@@ -867,7 +962,7 @@ class OptimizeJs
 		foreach ($scriptTagsObj as $scriptTagObj) {
 			$tagContents = $scriptTagObj->nodeValue;
 
-			if (strpos(CleanUp::getOuterHTML($scriptTagObj), $collectUntil) !== false) {
+			if ( strpos( Misc::getOuterHTML( $scriptTagObj ), $collectUntil) !== false) {
 				break;
 			}
 
@@ -1070,7 +1165,7 @@ class OptimizeJs
 
 					$htmlSource = str_replace($toReplaceTagList, '', $htmlSource);
 
-					// Extra, in case the previous replace didn't go through
+					// Extra, in case the previous replacement didn't go through
 					$listWithMatches   = array();
 					$listWithMatches[] = 'data-wpacu-script-handle=[\'"]'.$scriptHandle.'[\'"]';
 					$listWithMatches[] = OptimizeCommon::getSourceRelPath($scriptSrc);
@@ -1157,17 +1252,15 @@ class OptimizeJs
 	}
 
 	/**
-	 * @param $handle
-	 * @param $position
-	 * @param $inlineScriptContent
+	 * @param string $handle
+	 * @param string $position
+	 * @param string $inlineScriptContent
 	 *
 	 * @return string
 	 */
 	public static function generateInlineAssocHtmlForHandle($handle, $position, $inlineScriptContent = '')
 	{
 		global $wp_scripts;
-
-		$typeAttr = Misc::getScriptTypeAttribute();
 
 		$output = '';
 
@@ -1179,29 +1272,29 @@ class OptimizeJs
 			}
 
 			if ( $translations ) {
-				$output = sprintf( "<script%s id='%s-js-translations'>\n%s\n</script>\n", $typeAttr, esc_attr( $handle ), $translations );
+				$output = sprintf( "<script%s id='%s-js-translations'>\n%s\n</script>\n", Misc::getScriptTypeAttribute(), esc_attr( $handle ), $translations );
 			}
 		}
 
 		if ( $position === 'data' ) {
-			if ( $inlineScriptContent === '' ) {
+			if ( ! $inlineScriptContent ) {
 				$inlineScriptContent = $wp_scripts->get_data( $handle, 'data' );
 
-				if (! $inlineScriptContent) {
+				if ( ! $inlineScriptContent ) {
 					return '';
 				}
 			}
 
-			$output .= sprintf("<script%s id='%s-js-extra'>\n", $typeAttr, esc_attr($handle));
+			$output .= sprintf("<script%s id='%s-js-extra'>\n", Misc::getScriptTypeAttribute(), esc_attr($handle));
 
 			// CDATA is not needed for HTML 5.
-			if ( $typeAttr ) {
+			if ( Misc::getScriptTypeAttribute() ) {
 				$output .= "/* <![CDATA[ */\n";
 			}
 
 			$output .= $inlineScriptContent."\n";
 
-			if ( $typeAttr ) {
+			if ( Misc::getScriptTypeAttribute() ) {
 				$output .= "/* ]]> */\n";
 			}
 
@@ -1209,16 +1302,29 @@ class OptimizeJs
 		}
 
 		if ( $position === 'before' || $position === 'after' ) {
-			if ( $inlineScriptContent === '' ) {
-				$inlineScriptContent = $wp_scripts->print_inline_script( $handle, $position, false );
+			if ( ! $inlineScriptContent ) {
+				if (method_exists($wp_scripts, 'get_inline_script_data')) {
+					// WordPress >= 6.3
+					$inlineScriptContent = $wp_scripts->get_inline_script_data( $handle, $position );
+				} else {
+					// WordPress < 6.3
+					$inlineScriptContent = $wp_scripts->print_inline_script( $handle, $position, false );
+				}
 
-				if (! $inlineScriptContent) {
-					return '';
+				if ( ! $inlineScriptContent ) {
+					$output = '';
 				}
 			}
 
 			if ( $inlineScriptContent ) {
-				$output = sprintf( "<script%s id='%s-js-%s'>\n%s\n</script>\n", $typeAttr, $handle, $position, $inlineScriptContent );
+				if (function_exists('wp_get_inline_script_tag')) {
+					// WordPress >= 5.7.0
+					$id = "{$handle}-js-{$position}";
+					$output = wp_get_inline_script_tag( $inlineScriptContent, compact( 'id' ) );
+				} else {
+					// WordPress < 5.7.0
+					$output = sprintf( "<script%s id='%s-js-%s'>\n%s\n</script>\n", Misc::getScriptTypeAttribute(), $handle, $position, $inlineScriptContent );
+				}
 			}
 		}
 

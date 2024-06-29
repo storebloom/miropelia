@@ -40,24 +40,24 @@ class PluginTracking
 	public function init()
 	{
 		// Schedule
-		add_action('wp',   array($this, 'schedule_events'));
-		add_action('init', array($this, 'schedule_send'));
+		add_action('wp',   array($this, 'scheduleEvents' ));
+		add_action('init', array($this, 'scheduleSend' ));
 
 		// Triggers when Buttons from the Top Notice are clicked and page is reloaded (non-AJAX call)
         // This is a fallback in case there are JS errors and the AJAX call is not triggering
         if (isset($_GET['wpacu_is_page_reload']) && $_GET['wpacu_is_page_reload']) {
-	        add_action('admin_init', array($this, 'opt_in_out'));
+	        add_action('admin_init', array($this, 'optInOut' ));
         }
 
 		// Before "Settings" are saved in the database, right after form submit
         // Check "Allow Usage Tracking" value and take action if it's enabled
-		add_action('wpacu_before_save_settings', array($this, 'check_for_settings_optin'));
+		add_action('wpacu_before_save_settings', array($this, 'checkForSettingsOptIn' ));
 
         // Notice on the top screen within the Dashboard to get permission from the user to allow tracking
-        add_action('admin_notices', array($this, 'admin_notice'));
+        add_action('admin_notices', array($this, 'adminNotice'));
 
-        add_action('admin_head',   array($this, 'notice_styles'));
-        add_action('admin_footer', array($this, 'notice_scripts'));
+        add_action('admin_head',   array($this, 'noticeStyles' ));
+        add_action('admin_footer', array($this, 'noticeScripts' ));
 
 		// Close the notice when action is taken by AJAX call
 		add_action('wp_ajax_' . WPACU_PLUGIN_ID . '_close_tracking_notice', array($this, 'ajaxCloseTrackingNoticeCallback'));
@@ -67,7 +67,7 @@ class PluginTracking
      * @param bool $isAjaxCall
 	 * @return bool|string|void
 	 */
-	public function opt_in_out($isAjaxCall = false)
+	public function optInOut($isAjaxCall = false)
 	{
 	    if ( ! isset($_REQUEST['wpacu_action']) ) {
 	        return false;
@@ -83,11 +83,11 @@ class PluginTracking
 	    $wpacuAction = isset($_REQUEST['wpacu_action']) ? $_REQUEST['wpacu_action'] : '';
 
 	    if ($wpacuAction === 'wpacu_opt_into_tracking') {
-		    $response = $this->check_for_optin();
+		    $response = $this->checkForOptIn();
 	    }
 
 	    if ($wpacuAction === 'wpacu_opt_out_of_tracking') {
-            $response = $this->check_for_optout();
+            $response = $this->checkForOptOut();
 
             if ($redirect) {
 	            // Reload the same page without the Asset CleanUp query action
@@ -102,9 +102,9 @@ class PluginTracking
 	/**
 	 * Trigger scheduling
 	 */
-	public function schedule_events()
+	public function scheduleEvents()
 	{
-		$this->weekly_events();
+		$this->weeklyEvents();
 	}
 
 	/**
@@ -114,7 +114,7 @@ class PluginTracking
 	 * @since 1.6
 	 * @return void
 	 */
-	private function weekly_events()
+	private function weeklyEvents()
 	{
 		if (! wp_next_scheduled('wpacu_weekly_scheduled_events')) {
 			wp_schedule_event(current_time('timestamp', true), 'weekly', 'wpacu_weekly_scheduled_events');
@@ -127,28 +127,28 @@ class PluginTracking
 	 * @access private
 	 * @return bool
 	 */
-	private function tracking_allowed()
+	private function trackingAllowed()
 	{
 		$allowUsageTracking = $this->settings->getOption('allow_usage_tracking');
 		return (bool) $allowUsageTracking;
 	}
 	/**
-	 * Setup the data that is going to be tracked
+	 * Set up the data that is going to be tracked
 	 *
 	 * @access private
 	 * @return void
 	 */
-	public function setup_data()
+	public function setupData()
 	{
 		$data = array();
 
 		// Retrieve current theme info
-		$theme_data = wp_get_theme();
-		$theme      = $theme_data->Name . ' ' . $theme_data->Version;
+		$themeData = wp_get_theme();
+		$theme     = $themeData->get('Name') . ' ' . $themeData->get('Version');
 
 		$settingsClass = new Settings();
 
-		$data['php_version']       = phpversion();
+		$data['php_version']       = PHP_VERSION;
 		$data['wpacu_version']     = WPACU_PLUGIN_VERSION;
 		$data['wpacu_settings']    = $settingsClass->getAll();
 		$data['wpacu_first_usage'] = get_option(WPACU_PLUGIN_ID.'_first_usage');
@@ -169,7 +169,7 @@ class PluginTracking
 
 		foreach ($plugins as $key => $plugin) {
 			if (in_array($plugin, $active_plugins)) {
-				// Remove active plugins from list so we can show active and inactive separately
+				// Remove active plugins from list, so we can show active and inactive separately
 				unset($plugins[$key]);
 			}
 		}
@@ -187,31 +187,31 @@ class PluginTracking
 	 * @access private
 	 *
 	 * @param  bool $override If we should override the tracking setting.
-	 * @param  bool $ignore_last_checkin If we should ignore when the last check in was.
+	 * @param  bool $ignoreLastCheckIn If we should ignore when the last check in was.
 	 *
 	 * @return bool
 	 */
-	public function send_checkin($override = false, $ignore_last_checkin = false)
+	public function sendCheckIn($override = false, $ignoreLastCheckIn = false)
 	{
 		// Allows us to stop the plugin's own site from checking in, and a filter for any related sites
 		if (apply_filters('wpacu_disable_tracking_checkin', false)) {
 			return false;
 		}
 
-		if (! $override && ! $this->tracking_allowed()) {
+		if (! $override && ! $this->trackingAllowed()) {
 			return false;
 		}
 
 		// Send a maximum of once per week
-		$last_send = $this->get_last_send();
+		$lastSend = $this->getLastSend();
 
-		if (! $ignore_last_checkin && is_numeric($last_send) && $last_send > strtotime('-1 week')) {
+		if ( ! $ignoreLastCheckIn && is_numeric($lastSend) && $lastSend > strtotime('-1 week')) {
 			return 'Not Sent: Only Weekly';
 		}
 
-		$this->setup_data();
+		$this->setupData();
 
-		$response = wp_remote_post('https://www.gabelivan.com/tracking/?wpacu_action=checkin', array(
+		$response = wp_remote_post('https://www.assetcleanup.com/tracking/?wpacu_action=checkin', array(
 			'method'      => 'POST',
 			'timeout'     => 8,
 			'redirection' => 5,
@@ -231,11 +231,11 @@ class PluginTracking
 	 *
 	 * @return array
 	 */
-	public function check_for_settings_optin($savedSettings)
+	public function checkForSettingsOptIn($savedSettings)
 	{
 		// Send an initial check in when "Settings" are saved
 		if (isset($savedSettings['allow_usage_tracking']) && $savedSettings['allow_usage_tracking'] == 1) {
-			$this->send_checkin( true );
+			$this->sendCheckIn( true );
 		}
 
 		return $savedSettings;
@@ -246,7 +246,7 @@ class PluginTracking
      *
 	 * @return bool|void
 	 */
-	public function check_for_optin()
+	public function checkForOptIn()
 	{
 		if (! Menu::userCanManageAssets()) {
 			return;
@@ -256,7 +256,7 @@ class PluginTracking
 		$this->settings->updateOption('allow_usage_tracking', 1);
 
 		// Send the tracking data
-		$response = $this->send_checkin(true);
+		$response = $this->sendCheckIn(true);
 
 		// Mark the notice to be hidden
 		Misc::addUpdateOption(WPACU_PLUGIN_ID . '_hide_tracking_notice', 1);
@@ -267,7 +267,7 @@ class PluginTracking
 	/**
 	 * @return string
 	 */
-	public function check_for_optout()
+	public function checkForOptOut()
 	{
 		if (! Menu::userCanManageAssets()) {
 			return 'Unauthorized';
@@ -286,7 +286,7 @@ class PluginTracking
 	 * @access private
 	 * @return false|string
 	 */
-	private function get_last_send()
+	private function getLastSend()
 	{
 		return get_option(WPACU_PLUGIN_ID . '_tracking_last_send');
 	}
@@ -299,10 +299,10 @@ class PluginTracking
 	 *
 	 * @return void
 	 */
-	public function schedule_send()
+	public function scheduleSend()
 	{
 		if (Misc::doingCron()) {
-			add_action('wpacu_weekly_scheduled_events', array($this, 'send_checkin'));
+			add_action('wpacu_weekly_scheduled_events', array($this, 'sendCheckIn' ));
 		}
 	}
 
@@ -311,7 +311,7 @@ class PluginTracking
 	 *
 	 * @return bool
 	 */
-	public function show_tracking_notice()
+	public function showTrackingNotice()
 	{
 	    // On URL request (for debugging)
 		if ( isset($_GET['wpacu_show_tracking_notice']) ) {
@@ -324,13 +324,11 @@ class PluginTracking
 		    return false;
         }
 
-		$hide_notice = get_option(WPACU_PLUGIN_ID . '_hide_tracking_notice');
-
-		if ($hide_notice) {
+		if ($this->settings->getOption('allow_usage_tracking')) {
 			return false;
 		}
 
-		if ($this->settings->getOption('allow_usage_tracking')) {
+		if (get_option(WPACU_PLUGIN_ID . '_hide_tracking_notice')) {
 			return false;
 		}
 
@@ -369,8 +367,8 @@ class PluginTracking
 		}
 
 		// Allow to Disallow (depending on the action chosen)
-		$response = $this->opt_in_out(true);
-		echo $response;
+		$response = $this->optInOut(true);
+		echo esc_html($response);
 
 		exit();
 	}
@@ -378,7 +376,7 @@ class PluginTracking
 	/**
 	 *
 	 */
-	public function notice_styles()
+	public function noticeStyles()
 	{
 		?>
         <style <?php echo Misc::getStyleTypeAttribute(); ?>>
@@ -439,76 +437,30 @@ class PluginTracking
 	}
 
 	/**
-	 * Display the admin notice to users that have not opted-in or out
-	 *
-	 * @return void
-	 */
-	public function admin_notice()
-	{
-	    if (! $this->show_tracking_notice()) {
-		    return;
-        }
-
-		$this->setup_data();
-
-		$optin_url  = add_query_arg(array('wpacu_action' => 'wpacu_opt_into_tracking', 'wpacu_is_page_reload' => true));
-		$optout_url = add_query_arg(array('wpacu_action' => 'wpacu_opt_out_of_tracking', 'wpacu_is_page_reload' => true));
-
-		?>
-		<div class="wpacu-tracking-notice notice is-dismissible">
-			<p><?php echo __('Allow Asset CleanUp to anonymously track plugin usage in order to help us make the plugin better? No sensitive or personal data is collected.', 'wp-asset-clean-up'); ?></p>
-			<div class="wpacu-action-links">
-				<ul>
-					<li class="wpacu-optin">
-                        <a href="<?php echo esc_url($optin_url); ?>"
-                           data-wpacu-close-action="wpacu_opt_into_tracking"
-                           class="wpacu-close-tracking-notice button-primary"><?php echo __('Allow, I\'m happy to help', 'easy-digital-downloads'); ?></a>
-                    </li>
-					<li class="wpacu-optout">
-                        <a href="<?php echo esc_url($optout_url); ?>"
-                           data-wpacu-close-action="wpacu_opt_out_of_tracking"
-                           class="wpacu-close-tracking-notice button-secondary"><?php echo __('No, do not allow', 'easy-digital-downloads'); ?></a></li>
-			        <li class="wpacu-more-info"><span style="color: #004567;" class="dashicons dashicons-info"></span> <a id="wpacu-show-tracked-data" href="#">What kind of data will be sent for the tracking?</a></li>
-				</ul>
-				<div style="clear: both;"></div>
-			</div>
-
-			<div style="display: none;" id="wpacu-tracked-data-list">
-				<?php self::showSentInfoDataTable($this->data); ?>
-			</div>
-		</div>
-		<?php
-        if (! defined('WPACU_ADMIN_TRACKING_NOTICE_SHOWN')) {
-	        define('WPACU_ADMIN_TRACKING_NOTICE_SHOWN', true);
-        }
-
-        // Only mark it as shown after it was printed
-		$this->showTrackingNotice = true;
-	}
-
-	/**
 	 *
 	 */
-	public function notice_scripts()
+	public function noticeScripts()
 	{
-	    if (! $this->showTrackingNotice) {
-	        return;
-        }
+		if (! $this->showTrackingNotice) {
+			return;
+		}
 		?>
-		<script type="text/javascript">
-			jQuery(document).ready(function($) {
-			    var $wpacuTrackedDataList = $('#wpacu-tracked-data-list');
+        <script type="text/javascript">
+            jQuery(document).ready(function($) {
+                var $wpacuTrackedDataList = $('#wpacu-tracked-data-list');
 
-			    // Tracking Info Link Clicked
-			    $('#wpacu-show-tracked-data').on('click', function() {
-					if ($wpacuTrackedDataList.is(':hidden')) {
+                // Tracking Info Link Clicked
+                $('#wpacu-show-tracked-data').on('click', function(e) {
+                    e.preventDefault();
+
+                    if ($wpacuTrackedDataList.is(':hidden')) {
                         $wpacuTrackedDataList.slideDown('fast');
-					} else {
+                    } else {
                         $wpacuTrackedDataList.slideUp('fast');
-					}
-			    });
+                    }
+                });
 
-			    // 'x' click from the top right of the notice
+                // 'x' click from the top right of the notice
                 $(document).on('click', '.wpacu-tracking-notice .notice-dismiss', function(event) {
                     $('[data-wpacu-close-action="wpacu_opt_out_of_tracking"]').trigger('click');
                 });
@@ -523,7 +475,7 @@ class PluginTracking
                         wpacuCloseAction = $(this).attr('data-wpacu-close-action'),
                         wpacuSecurityNonce = '<?php echo wp_create_nonce('wpacu_plugin_tracking_nonce'); ?>';
 
-                    wpacuXhr.open('POST', '<?php echo admin_url('admin-ajax.php'); ?>');
+                    wpacuXhr.open('POST', '<?php echo esc_url(admin_url('admin-ajax.php')); ?>');
                     wpacuXhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
                     wpacuXhr.onload = function () {
                         if (wpacuXhr.status === 200) {
@@ -533,9 +485,58 @@ class PluginTracking
 
                     wpacuXhr.send(encodeURI('action=<?php echo WPACU_PLUGIN_ID . '_close_tracking_notice'; ?>&wpacu_action=' + wpacuCloseAction + '&wpacu_security='+ wpacuSecurityNonce));
                 });
-			});
-		</script>
+            });
+        </script>
 		<?php
+	}
+
+	/**
+	 * Display the admin notice to users that have not opted-in or out
+	 *
+	 * @return void
+	 */
+	public function adminNotice()
+	{
+	    if (! $this->showTrackingNotice()) {
+		    return;
+        }
+
+		$this->setupData();
+
+		$optin_url  = add_query_arg(array('wpacu_action' => 'wpacu_opt_into_tracking', 'wpacu_is_page_reload' => true));
+		$optout_url = add_query_arg(array('wpacu_action' => 'wpacu_opt_out_of_tracking', 'wpacu_is_page_reload' => true));
+
+		?>
+		<div class="wpacu-tracking-notice notice is-dismissible">
+			<p><?php _e('Allow Asset CleanUp to anonymously track plugin usage in order to help us make the plugin better? No sensitive or personal data is collected.', 'wp-asset-clean-up'); ?></p>
+			<div class="wpacu-action-links">
+				<ul>
+					<li class="wpacu-optin">
+                        <a href="<?php echo esc_url($optin_url); ?>"
+                           data-wpacu-close-action="wpacu_opt_into_tracking"
+                           class="wpacu-close-tracking-notice button-primary"><?php _e('Allow, I\'m happy to help', 'easy-digital-downloads'); ?></a>
+                    </li>
+					<li class="wpacu-optout">
+                        <a href="<?php echo esc_url($optout_url); ?>"
+                           data-wpacu-close-action="wpacu_opt_out_of_tracking"
+                           class="wpacu-close-tracking-notice button-secondary"><?php _e('No, do not allow', 'easy-digital-downloads'); ?></a></li>
+			        <li class="wpacu-more-info"><span style="color: #004567;" class="dashicons dashicons-info"></span> <a id="wpacu-show-tracked-data" href="#">What kind of data will be sent for the tracking?</a></li>
+				</ul>
+				<div style="clear: both;"></div>
+                <div style="display: none;" id="wpacu-tracked-data-list">
+					<?php self::showSentInfoDataTable($this->data); ?>
+                </div>
+                <hr />
+                <p><strong>Note:</strong> This option can always be turned ON &amp; OFF in <a style="text-decoration: none;" target="_blank" href="<?php echo admin_url('admin.php?page=wpassetcleanup_settings&wpacu_selected_tab_area=wpacu-setting-plugin-usage-settings#wpacu-settings-allow-usage-tracking'); ?>">"Settings" &rarr; "Plugin Usage Preferences" &rarr; "Allow Usage Tracking"</a></p>
+			</div>
+		</div>
+		<?php
+        if (! defined('WPACU_ADMIN_TRACKING_NOTICE_SHOWN')) {
+	        define('WPACU_ADMIN_TRACKING_NOTICE_SHOWN', true);
+        }
+
+        // Only mark it as shown after it was printed
+		$this->showTrackingNotice = true;
 	}
 
 	/**
@@ -548,31 +549,31 @@ class PluginTracking
             <table class="table table-striped">
                 <tr>
                     <td style="width: 182px;">PHP Version:</td>
-                    <td><?php echo $data['php_version']; ?></td>
+                    <td><?php echo esc_html($data['php_version']); ?></td>
                 </tr>
                 <tr>
                     <td>Asset CleanUp Info:</td>
-                    <td>Version: <?php echo $data['wpacu_version']; ?>, Settings &amp; Usage Information</td>
+                    <td>Version: <?php echo esc_html($data['wpacu_version']); ?>, Settings &amp; Usage Information</td>
                 </tr>
                 <tr>
                     <td>WordPress Version:</td>
-                    <td><?php echo $data['wp_version']; ?></td>
+                    <td><?php echo esc_html($data['wp_version']); ?></td>
                 </tr>
                 <tr>
                     <td>Server:</td>
-                    <td><?php echo $data['server']; ?></td>
+                    <td><?php echo esc_html($data['server']); ?></td>
                 </tr>
                 <tr>
                     <td>Multisite:</td>
-                    <td><?php echo $data['multisite']; ?></td>
+                    <td><?php echo esc_html($data['multisite']); ?></td>
                 </tr>
                 <tr>
                     <td>Theme:</td>
-                    <td><?php echo $data['theme']; ?></td>
+                    <td><?php echo esc_html($data['theme']); ?></td>
                 </tr>
                 <tr>
                     <td>Locale:</td>
-                    <td><?php echo $data['locale']; ?></td>
+                    <td><?php echo esc_html($data['locale']); ?></td>
                 </tr>
                 <tr>
                     <td>Plugins:</td>

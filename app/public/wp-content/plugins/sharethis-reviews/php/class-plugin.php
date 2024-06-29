@@ -79,7 +79,7 @@ class Plugin extends Plugin_Base {
 		$sb_active  = in_array( 'sharethis-share-buttons/sharethis-share-buttons.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ), true );
 
 		if ( ! $sb_active && is_array( $propertyid ) && array() !== $propertyid ) {
-			wp_register_script( "{$this->assets_prefix}-mu", "//platform-api.sharethis.com/js/sharethis.js#property={$propertyid[0]}&product=reviews", null, '1.0.0', true );
+			wp_register_script( "{$this->assets_prefix}-mu", "//platform-api.sharethis.com/js/sharethis.js#property={$propertyid[0]}&product=reviews&source=sharethis-reviews-wordpress", null, '1.0.0', true );
 		}
 
 		wp_register_script( "{$this->assets_prefix}-review", "{$this->dir_url}js/review.js", array(

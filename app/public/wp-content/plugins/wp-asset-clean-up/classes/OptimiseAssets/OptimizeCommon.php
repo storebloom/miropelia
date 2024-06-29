@@ -94,14 +94,24 @@ class OptimizeCommon
 			return self::alterHtmlSource($htmlSource, true);
 		});
 
-		// Make sure HTML changes are applied to cached pages from "Cache Enabler" plugin
-		add_filter('cache_enabler_before_store', static function($htmlSource) {
-			return self::alterHtmlSource($htmlSource); // deprecated, include it in case other users have an older version of "Cache Enabler"
-		}, 1, 1);
+		if (Misc::isPluginActive('cache-enabler/cache-enabler.php')) {
+			if (defined('CE_VERSION') && version_compare(CE_VERSION, '1.6.0', '<')) {
+				// Cache Enabler: BEFORE 1.6.0 (1.5.5 and below)
+				// Make sure HTML changes are applied to cached pages from "Cache Enabler" plugin
+				add_filter( 'cache_enabler_before_store', static function( $htmlSource ) {
+					return self::alterHtmlSource( $htmlSource ); // deprecated, include it in case other users have an older version of "Cache Enabler"
+				}, 1, 1 );
+			} else {
+				// Cache Enabler: 1.6.0+
+				global $cache_enabler_constants;
 
-		add_filter('cache_enabler_page_contents_before_store', static function($htmlSource) {
-			return self::alterHtmlSource($htmlSource);
-		}, 1, 1);
+				if (isset($cache_enabler_constants['CACHE_ENABLER_VERSION']) && version_compare($cache_enabler_constants['CACHE_ENABLER_VERSION'], '1.6.0', '>=')) {
+					add_filter( 'cache_enabler_page_contents_before_store', static function( $htmlSource ) {
+						return self::alterHtmlSource( $htmlSource );
+					}, 1, 1 );
+				}
+			}
+		}
 
 		// In case HTML Minify is enabled in W3 Total Cache, make sure any settings (e.g. JS combine) in Asset CleanUp will be applied
 		add_filter('w3tc_minify_before', static function ($htmlSource) {
@@ -129,6 +139,21 @@ class OptimizeCommon
 		if (Misc::isPluginActive('wp-rocket/wp-rocket.php')) {
 			add_filter('rocket_buffer', static function($htmlSource) {
 				return self::alterHtmlSource($htmlSource, true);
+			});
+		}
+
+		// "Hide My WP Ghost – Security Plugin" - Make sure the alter the HTML (some files might be cached) before the security plugin proceeds with the alteration of the paths
+		// This way, "Hide My WP Ghost – Security Plugin" would process the paths to the CSS/JS files that are already cached from /wp-content/cache/
+		if ( ( ! (defined('DOING_AJAX') && DOING_AJAX) ) // not when /wp-admin/admin-ajax.php is called
+            && class_exists('\HMWP_Classes_ObjController')
+		    && method_exists('\HMWP_Models_Rewrite', 'find_replace')
+		    && apply_filters('hmwp_process_buffer', true) // only when processing the buffer is turned ON
+		) {
+			add_filter('hmwp_process_buffer', '__return_false');
+			add_filter('wpacu_print_info_comments_in_cached_assets', '__return_false'); // hide comments revealing the paths to serve the purpose of "Hide My WP Ghost – Security Plugin"
+
+			add_filter('wpacu_html_source_after_optimization', function($htmlSource) {
+				return \HMWP_Classes_ObjController::getClass('HMWP_Models_Rewrite')->find_replace($htmlSource);
 			});
 		}
 
@@ -213,6 +238,13 @@ class OptimizeCommon
 		// In order to check how fast the page loads without the DOM changes (for debugging purposes)
 		$wpacuNoHtmlChanges = isset($_REQUEST['wpacu_no_html_changes']) || ( defined('WPACU_NO_HTML_CHANGES') && WPACU_NO_HTML_CHANGES );
 
+		// Not a normal WordPress page load
+		// e.g. it could be JS content loaded dynamically such as /?wpml-app=ate-widget
+		if ( ! (did_action('wp_head') && did_action('wp_footer')) && Plugin::preventAnyFrontendOptimization('', $htmlSource) ) {
+			/* [wpacu_timing] */ Misc::scriptExecTimer( 'alter_html_source', 'end' ); /* [/wpacu_timing] */
+			return $htmlSource;
+		}
+
 		if ( $wpacuNoHtmlChanges || Plugin::preventAnyFrontendOptimization() ) {
 			/* [wpacu_timing] */ Misc::scriptExecTimer( 'alter_html_source', 'end' ); /* [/wpacu_timing] */
 			return $htmlSource;
@@ -225,7 +257,7 @@ class OptimizeCommon
 
 		// The admin is editing the CSS/JS list within the front-end view
 		if (HardcodedAssets::useBufferingForEditFrontEndView()) {
-			ObjectCache::wpacu_cache_set('wpacu_hardcoded_assets_encoded', base64_encode( json_encode($anyHardCodedAssetsList) ));
+			ObjectCache::wpacu_cache_set('wpacu_hardcoded_assets_encoded', base64_encode( wp_json_encode($anyHardCodedAssetsList) ));
 		}
 
 		$htmlSource = OptimizeCss::alterHtmlSource( $htmlSource );
@@ -327,16 +359,15 @@ class OptimizeCommon
 
 	/**
 	 * @param $htmlSource
-	 * @param $for
+	 * @param string $for
 	 *
-	 * @return bool|\DOMDocument|mixed
+	 * @return \DOMDocument
 	 */
 	public static function getDomLoadedTag($htmlSource, $for = '')
 	{
 		$htmlSourceBefore = $htmlSource;
 
-		$domTag = new \DOMDocument();
-		libxml_use_internal_errors( true );
+		$domTag = Misc::initDOMDocument();
 
 		$cleanerDomRegEx = '';
 
@@ -386,13 +417,114 @@ class OptimizeCommon
 
 		// Avoid "Warning: DOMDocument::loadHTML(): Empty string supplied as input"
 		// Just in case $htmlSource has been altered incorrectly for any reason, fallback to the original $htmlSource value ($htmlSourceBefore)
-		if (! $htmlSource) {
+		if ( ! $htmlSource ) {
 			$domTag->loadHTML($htmlSourceBefore);
 			return $domTag;
 		}
 
 		$domTag->loadHTML($htmlSource);
 		return $domTag;
+	}
+
+	/**
+	 * @param $htmlSource
+	 * @param $params
+	 *
+	 * @return array|mixed|string|string[]
+	 */
+	public static function matchAndReplaceLinkTags($htmlSource, $params = array())
+	{
+		if (isset($params['as']) && $params['as']) {
+			$fallbackToRegex = false;
+
+			/*
+			  * Option 1: DOM + Regular Expression (Best)
+			 */
+			if ( Misc::isDOMDocumentOn() ) {
+				$dom = Misc::initDOMDocument();
+
+				$dom->loadHTML($htmlSource);
+
+				$selector = new \DOMXPath($dom);
+
+				$domTagQuery = $selector->query('//link[@as="'.$params['as'].'"]');
+
+				if (count($domTagQuery) < 1) {
+					// No LINK tags found with the specified "as" attribute? Stop here!
+					return $htmlSource;
+				}
+
+				foreach($domTagQuery as $link) {
+					if ( ! $link->hasAttributes() ) {
+						continue;
+					}
+
+					$linkTagParts = array();
+					$linkTagParts[] = '<link ';
+
+					foreach ($link->attributes as $attr) {
+						$attrName = $attr->nodeName;
+						$attrValue = $attr->nodeValue;
+
+						if ($attrName) {
+							if ($attrValue !== '') {
+								$linkTagParts[] = '(\s+|)' . preg_quote($attrName, '/') . '(\s+|)=(\s+|)(|"|\')' . preg_quote($attrValue, '/') . '(|"|\')(|\s+)';
+							} else {
+								$linkTagParts[] = '(\s+|)' . preg_quote($attrName, '/') . '(|((\s+|)=(\s+|)(|"|\')(|"|\')))';
+							}
+						}
+					}
+
+					$linkTagParts[] = '(|\s+)(|/)>';
+
+					$linkTagFinalRegExPart = implode('', $linkTagParts);
+
+					preg_match_all(
+						'#'.$linkTagFinalRegExPart.'#Umi',
+						$htmlSource,
+						$matchSourceFromTag,
+						PREG_SET_ORDER
+					);
+
+					// It always has to be a match from the DOM generated tag
+					// Otherwise, default it to RegEx
+					if ( empty($matchSourceFromTag) || ! (isset($matchSourceFromTag[0]) && ! empty($matchSourceFromTag[0])) ) {
+						$fallbackToRegex = true;
+						break;
+					}
+
+					$matchesSourcesFromTags[] = $matchSourceFromTag[0];
+				}
+			}
+
+			/*
+			  * Option 2: Regular Expression (Fallback)
+			 */
+			if ($fallbackToRegex || ! Misc::isDOMDocumentOn()) {
+				preg_match_all( '#<link[^>]*(as(\s+|)=(\s+|)(|"|\')'.$params['as'].'(|"|\'))[^>]*>#Umi', $htmlSource, $matchesSourcesFromTags, PREG_SET_ORDER );
+			}
+
+			// Are there any preloaded / prefetched scripts that are inside the unloaded list?
+			// Strip the preloading tag as it's not relevant, since the script was unloaded
+			// These can be generated via plugins such as "Pre* Party Resource Hints" where users can manually insert scripts to preload
+			if ( ! empty( $matchesSourcesFromTags ) ) {
+				foreach ( $matchesSourcesFromTags as $matchedLink ) {
+					$matchedLinkTag = isset( $matchedLink[0] ) ? $matchedLink[0] : '';
+
+					if ( ! ( $matchedLinkTag && strpos( $matchedLinkTag, ' href' ) !== false ) ) {
+						continue;
+					}
+
+					foreach ( $params['unloaded_assets_rel_sources'] as $unloadedAssetRelSource ) {
+						if ( strpos( $matchedLinkTag, $unloadedAssetRelSource ) !== false ) {
+							$htmlSource = str_replace( $matchedLinkTag, '', $htmlSource );
+						}
+					}
+				}
+			}
+		}
+
+		return $htmlSource;
 	}
 
 	/**
@@ -472,6 +604,40 @@ class OptimizeCommon
 	}
 
 	/**
+	 * @param $isFile
+	 * @param $localAssetPath
+	 * @param $assetHandle
+	 * @param $fileVer
+	 *
+	 * @return string
+	 */
+	public static function generateUniqueNameForCachedAsset($isFile, $localAssetPath, $assetHandle, $fileVer)
+	{
+		if ($isFile) {
+			$relPathToFileFiltered = str_replace(Misc::getWpRootDirPath(), '', $localAssetPath);
+
+			// Some people might use plugins to hide the fact that they are using WordPress
+			// Strip such information from the cached asset names as it's irrelevant for the visitor anyway
+			// if the cached file name loaded in the browser contain references to WordPress
+			foreach (array('wp-content/plugins', 'wp-content/themes', 'wp-', 'wordpress') as $toStripFromFileName) {
+				$relPathToFileFiltered = str_replace( $toStripFromFileName, '', $relPathToFileFiltered );
+			}
+
+			$relPathToFileFiltered = ltrim($relPathToFileFiltered, '/');
+
+			$sanitizedRelPathToFileFiltered = str_replace('/', '__', $relPathToFileFiltered);
+			$sanitizedRelPathToFileFiltered = sanitize_title($sanitizedRelPathToFileFiltered);
+			$uniqueOptimizedAssetName = $sanitizedRelPathToFileFiltered;
+		} else {
+			$uniqueOptimizedAssetName = sanitize_title( $assetHandle );
+		}
+
+		$uniqueOptimizedAssetName .= '-v' . $fileVer;
+
+		return $uniqueOptimizedAssetName;
+	}
+
+	/**
 	 * @param $href
 	 * @param $assetType
 	 *
@@ -505,21 +671,35 @@ class OptimizeCommon
 			$hrefRelPath = substr($hrefRelPath, 1);
 		}
 
-		$localAssetPath = Misc::getWpRootDirPath() . $hrefRelPath;
+		$localAssetPossiblePaths = array(Misc::getWpRootDirPath() . $hrefRelPath);
 
-		if (strpos($localAssetPath, '?ver') !== false) {
-			list($localAssetPathAlt,) = explode('?ver', $localAssetPath);
-			$localAssetPath = $localAssetPathAlt;
+		// Perhaps the URL starts with / (not //) and site_url() was not used
+		$parseSiteUrlPath = (string)parse_url(site_url(), PHP_URL_PATH);
+
+		// This is in case we have something like this in the source (hardcoded or generated through a plugin)
+		// /blog/wp-content/plugins/custom-plugin-slug/script.js
+		// and the site_url() is equal with https://www.mysite.com/blog
+		if ($parseSiteUrlPath !== '/' && strlen($parseSiteUrlPath) > 1 && strpos($href, $parseSiteUrlPath) === 0) {
+			$relPathFromWpRootDir = str_replace($parseSiteUrlPath, '', $href);
+			$altHrefRelPath = str_replace('//', '/', Misc::getWpRootDirPath() . $relPathFromWpRootDir);
+			$localAssetPossiblePaths[] = $altHrefRelPath;
 		}
 
-		// Not using "?ver="
-		if (strpos($localAssetPath, '.' . $assetType . '?') !== false) {
-			list($localAssetPathAlt,) = explode('.' . $assetType . '?', $localAssetPath);
-			$localAssetPath = $localAssetPathAlt . '.' . $assetType;
-		}
+		foreach ($localAssetPossiblePaths as $localAssetPath) {
+			if ( strpos( $localAssetPath, '?ver' ) !== false ) {
+				list( $localAssetPathAlt, ) = explode( '?ver', $localAssetPath );
+				$localAssetPath = $localAssetPathAlt;
+			}
 
-		if (strrchr($localAssetPath, '.') === '.' . $assetType && is_file($localAssetPath)) {
-			return $localAssetPath;
+			// Not using "?ver="
+			if ( strpos( $localAssetPath, '.' . $assetType . '?' ) !== false ) {
+				list( $localAssetPathAlt, ) = explode( '.' . $assetType . '?', $localAssetPath );
+				$localAssetPath = $localAssetPathAlt . '.' . $assetType;
+			}
+
+			if ( strrchr( $localAssetPath, '.' ) === '.' . $assetType && is_file( $localAssetPath ) ) {
+				return $localAssetPath;
+			}
 		}
 
 		return false;
@@ -528,7 +708,7 @@ class OptimizeCommon
 	/**
 	 * @param $assetHref
 	 *
-	 * @return bool|mixed|string
+	 * @return array|false|string|string[]
 	 */
 	public static function getPathToAssetDir($assetHref)
 	{
@@ -556,23 +736,16 @@ class OptimizeCommon
 
 	/**
 	 * @param $sourceTag
-	 * @param string $forAttr
 	 *
 	 * @return array|bool
 	 */
-	public static function getLocalCleanSourceFromTag($sourceTag, $forAttr)
+	public static function getLocalCleanSourceFromTag($sourceTag)
 	{
-		preg_match_all('#'.$forAttr.'=(["\'])' . '(.*)' . '(["\'])#Usmi', $sourceTag, $outputMatchesSource);
-
-		$sourceFromTag = (isset($outputMatchesSource[2][0]) && $outputMatchesSource[2][0])
-			? trim($outputMatchesSource[2][0], '"\'')
-			: false;
+		$sourceFromTag = Misc::getValueFromTag($sourceTag);
 
 		if (! $sourceFromTag) {
 			return false;
 		}
-
-		$isRelPath = false;
 
 		// Check if it starts without "/" or a protocol; e.g. "wp-content/theme/style.css", "wp-content/theme/script.js"
 		if (strpos($sourceFromTag, '/')   !== 0 &&
@@ -584,7 +757,24 @@ class OptimizeCommon
 		}
 
 		// Perhaps the URL starts with / (not //) and site_url() was not used
-		if (strpos($sourceFromTag, '/') === 0 && strpos($sourceFromTag, '//') !== 0 && is_file(Misc::getWpRootDirPath() . $sourceFromTag)) {
+		$altFilePathForRelSource = $isRelPath = false;
+		$parseSiteUrlPath = (string)parse_url(site_url(), PHP_URL_PATH);
+
+		// This is in case we have something like this in the HTML source (hardcoded or generated through a plugin)
+		// <link href="/blog/wp-content/plugins/custom-plugin-slug/script.js" rel="preload" as="script" type="text/javascript">
+		// and the site_url() is equal with https://www.mysite.com/blog
+		if ($parseSiteUrlPath !== '/' && strlen($parseSiteUrlPath) > 1 && strpos($sourceFromTag, $parseSiteUrlPath) !== false) {
+			$relPathFromRootDir = str_replace($parseSiteUrlPath, '', $sourceFromTag);
+			$altFilePathForRelSource = str_replace('//', '/', Misc::getWpRootDirPath() . $relPathFromRootDir);
+		} elseif (strpos($sourceFromTag, '/') === 0 && strpos($sourceFromTag, '//') !== 0) {
+			$altFilePathForRelSource = str_replace('//', '/', Misc::getWpRootDirPath() . $sourceFromTag);
+		}
+
+		if ($altFilePathForRelSource && (strpos($altFilePathForRelSource, '.css?') !== false || strpos($altFilePathForRelSource, '.js?') !== false)) {
+			list($altFilePathForRelSource) = explode('?', $altFilePathForRelSource);
+		}
+
+		if ( $altFilePathForRelSource && (is_file(Misc::getWpRootDirPath() . $sourceFromTag) || is_file($altFilePathForRelSource)) ) {
 			$isRelPath = true;
 		}
 
@@ -747,7 +937,7 @@ class OptimizeCommon
 	 * @param $cdnUrl
 	 * @param $hrefAlt
 	 *
-	 * @return mixed
+	 * @return array
 	 */
 	public static function getCleanHrefAfterCdnStrip($cdnUrl, $hrefAlt)
 	{
@@ -822,12 +1012,12 @@ class OptimizeCommon
 		}
 
 		// Delete cached file after it expired as it will be regenerated
-		if (filemtime($assetsFile) < (time() - 1 * $cachedAssetsFileExpiresIn)) {
+		if (filemtime($assetsFile) < (time() - $cachedAssetsFileExpiresIn)) {
 			self::clearAssetCachedData($jsonStorageFile);
 			return array();
 		}
 
-		$optionValue = FileSystem::file_get_contents($assetsFile);
+		$optionValue = FileSystem::fileGetContents($assetsFile);
 
 		if ($optionValue) {
 			$optionValueArray = @json_decode($optionValue, ARRAY_A);
@@ -900,7 +1090,7 @@ class OptimizeCommon
 			$dirToFilename = str_replace('//', '/', $dirToFilename);
 
 			if (! is_dir($dirToFilename)) {
-				$makeFileDir = @mkdir($dirToFilename, 0755, true);
+				$makeFileDir = @mkdir($dirToFilename, FS_CHMOD_DIR, true);
 
 				if (! $makeFileDir) {
 					return;
@@ -920,7 +1110,7 @@ class OptimizeCommon
 			$dirToFilename = str_replace('//', '/', $dirToFilename);
 
 			if (! is_dir($dirToFilename)) {
-				$makeFileDir = @mkdir($dirToFilename, 0755, true);
+				$makeFileDir = @mkdir($dirToFilename, FS_CHMOD_DIR, true);
 
 				if (! $makeFileDir) {
 					return;
@@ -931,7 +1121,7 @@ class OptimizeCommon
 			$assetsValue = $list;
 		}
 
-		FileSystem::file_put_contents($assetsFile, $assetsValue);
+		FileSystem::filePutContents($assetsFile, $assetsValue);
 	}
 
 	/**
@@ -1007,7 +1197,7 @@ class OptimizeCommon
 		}
 
 		$isUriRequest = isset($_GET['wpacu_clear_cache_print']);
-		$isAjaxCallOrUriRequest = (isset($_POST['action']) && $_POST['action'] === WPACU_PLUGIN_ID . '_clear_cache' && is_admin()) || $isUriRequest;
+		$isAjaxCallOrUriRequest = (isset($_REQUEST['action']) && $_REQUEST['action'] === WPACU_PLUGIN_ID . '_clear_cache' && is_admin()) || $isUriRequest;
 		$clearedOutput = $keptOutput = array();
 
 		/*
@@ -1016,7 +1206,7 @@ class OptimizeCommon
 		$skipFiles       = array('index.php', '.htaccess');
 		$fileExtToRemove = array('.json', '.css', '.js');
 
-		$clearFilesOlderThanXDays = Main::instance()->settings['clear_cached_files_after']; // days
+		$clearFilesOlderThanXDays = (int)Main::instance()->settings['clear_cached_files_after']; // days
 
 		$assetCleanUpCacheDir = WP_CONTENT_DIR . self::getRelPathPluginCacheDir();
 		$storageDir           = $assetCleanUpCacheDir . '_storage';
@@ -1037,10 +1227,8 @@ class OptimizeCommon
 		if (is_dir($assetCleanUpCacheDir)) {
 			$storageEmptyDirs = $allClearableAssets = $allAssetsToKeep = array();
 
-			$mostRecentCachedAssets = self::getMostRecentCachedAssets();
-
-			$siteHost = parse_url(site_url(), PHP_URL_HOST);
-			$siteUri = parse_url(site_url(), PHP_URL_PATH);
+			$siteHost = (string)parse_url(site_url(), PHP_URL_HOST);
+			$siteUri  = (string)parse_url(site_url(), PHP_URL_PATH);
 
 			$relPathToPossibleDir = $storageDir.'/'.$siteHost . $siteUri;
 
@@ -1048,7 +1236,7 @@ class OptimizeCommon
 				$storageDir.'/item/',
 				$assetCleanUpCacheDir.'css/',
 				$assetCleanUpCacheDir.'js/',
-				// Possible common directories with less files
+				// Possible common directories with fewer files
 				$relPathToPossibleDir.'/category/',
 				$relPathToPossibleDir.'/author/',
 				$relPathToPossibleDir.'/tag/'
@@ -1062,32 +1250,35 @@ class OptimizeCommon
 				$dirItems = new \RecursiveDirectoryIterator( $targetedDir, \RecursiveDirectoryIterator::SKIP_DOTS );
 
 				foreach (
-					new \RecursiveIteratorIterator( $dirItems, \RecursiveIteratorIterator::SELF_FIRST,
-						\RecursiveIteratorIterator::CATCH_GET_CHILD ) as $item
+					new \RecursiveIteratorIterator(
+						$dirItems,
+						\RecursiveIteratorIterator::SELF_FIRST,
+						\RecursiveIteratorIterator::CATCH_GET_CHILD
+					) as $item
 				) {
-					$fileMtime = filemtime($item);
+					$fileMtime    = filemtime($item);
 					$fileBaseName = trim( strrchr( $item, '/' ), '/' );
-					$fileExt = strrchr( $fileBaseName, '.' );
+					$fileExt      = strrchr( $fileBaseName, '.' );
 
 					if ( is_file( $item ) && in_array( $fileExt, $fileExtToRemove ) && ( ! in_array( $fileBaseName, $skipFiles ) ) ) {
 						$isJsonFile = ( $fileExt === '.json' );
 						$isAssetFile = in_array( $fileExt, array( '.css', '.js' ) );
 
-						// Remove all JSONs & .css & .js (depending on other things as well) ONLY if they are older than (self::$cachedAssetFileExpiresIn + $clearFilesOlderThanXDays) days
-						$clearOlderThanInSeconds = self::$cachedAssetFileExpiresIn;
+						// Remove all JSONs & .css & .js (depending on other things as well) ONLY if they are older than $clearFilesOlderThanXDays days (at least one day)
+						$clearOlderThanInSeconds = self::$cachedAssetFileExpiresIn; // minimum
 
 						if ($clearFilesOlderThanXDays > 0) {
-							$clearOlderThanInSeconds += (86400 * $clearFilesOlderThanXDays);
+							$clearOlderThanInSeconds = (86400 * $clearFilesOlderThanXDays); // 1 day = 86400 seconds
 						}
 
 						// Conditions to delete the cached CSS/JS file:
 						// 1) It's older than $clearOlderThanInSeconds since its content was modified
 						// 2) It's not within the most recent cached files from /_storage/_recent_items/ (the latest cached assets should always be kept)
 
-						// $clearFilesOlderThanXDays is taken from "Settings" -> "Plugin Usage Preferences" -> "Clear previously cached CSS/JS files older than (x) days"
+						// $clearFilesOlderThanXDays is taken from
+						// "Settings" -> "Plugin Usage Preferences" -> "Clear cached CSS/JS files older than (x) days"
 						$isAssetFileToClear = ( $isAssetFile &&
-						                        ( strtotime( '-' . $clearOlderThanInSeconds . ' seconds' ) > $fileMtime ) &&
-						                        (! in_array($item, $mostRecentCachedAssets)) );
+					                          ( strtotime( '-' . $clearOlderThanInSeconds . ' seconds' ) > $fileMtime ) );
 
 						if ( $isJsonFile || $isAssetFileToClear ) {
 							if ( $isJsonFile ) {
@@ -1119,7 +1310,7 @@ class OptimizeCommon
 			// Clear all JSON files separately from the storage directory as it will be rebuilt
 			self::rmNonEmptyJsonStorageDir($storageDir);
 
-			// Now go through the JSONs and collect the latest assets so they would be kept
+			// Now go through the JSONs and collect the latest assets, so they would be kept
 			// Finally, collect the rest of $allAssetsToKeep from the database transients (if any)
 			// Do not check if they are expired or not as their assets could still be referenced
 			// until those pages will be accessed in a non-cached way
@@ -1127,7 +1318,7 @@ class OptimizeCommon
 
 			if (in_array(Main::instance()->settings['fetch_cached_files_details_from'], array('db', 'db_disk'))) {
 				$sqlGetCacheTransients = <<<SQL
-SELECT option_value FROM `{$wpdb->options}` 
+SELECT option_value FROM `{$wpdb->options}`
 WHERE `option_name` LIKE '%transient_wpacu_css_optimize%' OR `option_name` LIKE '%transient_wpacu_js_optimize%'
 SQL;
 				$cacheDbTransients   = $wpdb->get_col( $sqlGetCacheTransients );
@@ -1144,7 +1335,7 @@ SQL;
 			} elseif (Main::instance()->settings['fetch_cached_files_details_from'] === 'disk') {
 				// Since the asset's info is retrieved ONLY from the disk, any transients in the database are irrelevant, thus clear them
 				$sqlClearCacheTransients = <<<SQL
-DELETE FROM `{$wpdb->options}` 
+DELETE FROM `{$wpdb->options}`
 WHERE `option_name` LIKE '%transient_wpacu_css_optimize%' OR `option_name` LIKE '%transient_wpacu_js_optimize%'
 SQL;
 				$wpdb->query( $sqlClearCacheTransients );
@@ -1184,17 +1375,78 @@ SQL;
 			}
 		}
 
-		if (is_dir(WP_CONTENT_DIR . OptimizeCss::getRelPathCssCacheDir() .'min')) { Misc::rmDir( WP_CONTENT_DIR . OptimizeCss::getRelPathCssCacheDir() .'min' ); }
-		if (is_dir(WP_CONTENT_DIR . OptimizeJs::getRelPathJsCacheDir()   .'min')) { Misc::rmDir( WP_CONTENT_DIR . OptimizeJs::getRelPathJsCacheDir()   .'min' ); }
-		if (is_dir(WP_CONTENT_DIR . OptimizeCss::getRelPathCssCacheDir() .'one')) { Misc::rmDir( WP_CONTENT_DIR . OptimizeCss::getRelPathCssCacheDir() .'one' ); }
-		if (is_dir(WP_CONTENT_DIR . OptimizeJs::getRelPathJsCacheDir()   .'one')) { Misc::rmDir( WP_CONTENT_DIR . OptimizeJs::getRelPathJsCacheDir()   .'one' ); }
+		self::clearAllCacheOldLegacyDirs();
+		self::clearAllCacheInlineContentFromTagsNonStatic();
 
 		/*
-		 * Special Case: Any CSS/JS files from /wp-content/cache//asset-cleanup/(css|js)/item/inline/
-		 * These files are never loaded as static, externally (from LINK or SCRIPT tag);
-		 * Their content is just pulled (if not expired) into the STYLE/SCRIPT inline tag
-		 * If there are any expired files there, remove them
-		*/
+		 * STEP 2: Remove all transients related to the Minify CSS/JS files feature
+		 */
+		$toolsClass = new Tools();
+		$toolsClass->clearAllCacheTransients();
+
+		// Make sure all the caching files/folders are there in case the plugin was upgraded
+		Plugin::createCacheFoldersFiles(array('css', 'js'));
+
+		if ($isAjaxCallOrUriRequest) {
+			if (! empty($clearedOutput)) {
+				echo 'The following files/directories have been cleared:'."\n";
+				if ($isUriRequest) { echo '<br />'; }
+
+				foreach ($clearedOutput as $clearedInfo) {
+					echo esc_html($clearedInfo)."\n";
+					if ($isUriRequest) { echo '<br />'; }
+				}
+			}
+
+			if (! empty($keptOutput)) {
+				echo "\n".'The following files have been kept:'."\n";
+				if ($isUriRequest) { echo '<br />'; }
+
+				foreach ($keptOutput as $keptInfo) {
+					echo esc_html($keptInfo)."\n";
+					if ($isUriRequest) { echo '<br />'; }
+				}
+			}
+		}
+
+		// Any actions after clearing the cache?
+		do_action('wpacu_clear_cache_after');
+
+		// [START - Clear cache for other plugins if they are enabled]
+		// If, for any reason, someone uses Cache Enabler and want to prevent clearing its cache after Asset CleanUp Pro clears its own cache
+		// they can do so via the following code (e.g. in functions.php of their Child theme):
+		// add_filter('wpacu_clear_cache_enabler_cache', '__return_false');
+		if (assetCleanUpClearCacheEnablerCache()) {
+			if ($isAjaxCallOrUriRequest) {
+				echo '<br />"Cache Enabler" plugin is active. The following action was called: "cache_enabler_clear_complete_cache"';
+			}
+			do_action('cache_enabler_clear_complete_cache'); // Cache Enabler
+		}
+
+		// [END - Clear cache for other plugins if they are enabled]
+
+		set_transient('wpacu_last_clear_cache', time());
+
+		if ($isUriRequest) {
+			exit();
+		}
+
+		if ($redirectAfter && wp_get_referer()) {
+			wp_safe_redirect(wp_get_referer());
+			exit();
+		}
+	}
+
+	/**
+	 * Special Case: Any CSS/JS files from /wp-content/cache//asset-cleanup/(css|js)/item/inline/
+	 * These files are never loaded as static, externally (from LINK or SCRIPT tag);
+	 * Their content is just pulled (if not expired) into the STYLE/SCRIPT inline tag
+	 * If there are any expired files there, remove them
+	 *
+	 * @return void
+	 */
+	public static function clearAllCacheInlineContentFromTagsNonStatic()
+	{
 		foreach (array('.css', '.js') as $assetExt) {
 			$assetTypeDir = ($assetExt === '.css') ? OptimizeCss::getRelPathCssCacheDir() : OptimizeJs::getRelPathJsCacheDir();
 
@@ -1219,59 +1471,21 @@ SQL;
 
 				}
 		}
-
-		/*
-		 * STEP 2: Remove all transients related to the Minify CSS/JS files feature
-		 */
-		$toolsClass = new Tools();
-		$toolsClass->clearAllCacheTransients();
-
-		// Make sure all the caching files/folders are there in case the plugin was upgraded
-		Plugin::createCacheFoldersFiles(array('css', 'js'));
-
-		if ($isAjaxCallOrUriRequest) {
-			if (! empty($clearedOutput)) {
-				echo 'The following files/directories have been cleared:'."\n";
-				if ($isUriRequest) { echo '<br />'; }
-
-				foreach ($clearedOutput as $clearedInfo) {
-					echo $clearedInfo."\n";
-					if ($isUriRequest) { echo '<br />'; }
-				}
-			}
-
-			if (! empty($keptOutput)) {
-				echo "\n".'The following files have been kept:'."\n";
-				if ($isUriRequest) { echo '<br />'; }
-
-				foreach ($keptOutput as $keptInfo) {
-					echo $keptInfo."\n";
-					if ($isUriRequest) { echo '<br />'; }
-				}
-			}
-		}
-
-		// Any actions after clearing the cache?
-		do_action('wpacu_clear_cache_after');
-
-		// [START - Clear cache for other plugins if they are enabled]
-		do_action('cache_enabler_clear_complete_cache'); // Cache Enabler
-		// [END - Clear cache for other plugins if they are enabled]
-
-		set_transient('wpacu_last_clear_cache', time());
-
-		if ($isUriRequest) {
-			exit();
-		}
-
-		if ($redirectAfter && wp_get_referer()) {
-			wp_safe_redirect(wp_get_referer());
-			exit();
-		}
 	}
 
 	/**
-	 * Alias for clearCache() - some developers might have implemented clearAllCache()
+	 * @return void
+	 */
+	public static function clearAllCacheOldLegacyDirs()
+	{
+		if (is_dir(WP_CONTENT_DIR . OptimizeCss::getRelPathCssCacheDir() .'min')) { Misc::rmDir( WP_CONTENT_DIR . OptimizeCss::getRelPathCssCacheDir() .'min' ); }
+		if (is_dir(WP_CONTENT_DIR . OptimizeJs::getRelPathJsCacheDir()   .'min')) { Misc::rmDir( WP_CONTENT_DIR . OptimizeJs::getRelPathJsCacheDir()   .'min' ); }
+		if (is_dir(WP_CONTENT_DIR . OptimizeCss::getRelPathCssCacheDir() .'one')) { Misc::rmDir( WP_CONTENT_DIR . OptimizeCss::getRelPathCssCacheDir() .'one' ); }
+		if (is_dir(WP_CONTENT_DIR . OptimizeJs::getRelPathJsCacheDir()   .'one')) { Misc::rmDir( WP_CONTENT_DIR . OptimizeJs::getRelPathJsCacheDir()   .'one' ); }
+	}
+
+	/**
+	 * Alias for clearCache() - some developers might have implemented the old clearAllCache()
 	 *
 	 * @param bool $redirectAfter
 	 */
@@ -1282,21 +1496,74 @@ SQL;
 
 	/**
 	 * This is usually done when the plugin is deactivated
-	 * e.g. if you use Autoptimize and it remains active, you will likely want to have its caching cleared with traces from Asset CleanUp
+	 * e.g. if you use Autoptimize, and it remains active, you will likely want to have its caching cleared with traces from Asset CleanUp
 	 */
 	public static function clearOtherPluginsCache()
 	{
+		self::clearAutoptimizeCache();
+		self::clearCacheEnablerCache();
+	}
+
+	/**
+	 * @return void
+	 */
+	public static function clearAutoptimizeCache()
+	{
 		if ( assetCleanUpClearAutoptimizeCache() && Misc::isPluginActive('autoptimize/autoptimize.php')
-		    && class_exists('\autoptimizeCache')
-		    && method_exists('\autoptimizeCache', 'clearall')) {
+		     && class_exists('\autoptimizeCache')
+		     && method_exists('\autoptimizeCache', 'clearall') ) {
 			\autoptimizeCache::clearall();
 		}
 	}
 
 	/**
+	 * @param string $triggeredFrom (e.g. ajax_call)
+	 *
+	 * @return void
+	 */
+	public static function clearCacheEnablerCache($triggeredFrom = '')
+	{
+		$isCacheEnablerActive = Misc::isPluginActive('cache-enabler/cache-enabler.php');
+
+		// [IF AJAX CALL]
+		if ($triggeredFrom === 'ajax_call') {
+			if ($isCacheEnablerActive) {
+				echo '"Cache Enabler" plugin is active.<br />';
+			} else {
+				echo '"Cache Enabler" plugin is NOT active.<br />';
+				exit();
+			}
+
+			if (assetCleanUpClearCacheEnablerCache()) {
+				echo '"Cache Enabler" plugin is set to have its cache cleared.<br />';
+			} else {
+				echo '"Cache Enabler" plugin is set to not have its caching cleared via "WPACU_DO_NOT_ALSO_CLEAR_CACHE_ENABLER_CACHE" constant';
+				exit();
+			}
+		}
+		// [/IF AJAX CALL]
+
+		if ($isCacheEnablerActive && assetCleanUpClearCacheEnablerCache()) {
+			do_action('cache_enabler_clear_complete_cache');
+		}
+
+		// [IF AJAX CALL]
+		if ($triggeredFrom === 'ajax_call') {
+			if (did_action('cache_enabler_clear_complete_cache')) {
+				echo '"Cache Enabler" plugin had its "cache_enabler_clear_complete_cache" action triggered.<br />';
+			}
+
+			exit();
+		}
+		// [/IF AJAX CALL]
+	}
+
+	/**
+	 * @param bool $includeHtmlTags
+	 *
 	 * @return array
 	 */
-	public static function getStorageStats()
+	public static function getStorageStats($includeHtmlTags = true)
 	{
 		$assetCleanUpCacheDir = WP_CONTENT_DIR . self::getRelPathPluginCacheDir();
 
@@ -1336,10 +1603,10 @@ SQL;
 			ksort($fileDirs, SORT_ASC);
 
 			return array(
-				'total_size'         => Misc::formatBytes($totalSize),
+				'total_size'         => Misc::formatBytes($totalSize, 2, '', $includeHtmlTags),
 				'total_files'        => $totalFiles,
 
-				'total_size_assets'  => Misc::formatBytes($totalSizeAssets),
+				'total_size_assets'  => Misc::formatBytes($totalSizeAssets, 2, '', $includeHtmlTags),
 				'total_files_assets' => $totalFilesAssets,
 
 				'dirs_files_sizes'   => $fileDirs,
@@ -1372,7 +1639,7 @@ SQL;
 	/**
 	 * @param $fileName
 	 *
-	 * @return mixed
+	 * @return array|string|string[]
 	 */
 	public static function filterStorageFileName($fileName)
 	{
@@ -1403,9 +1670,9 @@ SQL;
 	}
 
 	/**
-	 * @param $anyCdnUrl
+	 * @param string $anyCdnUrl
 	 *
-	 * @return mixed|string
+	 * @return array|string|string[]
 	 */
 	public static function filterWpContentUrl($anyCdnUrl = '')
 	{
@@ -1414,10 +1681,9 @@ SQL;
 		$parseContentUrl = parse_url($wpContentUrl);
 		$parseBaseUrl = parse_url(site_url());
 
-		// Perhaps WPML plugin is used and the content URL is different then the current domain which might be for a different language
+		// Perhaps WPML plugin is used and the content URL is different from the current domain which might be for a different language
 		if ( ($parseContentUrl['host'] !== $parseBaseUrl['host']) &&
-		     (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] !== $parseContentUrl['host']) &&
-		     isset($parseContentUrl['path']) &&
+		     (isset($_SERVER['HTTP_HOST'], $parseContentUrl['path']) && $_SERVER['HTTP_HOST'] !== $parseContentUrl['host']) &&
 			 is_dir(rtrim(ABSPATH, '/') . $parseContentUrl['path']) ) {
 			$wpContentUrl = str_replace($parseContentUrl['host'], $parseBaseUrl['host'], $wpContentUrl);
 		}
@@ -1466,13 +1732,13 @@ SQL;
 	}
 
 	/**
-	 * @param $assetType
+	 * @param $for ("css" or "js")
 	 *
 	 * @return bool
 	 */
-	public static function appendInlineCodeToCombineAssetType($assetType)
+	public static function appendInlineCodeToCombineAssetType($for)
 	{
-		$settingsIndex = '_combine_loaded_'.$assetType.'_append_handle_extra';
+		$settingsIndex = '_combine_loaded_'.$for.'_append_handle_extra';
 		return (Misc::isWpVersionAtLeast('5.5') &&
 		        isset(Main::instance()->settings[$settingsIndex]) &&
 	            Main::instance()->settings[$settingsIndex]);
@@ -1489,26 +1755,101 @@ SQL;
 		$isPreview = (isset($_GET['preview_id'], $_GET['preview_nonce'], $_GET['preview'])
 		              || isset($_GET['preview'])); // show the CSS/JS as combined IF the option is enabled despite the query string (for debugging purposes)
 
+		if ($isPreview) {
+			return true;
+		}
+
 		$ignoreQueryStrings = array(
-			'wpacu_do_combine', // show the CSS/JS as combined IF the option is enabled despite the query string (for debugging purposes)
-			'wpacu_no_css_minify', 'wpacu_no_js_minify', 'wpacu_no_css_combine', 'wpacu_no_js_combine', 'wpacu_debug', 'wpacu_preload', 'wpacu_skip_test_mode',
-			'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'utm_expid', 'utm_referrer', // Google Analytics
-			'gclid', // Google Click ID
-			'fbclick', 'fbclid', 'fb_action_ids', 'fb_action_types', 'fb_source', // Facebook
-			'SSAID', 'sscid', // ShareASale
-			'ao_noptimize', // Autoptimize feature (strip its settings on page request for debugging purposes)
+			'wpacu_no_css_minify',
+			'wpacu_no_js_minify',
+			'wpacu_no_css_combine',
+			'wpacu_no_js_combine',
+			'wpacu_debug',
+			'wpacu_preload',
+			'wpacu_skip_test_mode',
+		);
+
+		$queryStringsToIgnoreFromTheURIForOptimizingAssets = array(
+			'_ga',
+			'_ke',
+			'adgroupid',
+			'adid',
+			'age-verified',
+			'ao_noptimize',
+			'campaignid',
+			'ck_subscriber_id', // ConvertKit's query parameter
+			'cn-reloaded',
+			'dclid',
+			'dm_i', // dotdigital
+			'dm_t', // dotdigital
+			'ef_id',
+			'epik', // Pinterest
+			'fb_action_ids',
+			'fb_action_types',
+			'fb_source',
+			'fbclick',
+			'fbclid',
+			'gclid',
+			'gclsrc',
+			'mc_cid',
+			'mc_eid',
+			'mkt_tok',      // Marketo (tracking users)
+			'msclkid',      // Microsoft Click ID
+			'mtm_campaign',
+			'mtm_cid',
+			'mtm_content',
+			'mtm_keyword',
+			'mtm_medium',
+			'mtm_source',
+			'pk_campaign',  // Piwik PRO URL builder
+			'pk_cid',       // Piwik PRO URL builder
+			'pk_content',   // Piwik PRO URL builder
+			'pk_keyword',   // Piwik PRO URL builder
+			'pk_medium',    // Piwik PRO URL builder
+			'pk_source',    // Piwik PRO URL builder
+			'ref',
+			'SSAID',
+			'sscid',
+			'usqp',
+			'utm_campaign',
+			'utm_content',
+			'utm_expid',
+			'utm_expid',
+			'utm_medium',
+			'utm_referrer',
+			'utm_source',
+			'utm_term',
 		);
 
 		$isQueryString = false;
 
-		foreach ($ignoreQueryStrings as $ignoreQueryString) {
+		foreach (array_merge($ignoreQueryStrings, $queryStringsToIgnoreFromTheURIForOptimizingAssets) as $ignoreQueryString) {
 			if (isset($_GET[$ignoreQueryString])) {
 				$isQueryString = true;
 				break;
 			}
 		}
 
-		return ($isPreview || $isQueryString);
+		return $isQueryString;
+	}
+
+	/**
+	 * Possible values returned: 'db', 'disk'
+	 *
+	 * @return mixed|string
+	 */
+	public static function fetchCachedFilesFrom()
+	{
+		if (Main::instance()->settings['fetch_cached_files_details_from'] === 'db_disk') {
+			if ( ! isset( $GLOBALS['wpacu_from_location_inc'] ) ) {
+				$GLOBALS['wpacu_from_location_inc'] = 1;
+			}
+			$fromLocation = ( $GLOBALS['wpacu_from_location_inc'] % 2 ) ? 'db' : 'disk';
+		} else {
+			$fromLocation = Main::instance()->settings['fetch_cached_files_details_from'];
+		}
+
+		return $fromLocation;
 	}
 
 	/**
@@ -1516,12 +1857,13 @@ SQL;
 	 * By default, the data is stored in the disk only
 	 *
 	 * @param $transient
-	 * @param $fromLocation
 	 *
 	 * @return bool|mixed
 	 */
-	public static function getTransient($transient, $fromLocation = 'disk')
+	public static function getTransient($transient)
 	{
+		$fromLocation = self::fetchCachedFilesFrom();
+
 		$contents = '';
 
 		// Stored in the "Disk": Local record
@@ -1530,11 +1872,11 @@ SQL;
 			$assetsFile = $dirToFilename . $transient.'.json';
 
 			if (is_file($assetsFile)) {
-				$contents = trim(FileSystem::file_get_contents($assetsFile));
+				$contents = trim(FileSystem::fileGetContents($assetsFile));
 
 				if (! $contents) {
 					// The file is empty or the contents could not be retrieved
-					// If a PHP reading error was triggered it should be logged in the "error_log" file
+					// If a PHP reading error was triggered, it should be logged in the "error_log" file
 					return false;
 				}
 			}
@@ -1589,55 +1931,7 @@ SQL;
 			);
 		}
 
-		self::markMostRecentAssetFile($transient, $value);
-	}
-
-	/**
-	 * The transient is re-created, thus, a possible new file name will be attached to the cached handle
-	 * Record it to avoid deleting it later on when the whole caching is cleared
-	 *
-	 * @param $transient
-	 * @param $value
-	 */
-	public static function markMostRecentAssetFile($transient, $value)
-	{
-		if ((strpos($transient, 'wpacu_css_optimize_') !== false) || (strpos($transient, 'wpacu_js_optimize_') !== false)) {
-			$recentItemStorageDir = WP_CONTENT_DIR . self::getRelPathPluginCacheDir() . '_storage/_recent_items/';
-
-			$assetType = (strpos($transient, '_css_') !== false) ? 'css' : 'js';
-
-			$valueDecoded = @json_decode($value, ARRAY_A);
-
-			if ( isset( $valueDecoded['optimize_uri'] ) && $valueDecoded['optimize_uri'] && (strrchr( $valueDecoded['optimize_uri'], '.' ) === '.'.$assetType) ) {
-				$handleDbStr = str_replace( 'wpacu_' . $assetType . '_optimize_', '', $transient );
-				FileSystem::file_put_contents(
-					$recentItemStorageDir . 'file-handle-' . $assetType . '-'. md5( $handleDbStr ) . '.txt',
-					$valueDecoded['optimize_uri']
-				);
-			}
 		}
-	}
-
-	/**
-	 * @return array
-	 */
-	public static function getMostRecentCachedAssets()
-	{
-		$itemRecentAssetsStorageDir = WP_CONTENT_DIR . self::getRelPathPluginCacheDir() . '_storage/_recent_items/';
-
-		$mostRecentCachedAssets = array();
-
-		$patternToUse = $itemRecentAssetsStorageDir.'file-handle-*.txt';
-
-		$mostRecentCachedAssetsInfoList = glob($patternToUse);
-		if ( ! empty($mostRecentCachedAssetsInfoList) ) {
-			foreach ( $mostRecentCachedAssetsInfoList as $fileFullPath ) {
-				$mostRecentCachedAssets[] = trim(FileSystem::file_get_contents($fileFullPath));
-			}
-		}
-
-		return $mostRecentCachedAssets;
-	}
 
 	/**
 	 * @return array
@@ -1668,7 +1962,7 @@ SQL;
 	 * @param $cdnUrl
 	 * @param $getType
 	 *
-	 * @return string|void
+	 * @return string
 	 */
 	public static function cdnToUrlFormat($cdnUrl, $getType)
 	{
@@ -1700,7 +1994,7 @@ SQL;
 	public static function clearJsonStorageForPost($postId, $checkTiming = false)
 	{
 		$postPermalink  = get_permalink($postId);
-		$requestUriPath = parse_url($postPermalink, PHP_URL_PATH);
+		$requestUriPath = (string)parse_url($postPermalink, PHP_URL_PATH);
 
 		$dirToFilename = WP_CONTENT_DIR . self::getRelPathPluginCacheDir() . '/_storage/'
 		                 . parse_url(site_url(), PHP_URL_HOST) . '/'. $requestUriPath;
@@ -1815,7 +2109,7 @@ SQL;
 			$existingList[$assetType]['already_minified'] = array_slice($existingList[$assetType]['already_minified'], 0, 100);
 		}
 
-		update_option($optionToUpdate, json_encode(Misc::filterList($existingList)));
+		update_option($optionToUpdate, wp_json_encode(Misc::filterList($existingList)));
 	}
 
 	// [START] For debugging purposes
@@ -1868,7 +2162,7 @@ SQL;
 			unset($existingList['scripts']['already_minified']);
 		}
 
-		update_option($optionToUpdate, json_encode(Misc::filterList($existingList)));
+		update_option($optionToUpdate, wp_json_encode(Misc::filterList($existingList)));
 	}
 
 	/**
@@ -1895,7 +2189,8 @@ SQL;
 			}
 		}
 
-		update_option($optionToUpdate, json_encode(Misc::filterList($existingList)));
+		update_option($optionToUpdate, wp_json_encode(Misc::filterList($existingList)));
 	}
 	// [END] For debugging purposes
-}
+
+	}

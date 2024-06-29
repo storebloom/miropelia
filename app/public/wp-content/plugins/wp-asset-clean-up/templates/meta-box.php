@@ -24,20 +24,18 @@ if ($data['is_list_fetchable']) {
         <div id="wpacu_fetching_assets_list_wrap" <?php if ($data['fetch_assets_on_click']) { echo 'style="display: none;"'; } ?>>
             <?php
             if ($data['dom_get_type'] === 'direct') {
-	            $wpacuDefaultFetchListStepDefaultStatus   = '<img src="'.admin_url('images/spinner.gif').'" align="top" width="20" height="20" alt="" />&nbsp; Please wait...';
-	            $wpacuDefaultFetchListStepCompletedStatus = '<span style="color: green;" class="dashicons dashicons-yes-alt"></span> Completed';
 	            ?>
-                <div id="wpacu-list-step-default-status" style="display: none;"><?php echo $wpacuDefaultFetchListStepDefaultStatus; ?></div>
-                <div id="wpacu-list-step-completed-status" style="display: none;"><?php echo $wpacuDefaultFetchListStepCompletedStatus; ?></div>
+                <div id="wpacu-list-step-default-status" style="display: none;"><img src="<?php echo esc_url(admin_url('images/spinner.gif')); ?>" align="top" width="20" height="20" alt="" />&nbsp; Please wait...</div>
+                <div id="wpacu-list-step-completed-status" style="display: none;"><span style="color: green;" class="dashicons dashicons-yes-alt"></span> Completed</div>
                 <div>
                     <ul class="wpacu_meta_box_content_fetch_steps">
-                        <li id="wpacu-fetch-list-step-1-wrap"><strong>Step 1</strong>: <?php echo sprintf(__('Fetch the assets from <strong>%s</strong>', 'wp-asset-clean-up'), $data['fetch_url']); ?>... <span id="wpacu-fetch-list-step-1-status"><?php echo $wpacuDefaultFetchListStepDefaultStatus; ?></span></li>
+                        <li id="wpacu-fetch-list-step-1-wrap"><strong>Step 1</strong>: <?php echo sprintf(__('Fetch the assets from <strong>%s</strong>', 'wp-asset-clean-up'), $data['fetch_url']); ?>... <span id="wpacu-fetch-list-step-1-status"><img src="<?php echo esc_url(admin_url('images/spinner.gif')); ?>" align="top" width="20" height="20" alt="" />&nbsp; Please wait...</span></li>
                         <li id="wpacu-fetch-list-step-2-wrap"><strong>Step 2</strong>: Build the list of the fetched assets and print it... <span id="wpacu-fetch-list-step-2-status"></span></li>
                     </ul>
                 </div>
             <?php } else { ?>
                     <div style="margin: 18px 0;">
-                        <img src="<?php echo admin_url('images/spinner.gif'); ?>" align="top" width="20" height="20" alt="" />&nbsp;
+                        <img src="<?php echo esc_url(admin_url('images/spinner.gif')); ?>" align="top" width="20" height="20" alt="" />&nbsp;
                         <?php echo sprintf(__('Fetching the loaded scripts and styles for <strong>%s</strong>... Please wait...', 'wp-asset-clean-up'), $data['fetch_url']); ?>
                     </div>
             <?php } ?>
@@ -53,8 +51,8 @@ if ($data['is_list_fetchable']) {
         </div>
         <?php
     } elseif ($data['status'] === 2) {
-	    echo '<p>'.__('In order to manage the CSS/JS files here, you need to have "Manage in the Dashboard?" enabled within the plugin\'s settings ("Plugin Usage Preferences" tab).', 'wp-asset-clean-up').'</p>';
-	    echo '<p style="margin-bottom: 0;">'.__('If you prefer to manage the assets within the front-end view and wish to hide this meta box, you can click on "Screen Options" at the top of this page and deselect "Asset CleanUp: CSS &amp; JavaScript Manager".').'</p>';
+	    echo '<p>'.esc_html__('In order to manage the CSS/JS files here, you need to have "Manage in the Dashboard?" enabled within the plugin\'s settings ("Plugin Usage Preferences" tab).', 'wp-asset-clean-up').'</p>';
+	    echo '<p style="margin-bottom: 0;">'.esc_html__('If you prefer to manage the assets within the front-end view and wish to hide this meta box, you can click on "Screen Options" at the top of this page and deselect "Asset CleanUp Pro: CSS &amp; JavaScript Manager".').'</p>';
     } elseif ($data['status'] === 3) {
         _e('The styles and scripts will be available for unload once this post/page is <strong>public</strong> and <strong>publish</strong>ed as the whole page needs to be scanned for all the loaded assets.', 'wp-asset-clean-up');
         ?>
@@ -68,8 +66,8 @@ if ($data['is_list_fetchable']) {
                 _e('There are no CSS/JS to manage as the permalink for this attachment redirects to the attachment itself because <em>"Redirect attachment URLs to the attachment itself?"</em> is set to <em>"Yes"</em> in <em>"Search Appearance - Yoast SEO" - "Media"</em> tab).', 'wp-asset-clean-up');
 
                 echo ' '.sprintf(
-                    __('As a result, the "%s" side meta box is not shown as it is irrelevant in this situation.', 'wp-asset-clean-up'),
-                    WPACU_PLUGIN_TITLE.': '.__('Options', 'wp-asset-clean-up')
+		                esc_html__('As a result, the "%s" side meta box is not shown as it is irrelevant in this situation.', 'wp-asset-clean-up'),
+                    WPACU_PLUGIN_TITLE.': '.esc_html__('Options', 'wp-asset-clean-up')
                 );
                 ?>
             </p>

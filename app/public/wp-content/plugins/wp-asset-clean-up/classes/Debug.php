@@ -15,7 +15,7 @@ class Debug
 	public function __construct()
 	{
 		if (isset($_GET['wpacu_debug'])) {
-			add_action('wp_footer', array($this, 'showDebugOptions'), PHP_INT_MAX);
+			add_action('wp_footer', array($this, 'showDebugOptionsFront'), PHP_INT_MAX);
 		}
 
 		foreach(array('wp', 'admin_init') as $wpacuActionHook) {
@@ -47,14 +47,14 @@ class Debug
 	/**
 	 *
 	 */
-	public function showDebugOptions()
+	public function showDebugOptionsFront()
 	{
 	    if (! Menu::userCanManageAssets()) {
 	        return;
         }
 
-	    $markedCssListForUnload = array_unique(Main::instance()->allUnloadedAssets['css']);
-		$markedJsListForUnload  = array_unique(Main::instance()->allUnloadedAssets['js']);
+	    $markedCssListForUnload = array_unique(Main::instance()->allUnloadedAssets['styles']);
+		$markedJsListForUnload  = array_unique(Main::instance()->allUnloadedAssets['scripts']);
 
 		$allDebugOptions = array(
 			// [For CSS]
@@ -78,10 +78,8 @@ class Debug
 			'wpacu_no_admin_bar'     => 'Do not show the admin bar',
 			'wpacu_no_html_changes'  => 'Do not alter the HTML DOM (this will also load all assets non-minified and non-combined)',
 		);
-
-		$styleAttrType = Misc::getStyleTypeAttribute();
 		?>
-		<style <?php echo $styleAttrType; ?>>
+		<style <?php echo Misc::getStyleTypeAttribute(); ?>>
 			<?php echo file_get_contents(WPACU_PLUGIN_DIR.'/assets/wpacu-debug.css'); ?>
 		</style>
 
@@ -101,8 +99,8 @@ class Debug
                             ?>
                                 <li>
                                     <label><input type="checkbox"
-                                                  name="<?php echo $debugKey; ?>"
-                                                  <?php if ( ! empty($_GET) && array_key_exists($debugKey, $_GET) ) { echo 'checked="checked"'; } ?> /> &nbsp;<?php echo $debugText; ?></label>
+                                                  name="<?php echo esc_attr($debugKey); ?>"
+                                                  <?php if ( ! empty($_GET) && array_key_exists($debugKey, $_GET) ) { echo 'checked="checked"'; } ?> /> &nbsp;<?php echo esc_html($debugText); ?></label>
                                 </li>
                             <?php
                             }
@@ -122,7 +120,7 @@ class Debug
 	                        if (! empty($markedCssListForUnload)) {
 	                            sort($markedCssListForUnload);
 		                        $markedCssListForUnloadFiltered = array_map(static function($handle) {
-		                        	return '<span style="color: darkred;">'.$handle.'</span>';
+		                        	return '<span style="color: darkred;">'.esc_html($handle).'</span>';
 		                        }, $markedCssListForUnload);
 	                            echo implode(' &nbsp;/&nbsp; ', $markedCssListForUnloadFiltered);
 	                        } else {
@@ -137,7 +135,7 @@ class Debug
 	                        if (! empty($markedJsListForUnload)) {
 	                            sort($markedJsListForUnload);
 		                        $markedJsListForUnloadFiltered = array_map(static function($handle) {
-			                        return '<span style="color: darkred;">'.$handle.'</span>';
+			                        return '<span style="color: darkred;">'.esc_html($handle).'</span>';
 		                        }, $markedJsListForUnload);
 
 	                            echo implode(' &nbsp;/&nbsp; ', $markedJsListForUnloadFiltered);
@@ -214,13 +212,14 @@ class Debug
 	    echo '<h3>'.WPACU_PLUGIN_TITLE.': Caching Directory Stats</h3>';
 
 	    if (is_dir($assetCleanUpCacheDir)) {
-	    	$printCacheDirOutput = str_replace($assetCleanUpCacheDirRel, '<strong>'.$assetCleanUpCacheDirRel.'</strong>', $assetCleanUpCacheDir).'</em>';
-		    if (! is_writable($assetCleanUpCacheDir)) {
+	    	$printCacheDirOutput = '<em>'.str_replace($assetCleanUpCacheDirRel, '<strong>'.$assetCleanUpCacheDirRel.'</strong>', $assetCleanUpCacheDir).'</em>';
+
+	    	if (! is_writable($assetCleanUpCacheDir)) {
 			    echo '<span style="color: red;">'.
-			            'The '.$printCacheDirOutput.' directory is <em>not writable</em>.</span>'.
+			            'The '.wp_kses($printCacheDirOutput, array('em' => array(), 'strong' => array())).' directory is <em>not writable</em>.</span>'.
 			         '<br /><br />';
 		    } else {
-			    echo '<span style="color: green;">The '.$printCacheDirOutput.' directory is <em>writable</em>.</span>' . '<br /><br />';
+			    echo '<span style="color: green;">The '.wp_kses($printCacheDirOutput, array('em' => array(), 'strong' => array())).' directory is <em>writable</em>.</span>' . '<br /><br />';
 		    }
 
 		    $dirItems = new \RecursiveDirectoryIterator( $assetCleanUpCacheDir,
@@ -248,7 +247,16 @@ class Debug
 
 			    	echo '&nbsp;-&nbsp;';
 			    }
-			    echo $item.' '.$appendAfter.'<br />';
+
+			    echo wp_kses($item.' '.$appendAfter, array(
+			            'em' => array(),
+                        'strong' => array('style' => array()),
+                        'br' => array(),
+                        'span' => array('style' => array())
+                    ))
+
+                     .'<br />';
+
 			    if ( $item->isFile() ) {
 				    $totalSize += $item->getSize();
 				    $totalFiles ++;

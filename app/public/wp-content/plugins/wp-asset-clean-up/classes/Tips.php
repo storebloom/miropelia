@@ -34,21 +34,18 @@ This CSS file is related to "Contact Form 7" and if you don't load any form on t
 HTML;
 
 		$this->list['css']['duplicate-post'] = <<<HTML
-This CSS file is meant to style the "Duplicate Post" plugin's menu within the top admin bar and it's loading when the user (with the right privileges) is logged-in. It's NOT meant to load for the guests (non logged-in visitors). You can leave it loaded.
+This CSS file is meant to style the "Duplicate Post" plugin's menu within the top admin bar, and it's loading when the user (with the right privileges) is logged-in. It's NOT meant to load for the guests (non-logged-in visitors). You can leave it loaded.
 HTML;
 
 		$this->list['css']['dashicons'] = <<<HTML
-To avoid breaking admin bar's styling which relies on the Wordpress Dashicons, any unload rule set for this handle will be ignored IF the user is logged-in and the admin bar is showing up.
+To avoid breaking admin bar's styling which relies on the WordPress Dashicons, any unload rule set for this handle will be ignored IF the user is logged-in and the admin bar is showing up.
 HTML;
-
-
-
 		// JavaScript list
 		$this->list['js']['wp-embed'] = <<<HTML
 To completely disable oEmbeds, you can use "Disable oEmbed (Embeds) Site-Wide" from plugin's "Settings" -&gt; "Site-Wide Common Unloads". It will also prevent this file from loading in the first place and hide it from this location.
 HTML;
 		$this->list['js']['wc-cart-fragments'] = <<<HTML
-This is used to make an AJAX call to retrieve the latest WooCommerce cart information. If there is no cart area (e.g. in a sidebar or menu), you can safely unload this file.
+This is used to make an AJAX call to retrieve the latest WooCommerce cart information. If there is no mini cart area (e.g. in a sidebar or menu), you can safely unload this file.
 HTML;
 
 		$this->list['js']['contact-form-7'] = <<<HTML

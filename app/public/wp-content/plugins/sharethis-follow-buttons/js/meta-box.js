@@ -22,9 +22,11 @@ var MinuteControl = ( function( $, wp ) {
 		boot: function( data ) {
 			this.data = data;
 
-			$( document ).ready( function() {
-				this.init();
-			}.bind( this ) );
+			$( document ).ready(
+				function() {
+					this.init();
+				}.bind( this )
+			);
 		},
 
 		/**
@@ -43,13 +45,17 @@ var MinuteControl = ( function( $, wp ) {
 			var self = this;
 
 			// When checking an option in the meta box.
-			this.$container.on( 'click', '#sharethis-follow-bottom-post, #sharethis-follow-top-post', function() {
-				var checked = $( this ).prop( 'checked' ),
-					type = $( this ).closest( '.button-setting-wrap' ).attr( 'id' ),
-					placement = $( this ).attr( 'class' );
+			this.$container.on(
+				'click',
+				'#sharethis-follow-bottom-post, #sharethis-follow-top-post',
+				function() {
+					var checked = $( this ).prop( 'checked' ),
+					type        = $( this ).closest( '.button-setting-wrap' ).attr( 'id' ),
+					placement   = $( this ).attr( 'class' );
 
-				self.updateList( type, checked, placement );
-			} );
+					self.updateList( type, checked, placement );
+				}
+			);
 		},
 
 		/**
@@ -62,14 +68,19 @@ var MinuteControl = ( function( $, wp ) {
 		updateList: function( type, checked, placement ) {
 
 			// Update specifide list per checked.
-			wp.ajax.post( 'follow_update_list', {
-				postid: this.data.postid,
-				type: type,
-				checked: checked,
-				placement: placement,
-				nonce: this.data.nonce
-			} ).always( function() {
-			} );
+			wp.ajax.post(
+				'follow_update_list',
+				{
+					postid: this.data.postid,
+					type: type,
+					checked: checked,
+					placement: placement,
+					nonce: this.data.nonce
+				}
+			).always(
+				function() {
+				}
+			);
 		}
 	};
 } )( window.jQuery, window.wp );

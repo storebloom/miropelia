@@ -3,6 +3,7 @@ namespace WpAssetCleanUp;
 
 use WpAssetCleanUp\OptimiseAssets\CombineJs;
 use WpAssetCleanUp\OptimiseAssets\DynamicLoadedAssets;
+use WpAssetCleanUp\OptimiseAssets\OptimizeCommon;
 
 /**
  * Class Main
@@ -13,12 +14,12 @@ class Main
 	/**
 	 *
 	 */
-	const START_DEL_ENQUEUED = 'BEGIN WPACU PLUGIN JSON ENQUEUED';
+	const START_DEL_ENQUEUED  = 'BEGIN WPACU PLUGIN JSON ENQUEUED';
 
 	/**
 	 *
 	 */
-	const END_DEL_ENQUEUED = 'END WPACU PLUGIN JSON ENQUEUED';
+	const END_DEL_ENQUEUED    = 'END WPACU PLUGIN JSON ENQUEUED';
 
 	/**
 	 *
@@ -28,26 +29,21 @@ class Main
 	/**
 	 *
 	 */
-	const END_DEL_HARDCODED = 'END WPACU PLUGIN JSON HARDCODED';
+	const END_DEL_HARDCODED   = 'END WPACU PLUGIN JSON HARDCODED';
 
 	/**
+     * Option "Plugin Usage Preferences" -> "Manage in the Dashboard" -> "Select a retrieval way:" ('Direct' or 'WP Remote Post')
+     *
 	 * @var string
-	 * Can be managed in the Dashboard within the plugin's settings
-	 * e.g. 'direct', 'wp_remote_post'
 	 */
 	public static $domGetType = 'direct';
-
-	/**
-	 * @var string
-	 */
-	public $assetsRemoved = '';
 
 	/**
 	 * Record them for debugging purposes when using /?wpacu_debug
 	 *
 	 * @var array
 	 */
-	public $allUnloadedAssets = array( 'css' => array(), 'js' => array() );
+	public $allUnloadedAssets = array( 'styles' => array(), 'scripts' => array() );
 
 	/**
 	 * @var array
@@ -57,19 +53,24 @@ class Main
 	/**
 	 * @var array
 	 */
-	public $loadExceptions = array( 'styles' => array(), 'scripts' => array() );
+	public $loadExceptionsPageLevel = array( 'styles' => array(), 'scripts' => array(), '_set' => false );
+
+	/**
+	 * @var array[]
+	 */
+	public $loadExceptionsPostType = array( 'styles' => array(), 'scripts' => array(), '_set' => false );
 
 	/**
 	 * Rule that applies site-wide: if the user is logged-in
 	 *
 	 * @var array
 	 */
-	public $loadExceptionsLoggedInGlobal = array( 'styles' => array(), 'scripts' => array() );
+	public $loadExceptionsLoggedInGlobal = array( 'styles' => array(), 'scripts' => array(), '_set' => false );
 
-    /**
-     * @var
-     */
-    public $fetchUrl;
+	/**
+	 * @var
+	 */
+	public $fetchUrl;
 
     // [wpacu_lite]
     /**
@@ -91,7 +92,7 @@ class Main
 	/**
 	 * @var array
 	 */
-	public static $vars = array( 'woo_url_not_match' => false, 'is_woo_shop_page' => false );
+	public static $vars = array( 'woo_url_not_match' => false, 'is_woo_shop_page' => false, 'for_type' => '', 'current_post_id' => 0, 'current_post_type' => '' );
 
 	/**
 	 * This is set to `true` only if "Manage in the Front-end?" is enabled in plugin's settings
@@ -213,30 +214,38 @@ class Main
 	 */
 	public function __construct()
     {
-		$this->skipAssets['styles'] = array(
-			WPACU_PLUGIN_ID . '-style',
-			// Asset CleanUp (Pro) Styling (for admin use only)
-			'admin-bar',
-			// The top admin bar
-			'yoast-seo-adminbar',
-			// Yoast "WordPress SEO" plugin
-			'autoptimize-toolbar',
-			'query-monitor',
-			'wp-fastest-cache-toolbar',
-			// WP Fastest Cache plugin toolbar CSS
-			'litespeed-cache',
-			// LiteSpeed toolbar
-			'siteground-optimizer-combined-styles-header'
-			// Combine CSS in SG Optimiser (irrelevant as it made from the combined handles)
-		);
+		$this->skipAssets['styles'] = array_merge(
+            array(
+                'admin-bar',
+                // The top admin bar
+                'yoast-seo-adminbar',
+                // Yoast "WordPress SEO" plugin
+                'autoptimize-toolbar',
+                'query-monitor',
+                'wp-fastest-cache-toolbar',
+                // WP Fastest Cache plugin toolbar CSS
+                'litespeed-cache',
+                // LiteSpeed toolbar
+                'siteground-optimizer-combined-styles-header'
+                // Combine CSS in SG Optimiser (irrelevant as it made from the combined handles)
+            ),
+			// Own Scripts (for admin use only)
+			OwnAssets::getOwnAssetsHandles('styles')
+        );
 
-		$this->skipAssets['scripts'] = array(
-			WPACU_PLUGIN_ID . '-script', // Asset CleanUp (Pro) Script (for admin use only)
-			'admin-bar',                 // The top admin bar
-			'autoptimize-toolbar',
-			'query-monitor',
-			'wpfc-toolbar' // WP Fastest Cache plugin toolbar JS
-		);
+		$this->skipAssets['scripts'] = array_merge(
+            array(
+                'admin-bar',            // The top admin bar
+                'autoptimize-toolbar',
+                'query-monitor',
+                'wpfc-toolbar'          // WP Fastest Cache plugin toolbar JS
+		    ),
+			// Own Scripts (for admin use only)
+			OwnAssets::getOwnAssetsHandles('scripts')
+        );
+
+	    // Filter before triggering the actual unloading through "wp_deregister_script", "wp_dequeue_script", "wp_deregister_style", "wp_dequeue_style"
+	    $this->fallbacks();
 
 		$this->isAjaxCall      = ( ! empty( $_SERVER['HTTP_X_REQUESTED_WITH'] ) && strtolower( $_SERVER['HTTP_X_REQUESTED_WITH'] ) === 'xmlhttprequest' );
 		$this->isGetAssetsCall = isset( $_REQUEST[ WPACU_LOAD_ASSETS_REQ_KEY ] ) && $_REQUEST[ WPACU_LOAD_ASSETS_REQ_KEY ];
@@ -246,7 +255,7 @@ class Main
 			$noRocketInit = true;
 
 			if (strpos($currentTheme, 'uncode') !== false) {
-				$noRocketInit = false; // make exception for the "Uncode" Theme as it doesn't check if get_rocket_option() function exists
+				$noRocketInit = false; // make exception for the "Uncode" Theme as it doesn't check if the get_rocket_option() function exists
 			}
 
 			if ($noRocketInit) {
@@ -323,22 +332,43 @@ class Main
 			$this->alterWpStylesScriptsObj();
 		}
 
-		if ( ! $this->isGetAssetsCall && ! is_admin() ) { // No AJAX call from the Dashboard? Trigger the code below
+		/*
+		 * [START] /?wpassetcleanup_load=1 is called
+		 */
+	    if ( $this->isGetAssetsCall && ! is_admin() ) {
+	        // These actions are also called when the page is loaded without query string (regular load)
+            // This time, the CSS/JS will not be unloaded, but the CSS/JS marked for unload will be collected
+            // and passed to the AJAX call for the option "Group by loaded or unloaded status"
+		    if ( get_option( 'siteground_optimizer_combine_css' ) ) {
+			    add_action( 'wp_print_styles',     array( $this, 'filterStyles' ), 9 ); // priority should be below 10
+		    }
+		    add_action( 'wp_print_styles',         array( $this, 'filterStyles' ), 100000 );
+		    add_action( 'wp_print_scripts',        array( $this, 'filterScripts' ), 100000 );
+		    add_action( 'wp_print_footer_scripts', array( $this, 'onPrintFooterScriptsStyles' ), 1 );
+	    }
+	    /*
+		 * [END] /?wpassetcleanup_load=1 is called
+		 */
+
+	    /*
+	     * [START] Front-end page visited (e.g. by the admin or a guest visitor)
+	     */
+		if ( ! $this->isGetAssetsCall && ! is_admin() ) {
 			// [START] Unload CSS/JS on page request (for debugging)
 			add_filter( 'wpacu_ignore_child_parent_list', array( $this, 'filterIgnoreChildParentList' ) );
 			// [END] Unload CSS/JS on page request (for debugging)
 
 			// SG Optimizer Compatibility: Unload Styles - HEAD (Before pre_combine_header_styles() from Combinator)
 			if ( get_option( 'siteground_optimizer_combine_css' ) ) {
-				add_action( 'wp_print_styles', array( $this, 'filterStyles' ), 9 ); // priority should be below 10
+				add_action( 'wp_print_styles',     array( $this, 'filterStyles' ), 9 ); // priority should be below 10
 			}
 
 			$this->filterStylesSpecialCases(); // e.g. CSS enqueued in a different way via Oxygen Builder
 
-			add_action( 'wp_print_styles', array( $this, 'filterStyles' ), 100000 ); // Unload Styles  - HEAD
-			add_action( 'wp_print_scripts', array( $this, 'filterScripts' ), 100000 ); // Unload Scripts - HEAD
+			add_action( 'wp_print_styles',         array( $this, 'filterStyles' ), 100000 ); // Unload Styles  - HEAD
+			add_action( 'wp_print_scripts',        array( $this, 'filterScripts' ), 100000 ); // Unload Scripts - HEAD
 
-            add_action( 'wp_print_styles', array($this, 'printAnySpecialCss'), PHP_INT_MAX );
+            add_action( 'wp_print_styles',         array($this, 'printAnySpecialCss'), PHP_INT_MAX );
 
 			// Unload Styles & Scripts - FOOTER
 			// Needs to be triggered very soon as some old plugins/themes use wp_footer() to enqueue scripts
@@ -445,13 +475,16 @@ class Main
 				return $scriptTag;
 			}, PHP_INT_MAX, 2 );
 
-			Preloads::instance()->init();
+            Preloads::instance()->init();
 		}
+	    /*
+	     * [END] Front-end page visited (e.g. by the admin or a guest visitor)
+	     */
 
 		// Only trigger it within the Dashboard when an Asset CleanUp (Pro) page is accessed and the transient is non-existent or expired
 		if ( is_admin() ) {
 			add_action( 'admin_footer', array( $this, 'ajaxFetchActivePluginsJsFooterCode' ) );
-			add_action( 'wp_ajax_' . WPACU_PLUGIN_ID . '_fetch_active_plugins_icons', array( $this, 'ajaxFetchActivePluginsIcons' ) );
+			add_action( 'wp_ajax_' . WPACU_PLUGIN_ID . '_fetch_active_plugins_icons', array( $this, 'ajaxFetchActivePluginsIconsFromWordPressOrg' ) );
 		}
 
 		add_filter( 'duplicate_post_meta_keys_filter', static function( $meta_keys ) {
@@ -498,7 +531,8 @@ SQL;
 		}
 
 		// Fetch the page in the background to see what scripts/styles are already loading
-		if ( $this->isGetAssetsCall || $this->frontendShow() ) {
+        // This applies only for front-end loading
+		if ( ! is_admin() && ($this->isGetAssetsCall || $this->frontendShow()) ) {
 			if ( $this->isGetAssetsCall ) {
 				add_filter( 'show_admin_bar', '__return_false' );
 			}
@@ -510,10 +544,10 @@ SQL;
 			// Save CSS/JS list that is printed in the <BODY>
 			add_action( 'wp_print_footer_scripts', array( $this, 'saveFooterAssets' ), 100000000 );
 			add_action( 'wp_footer', array( $this, 'printScriptsStyles' ), ( PHP_INT_MAX - 1 ) );
-
-			// Send an AJAX request to get the list of the loaded hardcoded scripts and styles and print it
-			add_action( 'wp_ajax_' . WPACU_PLUGIN_ID . '_print_loaded_hardcoded_assets', array( $this, 'ajaxPrintLoadedHardcodedAssets' ) );
 		}
+
+	    // Send an AJAX request to get the list of the loaded hardcoded scripts and styles and print it
+	    add_action( 'wp_ajax_' . WPACU_PLUGIN_ID . '_print_loaded_hardcoded_assets', array( $this, 'ajaxPrintLoadedHardcodedAssets' ) );
 
 		if ( is_admin() ) {
 			$metaboxes = new MetaBoxes;
@@ -522,17 +556,11 @@ SQL;
 			// if the asset management is not enabled for the Dashboard
 			if ( $this->settings['dashboard_show'] == 1 ) {
 				// Send an AJAX request to get the list of loaded scripts and styles and print it nicely
-				add_action(
-					'wp_ajax_' . WPACU_PLUGIN_ID . '_get_loaded_assets',
-					array( $this, 'ajaxGetJsonListCallback' )
-				);
+				add_action( 'wp_ajax_' . WPACU_PLUGIN_ID . '_get_loaded_assets', array( $this, 'ajaxGetJsonListCallback' ) );
 
 				// This is valid when the Gutenberg editor (not via "Classic Editor" plugin) is used and the user used the following option:
                 // "Do not load Asset CleanUp Pro on this page (this will disable any functionality of the plugin)"
-				add_action(
-					'wp_ajax_' . WPACU_PLUGIN_ID . '_load_page_restricted_area',
-					array( $this, 'ajaxLoadRestrictedPageAreaCallback' )
-				);
+				add_action( 'wp_ajax_' . WPACU_PLUGIN_ID . '_load_page_restricted_area', array( $this, 'ajaxLoadRestrictedPageAreaCallback' ) );
 			}
 
 			// If assets management within the Dashboard is not enabled, an explanation message will be shown within the box unless the meta box is hidden completely
@@ -584,59 +612,54 @@ SQL;
 		define( 'WPACU_CURRENT_PAGE_ID', $this->getCurrentPostId() );
 	}
 
-    /**
-     * Priority: 10 (latest)
-     */
-    public function setVarsAfterAnyUpdate()
+	/**
+	 * Priority: 10 (latest)
+	 */
+	public function setVarsAfterAnyUpdate()
     {
-        if (! $this->isGetAssetsCall && ! is_admin()) {
-            $this->globalUnloaded = $this->getGlobalUnload();
+		if ( ! is_admin() ) {
+			$this->globalUnloaded = $this->getGlobalUnload();
 
-	        // [wpacu_lite]
+			// [wpacu_lite]
             if (! $this->isUpdateable) {
                 return;
             }
 	        // [/wpacu_lite]
 
-            $getCurrentPost = $this->getCurrentPost();
+			$getCurrentPost = $this->getCurrentPost();
 
-			$post = false;
+			$post = $type = false;
 
-            if (Misc::isHomePage()) {
-            	$type = 'front_page';
-            } elseif ( ! empty($getCurrentPost) )  {
-            	$type = 'post';
-	            $post = $getCurrentPost;
-	            $this->postTypesUnloaded = (isset($post->post_type) && $post->post_type) ? $this->getBulkUnload('post_type', $post->post_type) : array();
-	            }
+			if (Misc::isHomePage() && empty($getCurrentPost) && ! get_option('page_on_front')) {
+				$type = 'front_page';
+			} elseif ( ! empty($getCurrentPost) )  {
+				$type = 'post';
+				$post = $getCurrentPost;
+				$this->postTypesUnloaded = (isset($post->post_type) && $post->post_type) ? $this->getBulkUnload('post_type', $post->post_type) : array();
+				}
 
-            else {
+			// [wpacu_lite]
+            if (! $type) {
             	// The request is done for a page such as is_archive(), is_author(), 404, search
 	            // and the premium extension is not available, thus no load exceptions are available
             	return;
             }
+            // [/wpacu_lite]
 
-			$this->loadExceptions = $this->getLoadExceptionsForCurrentPage( $type, $this->currentPostId, $post );
-			$this->loadExceptionsLoggedInGlobal = $this->getHandleLoadLoggedIn();
+            self::$vars['for_type'] = $type;
+			self::$vars['current_post_id'] = $this->currentPostId;
 
-            // [wpacu_pro]
-            if ($this->frontendShow()) { // For Lite
-                // Only relevant if a downgrade was done from Pro to Lite
-                // and the admin will notice any RegEx data added
-	            // [wpacu_pro]
-	            $this->unloadsRegEx        = self::getRegExRules('unloads');
-	            $this->loadExceptionsRegEx = self::getRegExRules('load_exceptions');
-	            // [/wpacu_pro]
-            }
-	        // [wpacu_pro]
+			if ($post && $type === 'post' && isset($post->post_type) && $post->post_type) {
+				self::$vars['current_post_type'] = $post->post_type;
+			}
 
-            }
-    }
+			}
+	}
 
 	/**
 	 * This is useful to change via hooks the "src", "ver" or other values of the loaded handle
      * Example: You have your theme's main style.css that is needed on every page
-     * On some pages, you only need only 20% of it to load and you can manually trim the other 80% (if you're sure you know which CSS is not used)
+     * On some pages, you only need 20% of it to load, and you can manually trim the other 80% (if you're sure you know which CSS is not used)
      * You can use a filter hook such as 'wpacu_{main_theme_handle_name_here}_css_handle_obj' to filter the "src" of the object and load an alternative purified CSS file
 	 */
 	public function alterWpStylesScriptsObj()
@@ -690,7 +713,7 @@ SQL;
 				$object->src = $newData['src'];
 				$object->src_origin = $originData['src'];
 
-				$object->ver = $newData['ver'] ? $newData['ver'] : null;
+				$object->ver = $newData['ver'] ?: null;
 				$object->ver_origin = isset($originData['ver']) ? $originData['ver'] : null;
 			}
 		}
@@ -744,17 +767,23 @@ SQL;
 
 			// It looks like the page loaded is neither a post, page or the front-page
 			// We'll see if there are assets unloaded globally and unload them
+
+			/*
+			* [START] Build unload list
+			*/
 			$globalUnload = $this->globalUnloaded;
 
 			// [wpacu_lite]
 			if ( $nonAssetConfigPage && ! empty( $globalUnload['styles'] ) ) {
 				$list = $globalUnload['styles'];
-			} else { // [/wpacu_lite]
+			} else {
+            // [/wpacu_lite]
+
 				// Post, Page, Front-page
 				// and more (if the Premium Extension is activated)
-				$toRemove = $this->getAssetsUnloaded();
+			$toRemove = $this->getAssetsUnloadedPageLevel();
 
-			    $jsonList = @json_decode( $toRemove );
+			$jsonList = @json_decode( $toRemove );
 
 				$list = array();
 
@@ -773,13 +802,11 @@ SQL;
 					}
 				}
 
-				if ( $this->isSingularPage() ) {
+			    if ( self::isSingularPage() ) {
 					// Any bulk unloaded styles (e.g. for all pages belonging to a post type)? Append them
 					if ( empty( $this->postTypesUnloaded ) ) {
 						$post                    = $this->getCurrentPost();
-						$this->postTypesUnloaded = ( isset( $post->post_type ) && $post->post_type )
-							? $this->getBulkUnload( 'post_type', $post->post_type )
-							: array();
+						$this->postTypesUnloaded = ( isset( $post->post_type ) && $post->post_type ) ? $this->getBulkUnload( 'post_type', $post->post_type ) : array();
 					}
 
 					if ( isset( $this->postTypesUnloaded['styles'] ) && ! empty( $this->postTypesUnloaded['styles'] ) ) {
@@ -798,8 +825,11 @@ SQL;
 			}
 
 			// Any bulk unloaded styles for 'category', 'post_tag' and more?
-			// If the premium extension is enabled, any of the unloaded CSS will be added to the list
-			$list = apply_filters( 'wpacu_filter_styles', array_unique( $list ) );
+			// If the Pro version is enabled, any of the unloaded CSS will be added to the list
+			$list = apply_filters( 'wpacu_filter_styles_list_unload', array_unique( $list ) );
+			/*
+			* [END] Build unload list
+			*/
 
 			// Add handles such as the Oxygen Builder CSS ones that are missing and added differently to the queue
 			$allStyles = $this->wpStylesFilter( $wp_styles, 'registered', $list );
@@ -827,39 +857,34 @@ SQL;
 
 			// e.g. for test/debug mode or AJAX calls (where all assets have to load)
             if ( isset($_REQUEST['wpacu_no_css_unload']) ) {
-				/* [wpacu_timing] */
-				Misc::scriptExecTimer( 'filter_dequeue_styles', 'end' ); /* [/wpacu_timing] */
+				/* [wpacu_timing] */Misc::scriptExecTimer( 'filter_dequeue_styles', 'end' ); /* [/wpacu_timing] */
 				return;
 			}
 
-			if ( $this->preventAssetsSettings() ) {
-				/* [wpacu_timing] */
-				Misc::scriptExecTimer( 'filter_dequeue_styles', 'end' ); /* [/wpacu_timing] */
+			if ( $this->preventAssetsSettings(array('assets_call')) ) {
+				/* [wpacu_timing] */Misc::scriptExecTimer( 'filter_dequeue_styles', 'end' ); /* [/wpacu_timing] */
 				return;
 			}
 
 			/*
 			* [START] Load Exception Check
 			* */
+            // Load exception rules ALWAYS have priority over the unloading ones
+            // Thus, if an exception is found, the handle will be removed from the unloading list
 			// Let's see if there are load exceptions for this page or site-wide (e.g. for logged-in users)
-			$anyStylesLoadExceptions = ( ! empty( $this->loadExceptions['styles'] ) || ! empty( $this->loadExceptionsLoggedInGlobal['styles'] ) );
+			// Only check for any load exceptions if the unloading list has at least one item
+			// Otherwise the action is irrelevant since the assets are loaded anyway by default
 
-			if ( ! empty( $list ) && $anyStylesLoadExceptions ) {
-				foreach ( $list as $handleKey => $handle ) {
-					$loadStyleAsException = in_array( $handle,
-							$this->loadExceptions['styles'] )  // per page, per group pages
-					                        || ( in_array( $handle,
-								$this->loadExceptionsLoggedInGlobal['styles'] ) && is_user_logged_in() ); // site-wide if the user is logged-in
-					if ( $loadStyleAsException ) {
-						unset( $list[ $handleKey ] );
-					}
-				}
-			}
+            // These are LITE rules
+			$list = ( ! empty($list) ) ? $this->filterAssetsUnloadList($list, 'styles','load_exception') : $list;
+
+			// These are PRO rules or rules added via custom coding
+            $list = ( ! empty($list) ) ? apply_filters('wpacu_filter_styles_list_load_exception', $list) : $list;
 			/*
 			 * [END] Load Exception Check
 			 * */
 
-			// Is $list still empty? Nothing to unload? Stop here
+            // Is $list still empty? Nothing to unload? Stop here
 			if (empty($list)) {
 				/* [wpacu_timing] */ Misc::scriptExecTimer( 'filter_dequeue_styles', 'end' ); /* [/wpacu_timing] */
 				return;
@@ -874,7 +899,7 @@ SQL;
 				// It will be stripped by cleaning its LINK tag from the HTML Source
 				$this->ignoreChildren['styles'][$handle] = $this->wpAllStyles['registered'][$handle]->src;
 				$this->ignoreChildren['styles'][$handle.'_has_unload_rule'] = 1;
-				$this->allUnloadedAssets['css'][] = $handle;
+				$this->allUnloadedAssets['styles'][] = $handle;
 				continue;
 			}
 
@@ -891,15 +916,18 @@ SQL;
 				continue;
 			}
 
-			// Do not apply rule if the user if the top WordPress admin bar is showing up
+			// Do not unload "dashicons" if the top WordPress admin bar is showing up
 			if ($handle === 'dashicons' && is_admin_bar_showing()) {
 				continue;
 			}
 
-			$this->allUnloadedAssets['css'][] = $handle;
+			$this->allUnloadedAssets['styles'][] = $handle;
 
-			wp_deregister_style($handle);
-			wp_dequeue_style($handle);
+			// Only trigger the unloading on regular page load, not when the assets list is collected
+			if ( ! $this->isGetAssetsCall ) {
+				wp_deregister_style( $handle );
+				wp_dequeue_style( $handle );
+			}
 		}
 
 		if (current_action() === 'wp_print_styles') {
@@ -940,7 +968,7 @@ SQL;
 
 			if (! empty($unloadedSpecialCases)) {
 				// This will be later used in 'wp_loaded' below to extract the special styles
-				echo self::$wpStylesSpecialDelimiters['start'] . json_encode($unloadedSpecialCases) . self::$wpStylesSpecialDelimiters['end'];
+				echo self::$wpStylesSpecialDelimiters['start'] . wp_json_encode($unloadedSpecialCases) . self::$wpStylesSpecialDelimiters['end'];
 			}
 		}
 
@@ -1007,13 +1035,11 @@ SQL;
 	 */
 	public function printAnySpecialCss()
     {
-        if (isset($this->allUnloadedAssets['css']) && ! empty($this->allUnloadedAssets['css'])) {
-	        if (in_array('photoswipe', $this->allUnloadedAssets['css'])) {
-	            ?>
-                <!-- Asset CleanUp: "photoswipe" unloaded (avoid printing useless HTML) -->
-                <style <?php echo Misc::getStyleTypeAttribute(); ?>>.pswp { display: none; }</style>
-                <?php
-            }
+        if (isset($this->allUnloadedAssets['styles']) && ! empty($this->allUnloadedAssets['styles']) && in_array('photoswipe', $this->allUnloadedAssets['styles'])) {
+            ?>
+            <?php if (current_user_can('administrator')) { ?><!-- Asset CleanUp: "photoswipe" unloaded (avoid printing useless HTML) --><?php } ?>
+            <style <?php echo Misc::getStyleTypeAttribute(); ?>>.pswp { display: none; }</style>
+            <?php
         }
     }
 	/* [END] Styles Dequeue */
@@ -1055,6 +1081,9 @@ SQL;
 
 		    // It looks like the page loaded is neither a post, page or the front-page
 		    // We'll see if there are assets unloaded globally and unload them
+		    /*
+			* [START] Build unload list
+		    */
 		    $globalUnload = $this->globalUnloaded;
 
 		    // [wpacu_lite]
@@ -1062,7 +1091,7 @@ SQL;
 			    $list = $globalUnload['scripts'];
 		    } else { // [/wpacu_lite]
 			    // Post, Page or Front-page?
-			    $toRemove = $this->getAssetsUnloaded();
+		        $toRemove = $this->getAssetsUnloadedPageLevel();
 
 			    $jsonList = @json_decode( $toRemove );
 
@@ -1079,36 +1108,27 @@ SQL;
 				    }
 			    }
 
-		    if ( $this->isSingularPage() ) {
-				    // Any bulk unloaded styles (e.g. for all pages belonging to a post type)? Append them
-				    if ( empty( $this->postTypesUnloaded ) ) {
-					    $post = $this->getCurrentPost();
+                if ( self::isSingularPage() ) {
+                    // Any bulk unloaded styles (e.g. for all pages belonging to a post type)? Append them
+                    if ( empty( $this->postTypesUnloaded ) ) {
+                        $post = $this->getCurrentPost();
+                        // Make sure the post_type is set; it's not in specific pages (e.g. BuddyPress ones)
+                        $this->postTypesUnloaded = ( isset( $post->post_type ) && $post->post_type ) ? $this->getBulkUnload( 'post_type', $post->post_type ) : array();
+                    }
 
-					    // Make sure the post_type is set; it's not in specific pages (e.g. BuddyPress ones)
-					    $this->postTypesUnloaded = ( isset( $post->post_type ) && $post->post_type ) ? $this->getBulkUnload( 'post_type',
-						    $post->post_type ) : array();
-				    }
-
-				    if ( isset( $this->postTypesUnloaded['scripts'] ) && ! empty( $this->postTypesUnloaded['scripts'] ) ) {
-					    foreach ( $this->postTypesUnloaded['scripts'] as $handleStyle ) {
-						    $list[] = $handleStyle;
-					    }
-				    }
-			    }
+                    if ( isset( $this->postTypesUnloaded['scripts'] ) && ! empty( $this->postTypesUnloaded['scripts'] ) ) {
+                        foreach ( $this->postTypesUnloaded['scripts'] as $handleStyle ) {
+                            $list[] = $handleStyle;
+                        }
+                    }
+                }
 			    // [wpacu_lite]
 		    }
 		    // [/wpacu_lite]
 
-		    $list = apply_filters( 'wpacu_filter_scripts', array_unique( $list ) );
-
-		    // Let's see if there are load exceptions for this page
-		    if ( ! empty( $list ) && ! empty( $this->loadExceptions['scripts'] ) ) {
-			    foreach ( $list as $handleKey => $handle ) {
-				    if ( in_array( $handle, $this->loadExceptions['scripts'] ) ) {
-					    unset( $list[ $handleKey ] );
-				    }
-			    }
-		    }
+		    // Any bulk unloaded styles for 'category', 'post_tag' and more?
+            // These are PRO rules or rules added via custom coding
+		    $list = apply_filters( 'wpacu_filter_scripts_list_unload', array_unique( $list ) );
 
 		    global $wp_scripts;
 
@@ -1129,39 +1149,39 @@ SQL;
 				    $this->wpAllScripts['queue'] = array_unique( $this->wpAllScripts['queue'] );
 			    }
 		    }
+		    /*
+			* [END] Build unload list
+		    */
 
 		    /*
 			* [START] Load Exception Check
 			* */
+		    // Load exception rules ALWAYS have priority over the unloading ones
+		    // Thus, if an exception is found, the handle will be removed from the unloading list
 		    // Let's see if there are load exceptions for this page or site-wide (e.g. for logged-in users)
-		    $anyScriptsLoadExceptions = ( ! empty( $this->loadExceptions['scripts'] ) || ! empty( $this->loadExceptionsLoggedInGlobal['scripts'] ) );
 
-		    if ( ! empty( $list ) && $anyScriptsLoadExceptions ) {
-			    foreach ( $list as $handleKey => $handle ) {
-				    $loadScriptAsException = in_array( $handle,
-						    $this->loadExceptions['scripts'] )  // per page, per group pages
-				                             || ( in_array( $handle,
-							    $this->loadExceptionsLoggedInGlobal['scripts'] ) && is_user_logged_in() ); // site-wide if the user is logged-in
-				    if ( $loadScriptAsException ) {
-					    unset( $list[ $handleKey ] );
-				    }
-			    }
-		    }
+            // These are LITE rules
+            $list = ( ! empty($list) ) ? $this->filterAssetsUnloadList($list, 'scripts', 'load_exception') : $list;
+
+            // [wpacu_pro]
+		    // These are PRO rules or rules added via custom coding
+		    // Only check for any load exceptions if the unloading list has at least one item
+		    // Otherwise the action is irrelevant since the assets are loaded anyway by default
+		    $list = ( ! empty($list) ) ? apply_filters('wpacu_filter_scripts_list_load_exception', $list) : $list;
+		    // [/wpacu_pro]
 		    /*
 			 * [END] Load Exception Check
 			 * */
 
 		    // Nothing to unload
 		    if ( empty( $list ) ) {
-			    /* [wpacu_timing] */
-			    Misc::scriptExecTimer( 'filter_dequeue_scripts', 'end' ); /* [/wpacu_timing] */
+			    /* [wpacu_timing] */Misc::scriptExecTimer( 'filter_dequeue_scripts', 'end' ); /* [/wpacu_timing] */
 			    return;
 		    }
 
 		    // e.g. for test/debug mode or AJAX calls (where all assets have to load)
-		    if ( isset($_REQUEST['wpacu_no_js_unload']) || $this->preventAssetsSettings() ) {
-			    /* [wpacu_timing] */
-			    Misc::scriptExecTimer( 'filter_dequeue_scripts', 'end' ); /* [/wpacu_timing] */
+		    if ( isset($_REQUEST['wpacu_no_js_unload']) || $this->preventAssetsSettings(array('assets_call')) ) {
+			    /* [wpacu_timing] */Misc::scriptExecTimer( 'filter_dequeue_scripts', 'end' ); /* [/wpacu_timing] */
 			    return;
 		    }
 	    }
@@ -1174,11 +1194,12 @@ SQL;
 	        // Ignore auto generated handles for the hardcoded CSS as they were added for reference purposes
 	        // They will get stripped later on via OptimizeCommon.php
 	        // The handle is used just for reference for later stripping via altering the DOM
-	        if (strpos($handle, 'wpacu_hardcoded_script_inline_') !== false) {
+	        if (strpos($handle, 'wpacu_hardcoded_script_inline_') !== false || strpos($handle, 'wpacu_hardcoded_noscript_inline_') !== false) {
 		        // [wpacu_pro]
-		        $saveMarkedHandles = ObjectCache::wpacu_cache_get('wpacu_hardcoded_scripts_inline') ?: array();
+		        $saveMarkedHandles = ObjectCache::wpacu_cache_get('wpacu_hardcoded_scripts_noscripts_inline') ?: array();
 		        $saveMarkedHandles[] = $handle;
-		        ObjectCache::wpacu_cache_set( 'wpacu_hardcoded_scripts_inline', $saveMarkedHandles );
+		        $this->allUnloadedAssets['scripts'][] = $handle; // for "wpacu_no_load" on hardcoded list
+		        ObjectCache::wpacu_cache_set( 'wpacu_hardcoded_scripts_noscripts_inline', $saveMarkedHandles );
 		        // [/wpacu_pro]
 		        continue;
 	        }
@@ -1187,12 +1208,13 @@ SQL;
 		        // [wpacu_pro]
 		        $saveMarkedHandles = ObjectCache::wpacu_cache_get('wpacu_hardcoded_scripts_src') ?: array();
 		        $saveMarkedHandles[] = $handle;
+		        $this->allUnloadedAssets['scripts'][] = $handle; // for "wpacu_no_load" on hardcoded list
 		        ObjectCache::wpacu_cache_set( 'wpacu_hardcoded_scripts_src', $saveMarkedHandles );
 		        // [/wpacu_pro]
 		        continue;
 	        }
 
-            // Special Action for 'jquery-migrate' handler as its tied to 'jquery'
+            // Special Action for 'jquery-migrate' handler as it's tied to 'jquery'
             if ($handle === 'jquery-migrate' && isset($this->wpAllScripts['registered']['jquery'])) {
 	            $jQueryRegScript = $this->wpAllScripts['registered']['jquery'];
 
@@ -1204,7 +1226,7 @@ SQL;
 		            wp_dequeue_script($handle);
 	            }
 
-	            continue;
+				continue;
             }
 
 	        if (isset($ignoreChildParentList['scripts'], $this->wpAllScripts['registered'][$handle]->src) && is_array($ignoreChildParentList['scripts']) && array_key_exists($handle, $ignoreChildParentList['scripts'])) {
@@ -1212,14 +1234,17 @@ SQL;
 		        // It will be stripped by cleaning its SCRIPT tag from the HTML Source
                 $this->ignoreChildren['scripts'][$handle] = $this->wpAllScripts['registered'][$handle]->src;
 		        $this->ignoreChildren['scripts'][$handle.'_has_unload_rule'] = 1;
-		        $this->allUnloadedAssets['js'][] = $handle;
+		        $this->allUnloadedAssets['scripts'][] = $handle;
 		        continue;
 	        }
 
-	        $this->allUnloadedAssets['js'][] = $handle;
+	        $this->allUnloadedAssets['scripts'][] = $handle;
 
-            wp_deregister_script($handle);
-            wp_dequeue_script($handle);
+	        // Only trigger the unloading on regular page load, not when the assets list is collected
+	        if ( ! $this->isGetAssetsCall ) {
+		        wp_deregister_script( $handle );
+		        wp_dequeue_script( $handle );
+	        }
         }
 
 	    if (current_action() === 'wp_print_scripts') {
@@ -1230,10 +1255,46 @@ SQL;
     }
 	/* [END] Scripts Dequeue */
 
+
+	/**
+	 * @param $list (should never be empty when called)
+	 * @param $assetType
+	 * @param $ruleType
+	 *
+	 * @return mixed
+	 */
+	public function filterAssetsUnloadList($list, $assetType, $ruleType)
+    {
+	    // Remove any assets from the list in case there are any load exceptions detected
+        if ($ruleType === 'load_exception') {
+	        $this->loadExceptionsPageLevel      = $this->getLoadExceptionsPageLevel(self::$vars['for_type'], self::$vars['current_post_id']);
+            $this->loadExceptionsLoggedInGlobal = $this->getHandleLoadLoggedIn();
+            $this->loadExceptionsPostType       = $this->getLoadExceptionsPostType(self::$vars['current_post_type']);
+
+	        $anyAssetsLoadExceptions = ( ! empty( $this->loadExceptionsPageLevel[ $assetType ] )
+                || ( ! empty( $this->loadExceptionsLoggedInGlobal[ $assetType ] ) )
+                || ( ! empty( $this->loadExceptionsPostType[$assetType] ) )
+            );
+
+	        if ( $anyAssetsLoadExceptions ) {
+		        foreach ( $list as $handleKey => $handle ) {
+			        $loadAssetAsException = in_array( $handle, $this->loadExceptionsPageLevel[ $assetType ] )  // 1) per page, per group pages OR
+                        || in_array( $handle, $this->loadExceptionsPostType[ $assetType ] ) // 2) On all pages belonging to a specific post type
+                        || ( in_array( $handle, $this->loadExceptionsLoggedInGlobal[ $assetType ] ) && is_user_logged_in() ); // 3) site-wide if the user is logged-in
+			        if ( $loadAssetAsException ) {
+				        unset( $list[ $handleKey ] );
+			        }
+		        }
+	        }
+        }
+
+	    return $list;
+    }
+
 	/**
      * Alter CSS/JS list marked for dequeue
 	 * @param $for
-	 * @return mixed
+	 * @return array
 	 */
 	public function unloadAssetOnTheFly($for)
     {
@@ -1274,7 +1335,7 @@ SQL;
 	/**
 	 * @param $exceptionsList
 	 *
-	 * @return mixed
+	 * @return array
 	 */
 	public function makeLoadExceptionOnTheFly($exceptionsList)
     {
@@ -1305,75 +1366,91 @@ SQL;
     }
 
     /**
-     * This fetches the "Load it on this page" / "Load it on all 404 pages", etc. exceptions
+     * This fetches the "Load it on this page" exceptions
      *
-     * @param string $type
+     * @param string $type ("post", "front_page")
      * @param string $postId
      *
-     * @return array|mixed|object
+     * @return array|array[]
      */
-    public function getLoadExceptions($type = 'post', $postId = '')
+    public function getLoadExceptionsPageLevel($type = 'post', $postId = '')
     {
-        $exceptionsListDefault = $exceptionsList = array( 'styles' => array(), 'scripts' => array() );
+        if ( $this->loadExceptionsPageLevel['_set'] ) {
+            return $this->loadExceptionsPageLevel; // it was set
+        }
 
-        if ($type === 'post' && !$postId) {
+	    $exceptionsListDefault = $exceptionsList = array( 'styles' => array(), 'scripts' => array() );
+
+	    if ( $type === 'post' && ! $postId ) {
             // $postId needs to have a value if $type is a 'post' type
-            return $exceptionsListDefault;
+            $this->loadExceptionsPageLevel = $exceptionsListDefault;
+		    $this->loadExceptionsPageLevel['_set'] = true;
+            return $this->loadExceptionsPageLevel;
         }
 
-        if (! $type) {
+	    if ( ! $type ) {
             // Invalid request
-            return $exceptionsListDefault;
+            $this->loadExceptionsPageLevel = $exceptionsListDefault;
+		    $this->loadExceptionsPageLevel['_set'] = true;
+            return $this->loadExceptionsPageLevel;
         }
 
-        // Default
-        $exceptionsListJson = '';
+	    // Default
+	    $exceptionsListJson = '';
 
-        $homepageClass = new AssetsPagesManager;
-
-        // Post or Post of the Homepage (if chosen in the Dashboard)
-        if ($type === 'post'
-            || ($homepageClass->data['show_on_front'] === 'page' && $postId)
-        ) {
-            $exceptionsListJson = get_post_meta(
-                $postId, '_' . WPACU_PLUGIN_ID . '_load_exceptions',
-                true
-            );
-        } elseif ($type === 'front_page') {
-            // The home page could also be the list of the latest blog posts
-            $exceptionsListJson = get_option(
-	            WPACU_PLUGIN_ID . '_front_page_load_exceptions'
-            );
+	    // Post or Post of the Homepage (if chosen in the Dashboard)
+	    if ( $type === 'post' || ( Misc::getShowOnFront() === 'page' && $postId ) ) {
+            $exceptionsListJson = get_post_meta( $postId, '_' . WPACU_PLUGIN_ID . '_load_exceptions', true );
         }
 
-        if ($exceptionsListJson) {
-            $exceptionsList = json_decode($exceptionsListJson, true);
+	    // The home page could also be the list of the latest blog posts
+	    if ( $type === 'front_page' ) {
+            $exceptionsListJson = get_option( WPACU_PLUGIN_ID . '_front_page_load_exceptions' );
+        }
 
-            if (Misc::jsonLastError() !== JSON_ERROR_NONE) {
+	    if ( $exceptionsListJson ) {
+            $exceptionsList = json_decode( $exceptionsListJson, true );
+
+            if ( Misc::jsonLastError() !== JSON_ERROR_NONE ) {
                 $exceptionsList = $exceptionsListDefault;
             }
         }
 
-        // Any exceptions on the fly added for debugging purposes? Make sure to grab them
-        $exceptionsList = $this->makeLoadExceptionOnTheFly($exceptionsList);
+	    // Any exceptions on the fly added for debugging purposes? Make sure to grab them
+	    $exceptionsList = $this->makeLoadExceptionOnTheFly( $exceptionsList );
 
-        // Avoid any notice errors
-        foreach ( array('styles', 'scripts') as $assetType ) {
-	        if ( ! isset( $exceptionsList[$assetType] ) ) {
-		        $exceptionsList[$assetType] = array();
-	        }
+	    // Avoid any notice errors
+	    foreach ( array( 'styles', 'scripts' ) as $assetType ) {
+            if ( ! isset( $exceptionsList[ $assetType ] ) ) {
+                $exceptionsList[ $assetType ] = array();
+            }
         }
 
-	    return $exceptionsList;
+	    $this->loadExceptionsPageLevel = $exceptionsList;
+	    $this->loadExceptionsPageLevel['_set'] = true;
+
+	    return $this->loadExceptionsPageLevel;
     }
 
 	/**
+     * Option: 'Make an exception from any unload rule & always load it' -> 'On all pages of "post" post type'
+     *
 	 * @param $postType
 	 *
-	 * @return \array[][]|mixed
+	 * @return \array[][]
 	 */
 	public function getLoadExceptionsPostType($postType)
     {
+        if ($this->loadExceptionsPostType['_set']) {
+            return $this->loadExceptionsPostType;
+        }
+
+        // Not on a singular page
+        if ($postType === '') {
+	        $this->loadExceptionsPostType['_set'] = true;
+	        return $this->loadExceptionsPostType;
+        }
+
 	    $exceptionsListDefault = array('styles' => array(), 'scripts' => array());
 
 	    $exceptionsListJson = get_option(WPACU_PLUGIN_ID . '_post_type_load_exceptions');
@@ -1382,84 +1459,29 @@ SQL;
 
 	    // Issues with decoding the JSON file? Return an empty list
 	    if (Misc::jsonLastError() !== JSON_ERROR_NONE) {
-		    return $exceptionsListDefault;
+            $this->loadExceptionsPostType = $exceptionsListDefault;
+		    $this->loadExceptionsPostType['_set'] = true;
+		    return $this->loadExceptionsPostType;
 	    }
 
 	    // Return any handles added as load exceptions for the requested $postType
 	    if (isset($exceptionsList[$postType])) {
-	        return $exceptionsList[$postType];
+            foreach ( $exceptionsList[$postType] as $assetType => $assetList ) {
+                foreach ( $assetList as $assetHandle => $assetValue ) {
+                    if ( $assetValue ) {
+                        $this->loadExceptionsPostType[ $assetType ][] = $assetHandle;
+                    }
+                }
+            }
         }
 
-	    return $exceptionsListDefault;
+	    $this->loadExceptionsPostType['_set'] = true;
+	    return $this->loadExceptionsPostType;
     }
-
-	/**
-     *
-	 * @param $type
-	 * @param $currentPostId
-	 *
-	 * @return array|array[]|mixed|object
-	 */
-	public function getLoadExceptionsForCurrentPage($type, $currentPostId, $post)
-    {
-	    $loadExceptions = $this->getLoadExceptions( $type, $currentPostId );
-
-	    if ($post && $type === 'post' && ( isset( $post->post_type ) && $post->post_type )) {
-		    $loadExceptionsPostType = $this->getLoadExceptionsPostType($post->post_type);
-
-		    foreach ($loadExceptionsPostType as $assetType => $assetList) {
-			    foreach ($assetList as $assetHandle => $assetValue) {
-				    if ($assetValue) {
-					    $loadExceptions[ $assetType ][] = $assetHandle;
-				    }
-			    }
-		    }
-	    }
-
-	    return $loadExceptions;
-    }
-
-	/**
-     * Case 1: UNLOAD style/script (based on the handle) for URLs matching a specified RegExp
-	 * Case 2: LOAD (make an exception) style/script (based on the handle) for URLs matching a specified RegExp
-     *
-	 * @param $for
-     *
-	 * @return array
-	 */
-	public static function getRegExRules($for = 'load_exceptions')
-	{
-		$regExes = array('styles' => array(), 'scripts' => array());
-
-		$regExDbListJson = get_option(WPACU_PLUGIN_ID . '_global_data');
-
-		// DB Key (how it's saved in the database)
-		if ($for === 'load_exceptions') {
-			$globalKey = 'load_regex';
-		} else {
-			$globalKey = 'unload_regex';
-        }
-
-		if ($regExDbListJson) {
-			$regExDbList = @json_decode($regExDbListJson, true);
-
-			// Issues with decoding the JSON file? Return an empty list
-			if (Misc::jsonLastError() !== JSON_ERROR_NONE) {
-				return $regExes;
-			}
-
-			// Are there any load exceptions / unload RegExes?
-			foreach (array('styles', 'scripts') as $assetKey) {
-				if ( isset( $regExDbList[$assetKey][$globalKey] ) && ! empty( $regExDbList[$assetKey][$globalKey] ) ) {
-					$regExes[$assetKey] = $regExDbList[$assetKey][$globalKey];
-				}
-			}
-		}
-
-		return $regExes;
-	}
 
     /**
+     * Option: Unload site-wide * everywhere
+     *
      * @return array
      */
     public function getGlobalUnload()
@@ -1480,7 +1502,7 @@ SQL;
     }
 
 	/**
-	 * @param string $for (could be 'post_type', 'taxonomy' for premium extension etc.)
+	 * @param string $for (could be 'post_type', 'taxonomy' for the Pro version etc.)
 	 * @param string $type
 	 *
 	 * @return array
@@ -1503,20 +1525,18 @@ SQL;
 
         $existingList = $existingListEmpty;
 
-        if (isset($existingListAll['styles'][$for][$type])
-            && is_array($existingListAll['styles'][$for][$type])) {
-            $existingList['styles'] = $existingListAll['styles'][$for][$type];
-        }
-
-        if (isset($existingListAll['scripts'][$for][$type])
-            && is_array($existingListAll['scripts'][$for][$type])) {
-            $existingList['scripts'] = $existingListAll['scripts'][$for][$type];
+        foreach (array('styles', 'scripts') as $assetType) {
+	        if ( isset( $existingListAll[$assetType][ $for ][ $type ] ) && is_array( $existingListAll[$assetType][ $for ][ $type ] ) ) {
+		        $existingList[$assetType] = $existingListAll[$assetType][ $for ][ $type ];
+	        }
         }
 
         return $existingList;
     }
 
 	/**
+     * Option: Add Note
+     *
 	 * @return array
 	 */
 	public function getHandleNotes()
@@ -1545,13 +1565,13 @@ SQL;
 	}
 
 	/**
-     * This fetches the "Load it if the user is logged in" exceptions
+     * Option: 'Make an exception from any unload rule & always load it' -> 'If the user is logged-in'
      *
 	 * @return array
 	 */
 	public function getHandleLoadLoggedIn()
     {
-    	if (! empty($this->loadExceptionsLoggedInGlobal['styles']) || ! empty($this->loadExceptionsLoggedInGlobal['scripts'])) {
+    	if ($this->loadExceptionsLoggedInGlobal['_set']) {
 			return $this->loadExceptionsLoggedInGlobal;
 	    }
 
@@ -1566,6 +1586,8 @@ SQL;
 
 		    // Issues with decoding the JSON file? Return an empty list
 		    if ( Misc::jsonLastError() !== JSON_ERROR_NONE ) {
+			    $this->loadExceptionsLoggedInGlobal = $handleData;
+			    $this->loadExceptionsLoggedInGlobal['_set'] = true;
 			    return $handleData;
 		    }
 
@@ -1586,10 +1608,14 @@ SQL;
             }
         }
 
+	    $this->loadExceptionsLoggedInGlobal['_set'] = true;
+
 	    return $this->loadExceptionsLoggedInGlobal;
     }
 
 	/**
+     * Option: 'Ignore dependency rule and keep the "children" loaded'
+     *
 	 * @return array
 	 */
 	public function getIgnoreChildren()
@@ -1618,7 +1644,7 @@ SQL;
 	}
 
 	/**
-	 * @return array|bool|mixed|object
+	 * @return array
 	 */
 	public static function getHandlesInfo()
     {
@@ -1659,7 +1685,7 @@ SQL;
 	/**
 	 * @param $ignoreChildParentList
 	 *
-	 * @return mixed
+	 * @return array
 	 */
 	public function filterIgnoreChildParentList($ignoreChildParentList)
 	{
@@ -1779,9 +1805,9 @@ SQL;
         }
 
         $isFrontEndEditView = $this->isFrontendEditView;
-        $isDashboardEditView = (!$isFrontEndEditView && $this->isGetAssetsCall);
+        $isDashboardEditView = (! $isFrontEndEditView && $this->isGetAssetsCall);
 
-        if (!$isFrontEndEditView && !$isDashboardEditView) {
+        if (! $isFrontEndEditView && ! $isDashboardEditView) {
             return;
         }
 
@@ -1794,7 +1820,9 @@ SQL;
         // Prevent plugins from altering the DOM
         add_filter('w3tc_minify_enable', '__return_false');
 
-        // This is the list of the scripts an styles that were eventually loaded
+        Misc::w3TotalCacheFlushObjectCache();
+
+        // This is the list of the scripts and styles that were eventually loaded
         // We have also the list of the ones that were unloaded
         // located in $this->wpScripts and $this->wpStyles
         // We will add it to the list as they will be marked
@@ -1806,44 +1834,23 @@ SQL;
 
         $list = array();
 
-        $currentUnloadedAll = $currentUnloaded = json_decode($this->getAssetsUnloaded($this->getCurrentPostId()), ARRAY_A);
+	    // e.g. for "Loaded" and "Unloaded" statuses
+        $currentUnloadedAll = isset($this->allUnloadedAssets) ? $this->allUnloadedAssets : array('styles' => array(), 'scripts' => array());
 
-        // Append global unloaded assets to current (one by one) unloaded ones
-        if (! empty($this->globalUnloaded['styles'])) {
-            foreach ($this->globalUnloaded['styles'] as $globalStyle) {
-                $currentUnloadedAll['styles'][] = $globalStyle;
-            }
+        foreach (array('styles', 'scripts') as $assetType) {
+	        if ( isset( $currentUnloadedAll[$assetType] ) ) {
+		        $currentUnloadedAll[$assetType] = array_unique( $currentUnloadedAll[$assetType] );
+	        }
         }
 
-        if (! empty($this->globalUnloaded['scripts'])) {
-            foreach ($this->globalUnloaded['scripts'] as $globalScript) {
-                $currentUnloadedAll['scripts'][] = $globalScript;
-            }
-        }
-
-        // Append bulk unloaded assets to current (one by one) unloaded ones
-        if ($this->isSingularPage()) {
-            if (! empty($this->postTypesUnloaded['styles'])) {
-                foreach ($this->postTypesUnloaded['styles'] as $postTypeStyle) {
-                    $currentUnloadedAll['styles'][] = $postTypeStyle;
-                }
-            }
-
-            if (! empty($this->postTypesUnloaded['scripts'])) {
-                foreach ($this->postTypesUnloaded['scripts'] as $postTypeScript) {
-                    $currentUnloadedAll['scripts'][] = $postTypeScript;
-                }
-            }
-        }
-
-	    $manageStylesCore = isset($wp_styles->done) && is_array($wp_styles->done) ? $wp_styles->done : array();
+        $manageStylesCore = isset($wp_styles->done) && is_array($wp_styles->done) ? $wp_styles->done : array();
 	    $manageStyles     = $this->wpStylesFilter($manageStylesCore, 'done');
 
 	    $manageScripts    = isset($wp_scripts->done) && is_array($wp_scripts->done) ? $wp_scripts->done : array();
 
 	    if ($isFrontEndEditView) {
 	    	if (! empty($this->wpAllStyles) && isset($this->wpAllStyles['queue'])) {
-			    $manageStyles = $this->wpStylesFilter($this->wpAllStyles['queue'],  'queue');
+			    $manageStyles = $this->wpStylesFilter($this->wpAllStyles['queue'], 'queue');
 		    }
 
 		    if (! empty($this->wpAllScripts) && isset($this->wpAllScripts['queue'])) {
@@ -1897,7 +1904,7 @@ SQL;
 		    $stylesList = $stylesListFilterAll->registered;
         }
 
-        if (! empty($stylesList)) {
+	    if (! empty($stylesList)) {
             foreach ($manageStyles as $handle) {
 	            if (! isset($stylesList[$handle]) || in_array($handle, $this->skipAssets['styles'])) {
                     continue;
@@ -1925,7 +1932,7 @@ SQL;
             ksort($list['styles']);
         }
 
-        /*
+	    /*
         * Scripts List
         */
 	    $scriptsList = $wp_scripts->registered;
@@ -1934,7 +1941,7 @@ SQL;
 		    $scriptsList = $scriptsBeforeUnload['registered'];
 	    }
 
-        if (! empty($scriptsList)) {
+	    if (! empty($scriptsList)) {
             /* These scripts below are used by this plugin (except admin-bar) and they should not show in the list
                as they are loaded only when you (or other admin) manage the assets, never for your website visitors */
             foreach ($manageScripts as $handle) {
@@ -1966,21 +1973,28 @@ SQL;
 
             }
 
-        if (! empty($list)) {
+	    if (! empty($list)) {
 	        Update::updateHandlesInfo( $list );
         }
 
+        // [wpacu_lite]
+	    if ($isFrontEndEditView && ! $this->isUpdateable) {
+		    $this->parseTemplate('settings-frontend-lite-locked', array(), true);
+	    }
+	    // [/wpacu_lite]
+
         // Front-end View while admin is logged in
-        if ($isFrontEndEditView) {
+        elseif ($isFrontEndEditView) {
 	        $wpacuSettings = new Settings();
 
-            $data = array(
-		        'is_frontend_view' => true,
-                'is_updateable'    => true,
-                'post_type'        => '',
-                'bulk_unloaded'    => array('post_type' => array()),
-                'plugin_settings'  => $wpacuSettings->getAll()
-            );
+	        $data = array(
+		        'is_frontend_view'            => true,
+		        'post_type'                   => '',
+		        'bulk_unloaded'               => array( 'post_type' => array() ),
+                'plugin_settings'             => $wpacuSettings->getAll(),
+		        'current_unloaded_all'        => $currentUnloadedAll,
+		        'current_unloaded_page_level' => $this->getAssetsUnloadedPageLevel( $this->getCurrentPostId(), true )
+	        );
 
 	        $data['wpacu_page_just_updated'] = false;
 
@@ -1989,76 +2003,67 @@ SQL;
 		        delete_transient('wpacu_page_just_updated');
 	        }
 
-	        // [wpacu_lite]
-            if ($this->isUpdateable) {
-            // [/wpacu_lite]
+	        if ($currentDebug = ObjectCache::wpacu_cache_get('wpacu_assets_unloaded_list_page_request')) {
+		        foreach ( array( 'styles', 'scripts' ) as $assetType ) {
+			        if ( isset( $data['current_unloaded_all'][ $assetType ] ) && ! empty( $data['current_unloaded_all'][ $assetType ] ) ) {
+				        foreach ( $data['current_unloaded_all'][ $assetType ] as $handleKey => $handle ) {
+					        if ( isset( $currentDebug[ $assetType ] ) && in_array( $handle, $currentDebug[ $assetType ] ) ) {
+						        unset( $data['current_unloaded_all'][ $assetType ][ $handleKey ] );
+					        }
+				        }
+			        }
+		        }
+	        }
 
-	            $data['current'] = $currentUnloaded;
+	        // e.g. /?wpacu_unload_(css|js)=
+	        $data['current_debug'] = ObjectCache::wpacu_cache_get('wpacu_assets_unloaded_list_page_request');
 
-	            if ($currentDebug = ObjectCache::wpacu_cache_get('wpacu_assets_unloaded_list_page_request')) {
-		            foreach ( array( 'styles', 'scripts' ) as $assetType ) {
-			            if ( isset( $data['current'][ $assetType ] ) && ! empty( $data['current'][ $assetType ] ) ) {
-				            foreach ( $data['current'][ $assetType ] as $handleKey => $handle ) {
-					            if ( isset( $currentDebug[ $assetType ] ) && in_array( $handle, $currentDebug[ $assetType ] ) ) {
-						            unset( $data['current'][ $assetType ][ $handleKey ] );
-					            }
-				            }
-			            }
-		            }
-	            }
+            $data['all']['scripts'] = $list['scripts'];
+            $data['all']['styles']  = $list['styles'];
 
-	            // e.g. /?wpacu_unload_(css|js)=
-	            $data['current_debug'] = ObjectCache::wpacu_cache_get('wpacu_assets_unloaded_list_page_request');
-
-                $data['all']['scripts'] = $list['scripts'];
-                $data['all']['styles']  = $list['styles'];
-
-                if ($data['plugin_settings']['assets_list_layout'] === 'by-location') {
-                    $data['all'] = Sorting::appendLocation($data['all']);
-                } else {
-                    $data['all'] = Sorting::sortListByAlpha($data['all']);
-                }
-
-	            $this->fetchUrl         = Misc::getPageUrl($this->getCurrentPostId());
-
-                $data['fetch_url']      = $this->fetchUrl;
-
-	            $data['nonce_action']   = Update::NONCE_ACTION_NAME;
-                $data['nonce_name']     = Update::NONCE_FIELD_NAME;
-
-                $data = $this->alterAssetObj($data);
-
-                $data['global_unload']   = $this->globalUnloaded;
-
-                if (Misc::isHomePage()) {
-                    $type = 'front_page';
-                } elseif ($this->getCurrentPostId() > 0) {
-                	$type = 'post';
-                }
-	            $data['wpacu_type'] = $type;
-
-	            $data['load_exceptions'] = $this->getLoadExceptions($type, $this->getCurrentPostId());
-
-	            // Avoid the /?wpacu_load_(css|js) to interfere with the form inputs
-	            if ($loadExceptionsDebug = ObjectCache::wpacu_cache_get( 'wpacu_exceptions_list_page_request' )) {
-		            foreach ( array( 'styles', 'scripts' ) as $assetType ) {
-			            if ( isset( $data['load_exceptions'][ $assetType ] ) && isset( $loadExceptionsDebug[ $assetType ] ) && ! empty( $data['load_exceptions'][ $assetType ] ) ) {
-				            foreach ( $data['load_exceptions'][ $assetType ] as $handleKey => $handle ) {
-					            if ( in_array( $handle, $loadExceptionsDebug[ $assetType ] ) ) {
-						            unset( $data['load_exceptions'][ $assetType ][ $handleKey ] );
-					            }
-				            }
-			            }
-		            }
-
-		            // e.g. /?wpacu_load_(css|js)=
-		            $data['load_exceptions_debug'] = $loadExceptionsDebug;
-	            }
-            // [wpacu_lite]
+            if ($data['plugin_settings']['assets_list_layout'] === 'by-location') {
+	            $data['all'] = Sorting::appendLocation($data['all']);
             } else {
-                $data['is_updateable'] = false;
+            	$data['all'] = Sorting::sortListByAlpha($data['all']);
             }
-	        // [/wpacu_lite]
+
+            $this->fetchUrl = Misc::getPageUrl($this->getCurrentPostId());
+
+            $data['fetch_url']      = $this->fetchUrl;
+
+            $data['nonce_action']   = Update::NONCE_ACTION_NAME;
+            $data['nonce_name']     = Update::NONCE_FIELD_NAME;
+
+            $data = $this->alterAssetObj($data);
+	        $data['global_unload']   = $this->globalUnloaded;
+
+	        $type = false;
+
+	        if (Misc::isHomePage() && $this->getCurrentPostId() < 1 && ! get_option('page_on_front')) {
+                $type = 'front_page';
+            } elseif ($this->getCurrentPostId() > 0) {
+                $type = 'post';
+            }
+
+            $data['wpacu_type'] = $type;
+
+            $data['load_exceptions_per_page'] = $this->getLoadExceptionsPageLevel($type, $this->getCurrentPostId());
+
+            // Avoid the /?wpacu_load_(css|js) to interfere with the form inputs
+            if ($loadExceptionsDebug = ObjectCache::wpacu_cache_get( 'wpacu_exceptions_list_page_request' )) {
+	            foreach ( array( 'styles', 'scripts' ) as $assetType ) {
+		            if ( isset( $data['load_exceptions_per_page'][ $assetType ], $loadExceptionsDebug[ $assetType ] ) && ! empty( $data['load_exceptions_per_page'][ $assetType ] ) ) {
+			            foreach ( $data['load_exceptions_per_page'][ $assetType ] as $handleKey => $handle ) {
+				            if ( in_array( $handle, $loadExceptionsDebug[ $assetType ] ) ) {
+					            unset( $data['load_exceptions_per_page'][ $assetType ][ $handleKey ] );
+				            }
+			            }
+		            }
+	            }
+
+	            // e.g. /?wpacu_load_(css|js)=
+	            $data['load_exceptions_debug'] = $loadExceptionsDebug;
+            }
 
             // WooCommerce Shop Page?
             $data['is_woo_shop_page'] = self::$vars['is_woo_shop_page'];
@@ -2069,8 +2074,10 @@ SQL;
 
 	        $data['load_exceptions_post_type'] = array();
 
-            if ($this->isSingularPage()) {
+            if (self::isSingularPage()) {
                 $post = $this->getCurrentPost();
+
+                $data['post_id'] = $post->ID;
 
                 // Current Post Type
                 $data['post_type'] = $post->post_type;
@@ -2085,50 +2092,50 @@ SQL;
 
 	            $data['is_bulk_unloadable'] = true;
 
+	            $data['post_type_has_tax_assoc'] = self::getAllSetTaxonomies($data['post_type']);
+
 	            $data = $this->setPageTemplate($data);
             }
 
-	        // [wpacu_lite]
-	        if ($this->isUpdateable) {
-            // [/wpacu_lite]
-		        $data['total_styles']  = ! empty($data['all']['styles']) ? count($data['all']['styles']) : 0;
-		        $data['total_scripts'] = ! empty($data['all']['scripts']) ? count($data['all']['scripts']) : 0;
+            $data['total_styles']  = ! empty($data['all']['styles'])  ? count($data['all']['styles'])  : false;
+            $data['total_scripts'] = ! empty($data['all']['scripts']) ? count($data['all']['scripts']) : false;
 
-		        $data['all_deps']      = $this->getAllDeps($data['all']);
-            // [wpacu_lite]
-	        }
-            // [/wpacu_lite]
+	        $data['all_deps'] = $this->getAllDeps($data['all']);
 
 	        $data['preloads'] = Preloads::instance()->getPreloads();
 
 	        // Load exception: If the user is logged in (applies globally)
 	        $data['handle_load_logged_in'] = $this->getHandleLoadLoggedIn();
-            $data['handle_notes'] = $this->getHandleNotes();
 
+	        $data['handle_notes'] = $this->getHandleNotes();
 	        $data['handle_rows_contracted'] = self::getHandleRowStatus();
 
 	        $data['ignore_child'] = $this->getIgnoreChildren();
 
-	        $data['status'] = 0;
+	        switch (assetCleanUpHasNoLoadMatches($data['fetch_url'])) {
+                case 'is_set_in_settings':
+	                // The rules from "Settings" -> "Plugin Usage Preferences" -> "Do not load the plugin on certain pages" will be checked
+	                $data['status'] = 5;
+                break;
 
-	        if ($this->isUpdateable) {
-		        if ( assetCleanUpHasNoLoadMatches( $data['fetch_url'], true ) === 'is_set_in_settings' ) {
-			        $data['status'] = 5; // The rules from "Settings" -> "Plugin Usage Preferences" -> "Do not load the plugin on certain pages" will be checked
-		        } elseif ( assetCleanUpHasNoLoadMatches( $data['fetch_url'], true ) === 'is_set_in_page' ) {
-			        $data['status'] = 6; // The following option from "Page Options" (within the CSS/JS manager of the targeted page) is set: "Do not load Asset CleanUp Pro on this page (this will disable any functionality of the plugin)"
-		        }
+                case 'is_set_in_page':
+	                // The following option from "Page Options" (within the CSS/JS manager of the targeted page) is set: "Do not load Asset CleanUp Pro on this page (this will disable any functionality of the plugin)"
+	                $data['status'] = 6;
+                break;
 
-                $data['page_options'] = array();
-                $data['show_page_options'] = false;
-
-                if (in_array($type, array('post', 'front_page'))) {
-                    $data['show_page_options'] = true;
-                    $data['page_options'] = MetaBoxes::getPageOptions($this->getCurrentPostId(), $type);
-                }
-
-		        $data['post_id'] = ($type === 'front_page') ? 0 : $this->getCurrentPostId();
+                default:
+	                $data['status'] = 1;
 	        }
 
+	        $data['page_options'] = array();
+	        $data['show_page_options'] = false;
+
+	        if (in_array($type, array('post', 'front_page'))) {
+		        $data['show_page_options'] = true;
+		        $data['page_options'] = MetaBoxes::getPageOptions($this->getCurrentPostId(), $type);
+	        }
+
+	        $data['post_id'] = ($type === 'front_page') ? 0 : $this->getCurrentPostId();
 	        ObjectCache::wpacu_cache_set('wpacu_settings_frontend_data', $data);
             $this->parseTemplate('settings-frontend', $data, true);
         } elseif ($isDashboardEditView && ! isset($_GET['wpacu_just_hardcoded'])) {
@@ -2149,7 +2156,10 @@ SQL;
 	            echo '<!-- '."\n".print_r(Misc::filterList($list), true)."\n".' -->';
             }
 
-	        echo self::START_DEL_ENQUEUED  . base64_encode(json_encode($list)) . self::END_DEL_ENQUEUED; // Loaded via wp_enqueue_scripts()
+	        // e.g. for "Loaded" and "Unloaded" statuses
+	        $list['current_unloaded_all'] = isset($this->allUnloadedAssets) ? $this->allUnloadedAssets : array('styles' => array(), 'scripts' => array());
+
+	        echo self::START_DEL_ENQUEUED  . base64_encode(wp_json_encode($list)) . self::END_DEL_ENQUEUED; // Loaded via wp_enqueue_scripts()
             echo self::START_DEL_HARDCODED . '{wpacu_hardcoded_assets}' . self::END_DEL_HARDCODED; // Make the user aware of any hardcoded CSS/JS (if any)
 
             add_action('shutdown', static function() {
@@ -2162,7 +2172,7 @@ SQL;
             echo self::START_DEL_HARDCODED . '{wpacu_hardcoded_assets}' . self::END_DEL_HARDCODED; // Make the user aware of any hardcoded CSS/JS (if any)
 
 	        add_action('shutdown', static function() {
-		        // Do not allow further processes as cache plugins such as W3 Total Cache could alter the source code
+		        // Do not allow further processes as cache plugins such as W3 Total Cache could alter the source code,
 		        // and we need the non-minified version of the DOM (e.g. to determine the position of the elements)
 		        exit();
 	        });
@@ -2175,9 +2185,10 @@ SQL;
      * @param $name
      * @param array $data (if present $data values are used within the included template)
      * @param bool|false $echo
-     * @return bool|string
+     * @param bool|false $returnData (relevant when $echo is set to true)
+     * @return string|array
      */
-    public function parseTemplate($name, $data = array(), $echo = false)
+    public function parseTemplate($name, $data = array(), $echo = false, $returnData = false)
     {
         $templateFile = apply_filters(
             'wpacu_template_file', // tag
@@ -2193,11 +2204,21 @@ SQL;
         include $templateFile;
         $result = ob_get_clean();
 
+        // $echo is set to true ($returnData is not relevant), thus print the output
         if ($echo) {
             echo $result;
             return true;
         }
 
+        // $echo is set to false and $returnData to true
+        if ($returnData) {
+            return array(
+                'output' => $result,
+                'data' => $data
+            );
+        }
+
+        /// $echo is set to false (default) and $returnData to $false (default)
         return $result;
     }
 
@@ -2233,7 +2254,7 @@ SQL;
 		    $type = 'front_page';
 	    }
 
-        $wpacuListE = $wpacuListH = $contents = '';
+        $wpacuListE = $wpacuListH = '';
 
 	    $settings = new Settings();
 
@@ -2279,7 +2300,7 @@ SQL;
             // EITHER the enqueued or hardcoded list of assets HAS TO BE RETRIEVED
 	        // Print out the 'error' response to make the user aware about it
             if ( ! ($wpacuListE || $wpacuListH) ) {
-                // 'body' is set and it's not an array
+                // 'body' is set, and it's not an array
 	            if ( is_wp_error($wpRemotePost) ) {
 		            $wpRemotePost['response']['message'] = $wpRemotePost->get_error_message();
 	            } elseif ( isset( $wpRemotePost['body']) ) {
@@ -2338,26 +2359,24 @@ SQL;
 	    }
 	    // [END] Hardcoded (if any)
 
+        $data['current_unloaded_page_level'] = $this->getAssetsUnloadedPageLevel( $postId, true );
+
+	    // e.g. for "Loaded" and "Unloaded" statuses
+	    $data['current_unloaded_all'] = isset($data['all']['current_unloaded_all']) ? (array)$data['all']['current_unloaded_all'] : array('styles' => array(), 'scripts' => array());
+
         if ($data['plugin_settings']['assets_list_layout'] === 'by-location') {
 	        $data['all'] = Sorting::appendLocation($data['all']);
         } else {
 	        $data['all'] = Sorting::sortListByAlpha($data['all']);
         }
 
-        // Check any existing results
-        $data['current'] = (array)json_decode($this->getAssetsUnloaded($postId));
-
-        // Set to empty if not set to avoid any errors
-        if (! isset($data['current']['styles']) || !is_array($data['current']['styles'])) {
-            $data['current']['styles'] = array();
-        }
-
-        if (! isset($data['current']['scripts']) || !is_array($data['current']['scripts'])) {
-            $data['current']['scripts'] = array();
-        }
-
         $data['fetch_url'] = $pageUrl;
         $data['global_unload'] = $this->getGlobalUnload();
+
+	    // [wpacu_pro]
+	    //ObjectCache::wpacu_cache_set('wpacu_data_global_unload', $data['global_unload']);
+		// [/wpacu_pro]
+
         $data['is_bulk_unloadable'] = $data['bulk_unloaded_type'] = false;
 
 	    $data['bulk_unloaded']['post_type'] = array('styles' => array(), 'scripts' => array());
@@ -2368,13 +2387,14 @@ SQL;
 
 		    if (isset($postData->post_type) && $postData->post_type) {
 			    // Current Post Type
-			    $data['post_type'] = $postData->post_type;
+			    $data['post_type']                  = $postData->post_type;
 
 			    // Are there any assets unloaded for this specific post type?
 			    // (e.g. page, post, product (from WooCommerce) or other custom post type)
 			    $data['bulk_unloaded']['post_type'] = $this->getBulkUnload('post_type', $data['post_type']);
 			    $data['bulk_unloaded_type']         = 'post_type';
 			    $data['is_bulk_unloadable']         = true;
+			    $data['post_type_has_tax_assoc']    = self::getAllSetTaxonomies($data['post_type']);
 		    }
 	    }
 
@@ -2384,17 +2404,14 @@ SQL;
 
 	    $data['wpacu_type'] = $type;
 
-        // e.g. Load it on this page
-        $data['load_exceptions'] = $this->getLoadExceptions($type, $postId);
+        // e.g. LITE rules: Load it on this page & on all pages of a specific post type
+        $data['load_exceptions_per_page']  = $this->getLoadExceptionsPageLevel($type, $postId);
+        $data['load_exceptions_post_type'] = ($type === 'post' && $data['post_type']) ? $this->getLoadExceptionsPostType($data['post_type']) : array();
 
-	    $data['load_exceptions_post_type'] = array();
-        if ($type === 'post' && $data['post_type']) {
-	        $data['load_exceptions_post_type'] = $this->getLoadExceptionsPostType($data['post_type']);
-        }
 
 	    $data['handle_rows_contracted'] = self::getHandleRowStatus();
 
-        $data['total_styles']  = ! empty($data['all']['styles']) ? count($data['all']['styles']) : 0;
+        $data['total_styles']  = ! empty($data['all']['styles'])  ? count($data['all']['styles'])  : 0;
         $data['total_scripts'] = ! empty($data['all']['scripts']) ? count($data['all']['scripts']) : 0;
 
 	    $data['all_deps'] = $this->getAllDeps($data['all']);
@@ -2443,16 +2460,25 @@ SQL;
 	    $post = get_post($postId);
 
 	    // Current Post Type
-	    $data['post_type'] = $post->post_type;
+	    $data['post_type']          = $post->post_type;
 	    $data['bulk_unloaded_type'] = 'post_type';
 	    $data['is_bulk_unloadable'] = true;
 
 	    $data = $this->setPageTemplate($data);
 
-	    if (assetCleanUpHasNoLoadMatches($data['fetch_url']) === 'is_set_in_settings') {
-		    $data['status'] = 5; // The rules from "Settings" -> "Plugin Usage Preferences" -> "Do not load the plugin on certain pages" will be checked
-	    } elseif (assetCleanUpHasNoLoadMatches($data['fetch_url']) === 'is_set_in_page') {
-		    $data['status'] = 6; // The following option from "Page Options" (within the CSS/JS manager of the targeted page) is set: "Do not load Asset CleanUp Pro on this page (this will disable any functionality of the plugin)"
+	    switch (assetCleanUpHasNoLoadMatches($data['fetch_url'])) {
+		    case 'is_set_in_settings':
+			    // The rules from "Settings" -> "Plugin Usage Preferences" -> "Do not load the plugin on certain pages" will be checked
+			    $data['status']  = 5;
+			    break;
+
+		    case 'is_set_in_page':
+			    // The following option from "Page Options" (within the CSS/JS manager of the targeted page) is set: "Do not load Asset CleanUp Pro on this page (this will disable any functionality of the plugin)"
+			    $data['status']  = 6;
+			    break;
+
+            default:
+                $data['status'] = 1;
 	    }
 
 	    $this->parseTemplate('meta-box-restricted-page-load', $data, true);
@@ -2471,39 +2497,40 @@ SQL;
 
 	    $wpacuListH        = Misc::getVar('post', 'wpacu_list_h');
 	    $wpacuSettingsJson = base64_decode(Misc::getVar('post', 'wpacu_settings'));
-	    $wpacuSettings     = (array)json_decode($wpacuSettingsJson, ARRAY_A);
+	    $wpacuSettings     = (array)json_decode($wpacuSettingsJson, ARRAY_A); // $data values are passed here
 
 	    // Only set the following variables if there is at least one hardcoded LINK/STYLE/SCRIPT
 	    $jsonH = base64_decode( $wpacuListH );
 
-	    $wpacuPrintHardcodedManagementList = static function($jsonH, $wpacuSettings) {
+	    function wpacuPrintHardcodedManagementList($jsonH, $wpacuSettings) {
 		    $data = $wpacuSettings ?: array();
 		    $data['do_not_print_list'] = true;
 		    $data['print_outer_html']  = false;
 		    $data['all']['hardcoded']  = (array)json_decode($jsonH, ARRAY_A);
 		    $totalHardcodedTags = 0; // default
-		    if (isset($data['all']['hardcoded']['within_conditional_comments']) && ! empty($data['all']['hardcoded']['within_conditional_comments'])) {
-			    ObjectCache::wpacu_cache_set( 'wpacu_hardcoded_content_within_conditional_comments', $data['all']['hardcoded']['within_conditional_comments'] );
-		    }
+
+			if (isset($data['all']['hardcoded']['within_conditional_comments']) && ! empty($data['all']['hardcoded']['within_conditional_comments'])) {
+				ObjectCache::wpacu_cache_set( 'wpacu_hardcoded_content_within_conditional_comments', $data['all']['hardcoded']['within_conditional_comments'] );
+			}
 
 		    ob_start();
 		    // $totalHardcodedTags is set here
 		    include_once WPACU_PLUGIN_DIR.'/templates/meta-box-loaded-assets/_assets-hardcoded-list.php'; // generate $hardcodedTagsOutput
 		    $output = ob_get_clean();
 
-		    return json_encode( array(
+		    return wp_json_encode( array(
 			    'output' => $output,
 			    'total_hardcoded_assets' => $totalHardcodedTags
 		    ) );
-	    };
+	    }
 
-	    echo $wpacuPrintHardcodedManagementList( $jsonH, $wpacuSettings );
+	    echo wpacuPrintHardcodedManagementList( $jsonH, $wpacuSettings );
 
 	    exit();
     }
 
 	/**
-	 * @return false|mixed|string|void
+	 *
 	 */
 	public function ajaxCheckExternalUrlsForStatusCode()
     {
@@ -2544,14 +2571,14 @@ SQL;
             }
         }
 
-	    echo json_encode($checkUrls);
+	    echo wp_json_encode($checkUrls);
 	    exit();
     }
 
 	/**
 	 * @return void
 	 */
-	public function ajaxFetchActivePluginsIcons()
+	public function ajaxFetchActivePluginsIconsFromWordPressOrg()
 	{
 		if ( ! isset($_POST['wpacu_nonce']) ) {
 			echo 'Error: The security nonce was not sent for verification. Location: '.__METHOD__;
@@ -2573,13 +2600,9 @@ SQL;
 
         echo 'POST DATA: '.print_r($_POST, true)."\n\n";
 
-        $forcePluginIconsDownload = isset($_POST['wpacu_force_fetch']) ? ($_POST['wpacu_force_fetch'] === 'true') : false;
+        echo '- Downloading from WordPress.org'."\n\n";
 
-        if ($forcePluginIconsDownload) {
-            echo '- Forcing re-download from WordPress.org'."\n\n";
-        }
-
-        $activePluginsIcons = Misc::fetchActiveFreePluginsIcons(false, $forcePluginIconsDownload) ?: array();
+        $activePluginsIcons = Misc::fetchActiveFreePluginsIconsFromWordPressOrg();
 
         if ($activePluginsIcons && is_array($activePluginsIcons) && ! empty($activePluginsIcons)) {
             echo print_r($activePluginsIcons, true)."\n";
@@ -2592,7 +2615,7 @@ SQL;
 	 */
 	public function ajaxFetchActivePluginsJsFooterCode()
 	{
-	    if (! (isset($_GET['page']) && strpos($_GET['page'], WPACU_PLUGIN_ID . '_') === 0)) {
+	    if (! Menu::isPluginPage()) {
 	        return;
         }
 
@@ -2602,7 +2625,9 @@ SQL;
 
  		$forcePluginIconsDownload = isset($_GET['wpacu_force_plugin_icons_fetch']);
 
-		if (! $forcePluginIconsDownload && get_transient('wpacu_active_plugins_icons')) {
+        $triggerPluginIconsDownload = $forcePluginIconsDownload || ! get_transient('wpacu_active_plugins_icons');
+
+		if (! $triggerPluginIconsDownload) {
 			return;
 		}
 		?>
@@ -2610,17 +2635,8 @@ SQL;
             jQuery(document).ready(function($) {
                 var wpacuDataToSend = {
                     'action': '<?php echo WPACU_PLUGIN_ID.'_fetch_active_plugins_icons'; ?>',
-                    'wpacu_force_fetch': false, // default (does not re-download the icons from WordPress.org)
                     'wpacu_nonce': '<?php echo wp_create_nonce('wpacu_fetch_active_plugins_icons'); ?>'
                 };
-
-                <?php
-                if ($forcePluginIconsDownload) {
-                    ?>
-                    wpacuDataToSend['wpacu_force_fetch'] = true;
-                    <?php
-                }
-                ?>
 
                 jQuery.post(ajaxurl, wpacuDataToSend, function(response) {
                     console.log(response);
@@ -2665,26 +2681,12 @@ SQL;
 
 	                if (! empty($localSrc)) {
 		                $data['all']['styles'][$key]->baseUrl = $localSrc['base_url'];
+
+		                if (Sorting::matchesWpCoreCriteria($obj, 'styles')) {
+                            $data['all']['styles'][ $key ]->wp = true;
+                            $data['core_styles_loaded']        = true;
+                        }
 	                }
-
-	                $part = str_replace(
-		                array(
-			                'http://',
-			                'https://',
-			                '//'
-		                ),
-		                '',
-		                $obj->src
-	                );
-
-	                $parts     = explode('/', $part);
-	                $parentDir = isset($parts[1]) ? $parts[1] : '';
-
-                    // Loaded from WordPress directories (Core)
-                    if (in_array($parentDir, array('wp-includes', 'wp-admin'))) {
-                        $data['all']['styles'][$key]->wp = true;
-                        $data['core_styles_loaded']      = true;
-                    }
 
                     // Determine source href (starting with '/' but not starting with '//')
                     if (strpos($obj->src, '/') === 0 && strpos($obj->src, '//') !== 0) {
@@ -2730,25 +2732,11 @@ SQL;
 
 	                    if (! empty($localSrc)) {
 		                    $data['all']['scripts'][$key]->baseUrl = $localSrc['base_url'];
-	                    }
 
-                        $part = str_replace(
-                            array(
-                                'http://',
-                                'https://',
-                                '//'
-                            ),
-                            '',
-                            $obj->src
-                        );
-
-	                    $parts     = explode('/', $part);
-	                    $parentDir = isset($parts[1]) ? $parts[1] : '';
-
-                        // Loaded from WordPress directories (Core)
-                        if (in_array($parentDir, array('wp-includes', 'wp-admin')) || strpos($obj->src, '/'.Misc::getPluginsDir('dir_name').'/jquery-updater/js/jquery-') !== false) {
-                            $data['all']['scripts'][$key]->wp = true;
-                            $data['core_scripts_loaded']      = true;
+                            if (Sorting::matchesWpCoreCriteria($obj, 'scripts')) {
+	                            $data['all']['scripts'][ $key ]->wp = true;
+	                            $data['core_scripts_loaded']        = true;
+                            }
                         }
 
                         // Determine source href
@@ -2778,11 +2766,14 @@ SQL;
      * Including 404, date and search pages (they are considered as ONE page with the same rules for any URL variation)
      *
      * @param int $postId
+     * @param bool $returnAsArray
      *
-     * @return string (The returned value must be a JSON one)
+     * @return string|array (The returned value must be a JSON one)
      */
-    public function getAssetsUnloaded($postId = 0)
+    public function getAssetsUnloadedPageLevel($postId = 0, $returnAsArray = false)
     {
+        $defaultEmptyArrayValue = array( 'styles' => array(), 'scripts' => array() );
+
         // Post Type (Overwrites 'front' - home page - if we are in a singular post)
         if ($postId == 0) {
             $postId = (int)$this->getCurrentPostId();
@@ -2790,66 +2781,81 @@ SQL;
 
         $isInAdminPageViaAjax = (is_admin() && defined('DOING_AJAX') && DOING_AJAX);
 
-        if ( empty($this->assetsRemoved) ) {
-            $this->assetsRemoved = json_encode( array( 'styles' => array(), 'scripts' => array() ) );
-	        // For Home Page (latest blog posts)
-	        if ( $postId < 1 && ( $isInAdminPageViaAjax || Misc::isHomePage() ) ) {
-		        $this->assetsRemoved = get_option( WPACU_PLUGIN_ID . '_front_page_no_load' );
-	        } elseif ( $postId > 0 ) {
-		        $this->assetsRemoved = get_post_meta( $postId, '_' . WPACU_PLUGIN_ID . '_no_load', true );
-	        }
+	    $assetsRemovedPageLevel = wp_json_encode( $defaultEmptyArrayValue );
 
-	        @json_decode( $this->assetsRemoved );
-
-	        if ( ! ( Misc::jsonLastError() === JSON_ERROR_NONE ) || empty( $this->assetsRemoved ) || $this->assetsRemoved === '[]' ) {
-		        // Reset value to a JSON formatted one
-		        $this->assetsRemoved = json_encode( array( 'styles' => array(), 'scripts' => array() ) );
-	        }
-
-	        $assetsRemovedDecoded = json_decode( $this->assetsRemoved, ARRAY_A );
-
-	        if (! isset($assetsRemovedDecoded['styles'])) {
-		        $assetsRemovedDecoded['styles'] = array();
-	        }
-
-	        if (! isset($assetsRemovedDecoded['scripts'])) {
-		        $assetsRemovedDecoded['scripts'] = array();
-	        }
-
-            /* [START] Unload CSS/JS on page request for debugging purposes */
-            $assetsUnloadedOnTheFly = array( 'styles' => array(), 'scripts' => array() );
-
-            if ( Misc::getVar( 'get', 'wpacu_unload_css' ) ) {
-                $cssOnTheFlyList = $this->unloadAssetOnTheFly( 'css' );
-
-                if ( ! empty( $cssOnTheFlyList ) ) {
-                    foreach ( $cssOnTheFlyList as $cssHandle ) {
-                        if ( ! in_array( $cssHandle, $assetsRemovedDecoded['styles'] ) ) {
-                            $assetsRemovedDecoded['styles'][] = $assetsUnloadedOnTheFly['styles'][] = $cssHandle;
-                        }
-                    }
-                }
-            }
-
-            if ( Misc::getVar( 'get', 'wpacu_unload_js' ) ) {
-                $jsOnTheFlyList = $this->unloadAssetOnTheFly( 'js' );
-
-                if ( ! empty( $jsOnTheFlyList ) ) {
-                    foreach ( $jsOnTheFlyList as $jsHandle ) {
-                        if ( ! in_array( $jsHandle, $assetsRemovedDecoded['scripts'] ) ) {
-                            $assetsRemovedDecoded['scripts'][] = $assetsUnloadedOnTheFly['scripts'][] = $jsHandle;
-                        }
-                    }
-                }
-            }
-
-            ObjectCache::wpacu_cache_add( 'wpacu_assets_unloaded_list_page_request', $assetsUnloadedOnTheFly );
-            /* [END] Unload CSS/JS on page request for debugging purposes */
-
-	        $this->assetsRemoved = json_encode( $assetsRemovedDecoded );
+        // For Home Page (latest blog posts)
+        if ( $postId < 1 && ( $isInAdminPageViaAjax || Misc::isHomePage() ) ) {
+            $assetsRemovedPageLevel = get_option( WPACU_PLUGIN_ID . '_front_page_no_load' );
+        } elseif ( $postId > 0 ) { // Singular Page
+            $assetsRemovedPageLevel = get_post_meta( $postId, '_' . WPACU_PLUGIN_ID . '_no_load', true );
         }
 
-	    return $this->assetsRemoved;
+        @json_decode( $assetsRemovedPageLevel );
+
+        if ( ! ( Misc::jsonLastError() === JSON_ERROR_NONE ) || empty( $assetsRemovedPageLevel ) || $assetsRemovedPageLevel === '[]' ) {
+            // Reset value to a JSON formatted one
+	        $assetsRemovedPageLevel = wp_json_encode( $defaultEmptyArrayValue );
+        }
+
+        $assetsRemovedDecoded = json_decode( $assetsRemovedPageLevel, ARRAY_A );
+
+        if (! isset($assetsRemovedDecoded['styles'])) {
+            $assetsRemovedDecoded['styles'] = array();
+        }
+
+        if (! isset($assetsRemovedDecoded['scripts'])) {
+            $assetsRemovedDecoded['scripts'] = array();
+        }
+
+        /* [START] Unload CSS/JS on page request for debugging purposes */
+        $assetsUnloadedOnTheFly = $defaultEmptyArrayValue;
+
+        if ( Misc::getVar( 'get', 'wpacu_unload_css' ) ) {
+            $cssOnTheFlyList = $this->unloadAssetOnTheFly( 'css' );
+
+            if ( ! empty( $cssOnTheFlyList ) ) {
+                foreach ( $cssOnTheFlyList as $cssHandle ) {
+                    if ( ! in_array( $cssHandle, $assetsRemovedDecoded['styles'] ) ) {
+                        $assetsRemovedDecoded['styles'][] = $assetsUnloadedOnTheFly['styles'][] = $cssHandle;
+                    }
+                }
+            }
+        }
+
+        if ( Misc::getVar( 'get', 'wpacu_unload_js' ) ) {
+            $jsOnTheFlyList = $this->unloadAssetOnTheFly( 'js' );
+
+            if ( ! empty( $jsOnTheFlyList ) ) {
+                foreach ( $jsOnTheFlyList as $jsHandle ) {
+                    if ( ! in_array( $jsHandle, $assetsRemovedDecoded['scripts'] ) ) {
+                        $assetsRemovedDecoded['scripts'][] = $assetsUnloadedOnTheFly['scripts'][] = $jsHandle;
+                    }
+                }
+            }
+        }
+
+        ObjectCache::wpacu_cache_add( 'wpacu_assets_unloaded_list_page_request', $assetsUnloadedOnTheFly );
+        /* [END] Unload CSS/JS on page request for debugging purposes */
+
+	    $assetsRemovedPageLevel = wp_json_encode( $assetsRemovedDecoded );
+
+        if ($returnAsArray) {
+	        $assetsRemovedPageLevel = (array)@json_decode($assetsRemovedPageLevel);
+
+	        // Make sure there are no objects in the array to avoid any PHP errors later on in PHP 8+
+	        foreach ( array( 'styles', 'scripts' ) as $assetType ) {
+		        if ( isset( $assetsRemovedPageLevel[ $assetType ] ) ) {
+			        $assetsRemovedPageLevel[ $assetType ] = (array)$assetsRemovedPageLevel[ $assetType ];
+		        }
+	        }
+        }
+
+        // Hmm, perhaps one of the filters was incorrectly used and returned an array instead of a JSON format; autocorrect this to avoid PHP errors
+        if (! $returnAsArray && is_array($assetsRemovedPageLevel)) {
+            return wp_json_encode( $defaultEmptyArrayValue );
+        }
+
+	    return $assetsRemovedPageLevel;
     }
 
 	/**
@@ -2942,7 +2948,7 @@ SQL;
 			}
 
 			// External file? Use a different approach
-			// Return a HTML code that will be parsed via AJAX through JavaScript
+			// Return an HTML code that will be parsed via AJAX through JavaScript
 			$isExternalFile = (! $isRelInternalPath &&
 			                   (! (isset($obj->wp) && $obj->wp === 1))
 			                   && strpos($src, $siteUrl) !== 0);
@@ -2957,32 +2963,46 @@ SQL;
 				       '<span style="display: none;"><img style="width: 20px; height: 20px;" alt="" align="top" width="20" height="20" src="'.includes_url('images/spinner-2x.gif').'"></span>';
 			}
 
-			// Local file? Core or from a plugin / theme?
-			if (strpos($obj->src, $siteUrl) !== false) {
-				// Local Plugin / Theme File
-				// Could be a Staging site that is having the Live URL in the General Settings
-				$src = ltrim(str_replace($siteUrl, '', $obj->src), '/');
-			} elseif ((isset($obj->wp) && $obj->wp === 1) || $isRelInternalPath) {
-				// Local WordPress Core File
-				$src = ltrim($obj->src, '/');
-			}
+			$forAssetType = $pathToFile = false;
 
-			$srcAlt = $src;
+            if ( stripos( $src, '.css' ) !== false ) {
+                $forAssetType = 'css';
+            } elseif ( stripos( $src, '.js' ) !== false ) {
+                $forAssetType = 'js';
+            }
 
-			if (strpos($src, '../') === 0) {
-				$srcAlt = str_replace('../', '', $srcAlt);
-			}
+            if ($forAssetType) {
+	            $pathToFile = OptimizeCommon::getLocalAssetPath( $src, $forAssetType );
+            }
 
-			$pathToFile = Misc::getWpRootDirPath() . $srcAlt;
+			if ( ! is_file($pathToFile) ) { // Fallback, old code...
+				// Local file? Core or from a plugin / theme?
+				if ( strpos( $obj->src, $siteUrl ) !== false ) {
+					// Local Plugin / Theme File
+					// Could be a Staging site that is having the Live URL in the General Settings
+					$src = ltrim( str_replace( $siteUrl, '', $obj->src ), '/' );
+				} elseif ( ( isset( $obj->wp ) && $obj->wp === 1 ) || $isRelInternalPath ) {
+					// Local WordPress Core File
+					$src = ltrim( $obj->src, '/' );
+				}
 
-			if (strpos($pathToFile, '?ver') !== false) {
-				list($pathToFile) = explode('?ver', $pathToFile);
-			}
+				$srcAlt = $src;
 
-			// It can happen that the CSS/JS has extra parameters (rare cases)
-			foreach (array('.css?', '.js?') as $needlePart) {
-				if (strpos($pathToFile, $needlePart) !== false) {
-					list($pathToFile) = explode('?', $pathToFile);
+				if ( strpos( $src, '../' ) === 0 ) {
+					$srcAlt = str_replace( '../', '', $srcAlt );
+				}
+
+				$pathToFile = Misc::getWpRootDirPath() . $srcAlt;
+
+				if ( strpos( $pathToFile, '?ver' ) !== false ) {
+					list( $pathToFile ) = explode( '?ver', $pathToFile );
+				}
+
+				// It can happen that the CSS/JS has extra parameters (rare cases)
+				foreach ( array( '.css?', '.js?' ) as $needlePart ) {
+					if ( strpos( $pathToFile, $needlePart ) !== false ) {
+						list( $pathToFile ) = explode( '?', $pathToFile );
+					}
 				}
 			}
 
@@ -3100,7 +3120,7 @@ SQL;
     /**
      * @return bool
      */
-    public function isSingularPage()
+    public static function isSingularPage()
     {
         return (self::$vars['is_woo_shop_page'] || is_singular() || Misc::isBlogPage());
     }
@@ -3136,9 +3156,7 @@ SQL;
                 list($siteUrlAfterProtocol) = explode('://', get_site_url());
                 $currentPageUrlAfterProtocol = parse_url(site_url(), PHP_URL_HOST) . $_SERVER['REQUEST_URI'];
 
-                if ($siteUrlAfterProtocol != $currentPageUrlAfterProtocol && (strpos($siteUrlAfterProtocol,
-                            '/shop') !== false)
-                ) {
+                if ($siteUrlAfterProtocol != $currentPageUrlAfterProtocol && (strpos($siteUrlAfterProtocol, '/shop') !== false)) {
 	                self::$vars['woo_url_not_match'] = true;
                 }
             }
@@ -3157,12 +3175,10 @@ SQL;
 
 	    // [wpacu_lite]
         // Undetectable? The page is not a singular one nor the home page
-        // It's likely an archive, category page (WooCommerce), 404 page etc.
+        // It's likely an archive, category page (WooCommerce), 404 page manageable in the Pro version etc.
         if (! $this->currentPostId && ! Misc::isHomePage()) {
-	        $this->isUpdateable = false;
-
-	        }
-
+            $this->isUpdateable = false;
+        }
 	    // [/wpacu_lite]
 
         return $this->currentPostId;
@@ -3217,6 +3233,58 @@ SQL;
 		}
 
 		return $handleRowStatus;
+	}
+
+	/**
+	 * @param $postType
+	 *
+	 * @return array
+	 */
+	public static function getAllSetTaxonomies($postType)
+	{
+		if ( ! $postType ) {
+			return array();
+		}
+
+		$postTaxonomies = get_object_taxonomies($postType);
+
+		if ($postType === 'post') {
+			$postFormatKey = array_search('post_format', $postTaxonomies);
+			unset($postTaxonomies[$postFormatKey]);
+		}
+
+		if (empty($postTaxonomies)) {
+			// There are no taxonomies associate with the $postType or $postType is not valid
+			return array();
+		}
+
+		$allPostTypeTaxonomyTerms = get_terms( array(
+			'taxonomy' => $postTaxonomies,
+			'hide_empty' => true,
+		) );
+
+		$finalList = array();
+
+		foreach ($allPostTypeTaxonomyTerms as $obj) {
+			$taxonomyObj = get_taxonomy($obj->taxonomy);
+
+			if ( ! $taxonomyObj->show_ui ) {
+				continue;
+			}
+			$finalList[$taxonomyObj->label][] = (array)$obj;
+		}
+
+        if ( ! empty($finalList) ) {
+	        foreach ( array_keys( $finalList ) as $taxonomyLabel ) {
+		        usort( $finalList[ $taxonomyLabel ], static function( $a, $b ) {
+			        return strcasecmp( $a['name'], $b['name'] );
+		        } );
+	        }
+
+	        ksort($finalList);
+        }
+
+		return $finalList;
 	}
 
 	/**
@@ -3307,14 +3375,17 @@ SQL;
 	/**
 	 * Situations when the assets will not be prevented from loading
 	 * e.g. test mode and a visitor accessing the page, an AJAX request from the Dashboard to print all the assets
+     *
+	 * @param array $ignoreList
+	 *
 	 * @return bool
 	 */
-	public function preventAssetsSettings()
+	public function preventAssetsSettings($ignoreList = array())
 	{
 		// This request specifically asks for all the assets to be loaded in order to print them in the assets management list
 		// This is for the AJAX requests within the Dashboard, thus the admin needs to see all the assets,
 		// including ones marked for unload, in case he/she decides to change their rules
-		if ($this->isGetAssetsCall) {
+		if ($this->isGetAssetsCall && ! in_array('assets_call', $ignoreList)) {
 			return true;
 		}
 
@@ -3441,26 +3512,32 @@ SQL;
 			}
 
 			if (Main::instance()->settings['test_mode']) {
-				$consoleMessage = sprintf(__('%s: "TEST MODE" ENABLED (any settings or unloads will be visible ONLY to you, the logged-in administrator)', 'wp-asset-clean-up'), WPACU_PLUGIN_TITLE);
-				$testModeNotice = __('"Test Mode" is ENABLED. Any settings or unloads will be visible ONLY to you, the logged-in administrator.', 'wp-asset-clean-up');
+				$consoleMessage = sprintf(esc_html__('%s: "TEST MODE" ENABLED (any settings or unloads will be visible ONLY to you, the logged-in administrator)', 'wp-asset-clean-up'), WPACU_PLUGIN_TITLE);
+				$testModeNotice = esc_html__('"Test Mode" is ENABLED. Any settings or unloads will be visible ONLY to you, the logged-in administrator.', 'wp-asset-clean-up');
 			} else {
-				$consoleMessage = sprintf(__('%s: "LIVE MODE" (test mode is not enabled, thus, all the plugin changes are visible for everyone: you, the logged-in administrator and the regular visitors)', 'wp-asset-clean-up'), WPACU_PLUGIN_TITLE);
-				$testModeNotice = __('The website is in LIVE MODE as "Test Mode" is not enabled. All the plugin changes are visible for everyone: logged-in administrators and regular visitors.', 'wp-asset-clean-up');
+				$consoleMessage = sprintf(esc_html__('%s: "LIVE MODE" (test mode is not enabled, thus, all the plugin changes are visible for everyone: you, the logged-in administrator and the regular visitors)', 'wp-asset-clean-up'), WPACU_PLUGIN_TITLE);
+				$testModeNotice = esc_html__('The website is in LIVE MODE as "Test Mode" is not enabled. All the plugin changes are visible for everyone: logged-in administrators and regular visitors.', 'wp-asset-clean-up');
 			}
-
-			$htmlCommentNote = sprintf(__('NOTE: These "%s: Page Speed Booster" messages are only shown to you, the HTML comment is not visible for the regular visitor.', 'wp-asset-clean-up'), WPACU_PLUGIN_TITLE);
-
-			$typeAttr = Misc::getScriptTypeAttribute();
 			?>
             <!--
-            <?php echo $htmlCommentNote; ?>
+            <?php echo sprintf(esc_html__('NOTE: These "%s: Page Speed Booster" messages are only shown to you, the HTML comment is not visible for the regular visitor.', 'wp-asset-clean-up'), WPACU_PLUGIN_TITLE); ?>
 
-            <?php echo $testModeNotice; ?>
+            <?php echo esc_html__($testModeNotice); ?>
             -->
-            <script <?php echo $typeAttr; ?> data-wpacu-own-inline-script="true">
-                console.log('<?php echo $consoleMessage; ?>');
+            <script <?php echo Misc::getScriptTypeAttribute(); ?> data-wpacu-own-inline-script="true">
+                console.log('<?php echo esc_js($consoleMessage); ?>');
             </script>
 			<?php
 		});
+	}
+
+	/**
+	 *
+	 */
+	public function fallbacks()
+	{
+		// Fallback for the old filters (e.g. Pro version below 1.2.0.7)
+		add_filter('wpacu_filter_styles_list_unload',  function ($list) { return apply_filters('wpacu_filter_styles',  $list); });
+		add_filter('wpacu_filter_scripts_list_unload', function ($list) { return apply_filters('wpacu_filter_scripts', $list); });
 	}
 }

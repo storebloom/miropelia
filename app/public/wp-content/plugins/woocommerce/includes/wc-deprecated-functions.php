@@ -11,6 +11,8 @@
  */
 
 use Automattic\Jetpack\Constants;
+use Automattic\WooCommerce\Internal\Admin\Logging\Settings;
+use Automattic\WooCommerce\Utilities\LoggingUtil;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -1098,7 +1100,7 @@ function add_woocommerce_term_meta( $term_id, $meta_key, $meta_value, $unique = 
  * @deprecated 3.6.0
  * @param int    $term_id    Term ID.
  * @param string $meta_key   Meta key.
- * @param string $meta_value Meta value (default: '').
+ * @param mixed  $meta_value Meta value (default: '').
  * @param bool   $deprecated Deprecated param (default: false).
  * @return bool
  */
@@ -1124,16 +1126,56 @@ function get_woocommerce_term_meta( $term_id, $key, $single = true ) {
 	return function_exists( 'get_term_meta' ) ? get_term_meta( $term_id, $key, $single ) : get_metadata( 'woocommerce_term', $term_id, $key, $single );
 }
 
-if ( ! function_exists( 'is_ajax' ) ) {
+/**
+ * Registers the default log handler.
+ *
+ * @deprecated 8.6.0
+ * @since 3.0
+ * @param array $handlers Handlers.
+ * @return array
+ */
+function wc_register_default_log_handler( $handlers = array() ) {
+	wc_deprecated_function( 'wc_register_default_log_handler', '8.6.0' );
 
-	/**
-	 * Is_ajax - Returns true when the page is loaded via ajax.
-	 *
-	 * @deprecated 6.1.0
-	 * @return bool
-	 */
-	function is_ajax() {
-		wc_deprecated_function( 'is_ajax', '6.1.0', 'wp_doing_ajax' );
-		return function_exists( 'wp_doing_ajax' ) ? wp_doing_ajax() : Constants::is_defined( 'DOING_AJAX' );
-	}
+	$default_handler = wc_get_container()->get( Settings::class )->get_default_handler();
+
+	array_push( $handlers, new $default_handler() );
+
+	return $handlers;
+}
+
+/**
+ * Get a log file path.
+ *
+ * @deprecated 8.6.0
+ * @since 2.2
+ *
+ * @param string $handle name.
+ * @return string the log file path.
+ */
+function wc_get_log_file_path( $handle ) {
+	wc_deprecated_function( 'wc_get_log_file_path', '8.6.0' );
+
+	$directory = LoggingUtil::get_log_directory();
+	$file_id   = LoggingUtil::generate_log_file_id( $handle, null, time() );
+	$hash      = LoggingUtil::generate_log_file_hash( $file_id );
+
+	return "{$directory}{$file_id}-{$hash}.log";
+}
+
+/**
+ * Get a log file name.
+ *
+ * @since 3.3
+ *
+ * @param string $handle Name.
+ * @return string The log file name.
+ */
+function wc_get_log_file_name( $handle ) {
+	wc_deprecated_function( 'wc_get_log_file_name', '8.6.0' );
+
+	$file_id = LoggingUtil::generate_log_file_id( $handle, null, time() );
+	$hash    = LoggingUtil::generate_log_file_hash( $file_id );
+
+	return "{$file_id}-{$hash}";
 }

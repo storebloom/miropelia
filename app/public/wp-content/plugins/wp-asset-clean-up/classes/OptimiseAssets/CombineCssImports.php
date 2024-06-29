@@ -235,10 +235,15 @@ class CombineCssImports extends Minify
 	 */
 	protected function alterImportsBetweenComments($css)
 	{
-		preg_match_all('~/\*.*?@import(.*?)\*/~', $css, $commentsMatches);
+		// RegEx Source: https://blog.ostermiller.org/finding-comments-in-source-code-using-regular-expressions/
+		preg_match_all('#/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/#', $css, $commentsMatches);
 
 		if (isset($commentsMatches[0]) && ! empty($commentsMatches[0])) {
 			foreach ($commentsMatches[0] as $commentMatch) {
+				if (strpos($commentMatch, '@import') === false) {
+					continue; // the comment needs to have @import
+				}
+
 				$newComment = str_replace('@import', '(wpacu)(at)import', $commentMatch);
 				$css = str_replace($commentMatch, $newComment, $css);
 			}
@@ -246,7 +251,6 @@ class CombineCssImports extends Minify
 
 		return $css;
 	}
-
 
 	/**
 	 * Import files into the CSS, base64-sized.
@@ -312,7 +316,7 @@ class CombineCssImports extends Minify
 		// loop CSS data (raw data and files)
 		foreach ($this->data as $source => $css) {
 			// Some developers might have wrapped @import between comments
-			// No import for those ones
+			// No import for those
 			$css = $this->alterImportsBetweenComments($css);
 
 			$source = is_int($source) ? '' : $source;
@@ -423,12 +427,12 @@ class CombineCssImports extends Minify
 
 		// loop all urls
 		foreach ($matches as $match) {
-			// determine if it's a url() or an @import match
+			// determine if it's an url() or an @import match
 			$type = (strpos($match[0], '@import') === 0 ? 'import' : 'url');
 
 			$url = $match['path'];
 			if ($this->canImportByPath($url)) {
-				// attempting to interpret GET-params makes no sense, so let's discard them for awhile
+				// attempting to interpret GET-params makes no sense, so let's discard them for a while
 				$params = strrchr($url, '?');
 				$url = $params ? substr($url, 0, -strlen($params)) : $url;
 

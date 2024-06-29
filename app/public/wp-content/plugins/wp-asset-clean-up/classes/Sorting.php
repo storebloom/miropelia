@@ -24,7 +24,7 @@ class Sorting
 					continue;
 				}
 
-				if ($assetAlt = self::matchesWpCoreCriteria($styleObj)) {
+				if ($assetAlt = self::matchesWpCoreCriteria($styleObj, 'styles')) {
 					if (isset($assetAlt->wp)) {
 						$styleObj->wp = true;
 					}
@@ -50,7 +50,7 @@ class Sorting
 					continue;
 				}
 
-				if ($assetAlt = self::matchesWpCoreCriteria($scriptObj)) {
+				if ($assetAlt = self::matchesWpCoreCriteria($scriptObj, 'scripts')) {
 					if (isset($assetAlt->wp)) {
 						$scriptObj->wp = true;
 					}
@@ -110,7 +110,7 @@ class Sorting
 				$src = isset($asset->src) ? $asset->src : '';
 				$miscLocalSrc = Misc::getLocalSrc($src);
 
-				if ($assetAlt = self::matchesWpCoreCriteria($asset)) {
+				if ($assetAlt = self::matchesWpCoreCriteria($asset, $assetType)) {
 					// Core Files
 					$asset->locationMain = 'wp_core';
 					$asset->locationChild = 'none';
@@ -179,21 +179,59 @@ class Sorting
 
 	/**
 	 * @param $asset
+	 * @param $assetType
 	 *
 	 * @return bool
 	 */
-	public static function matchesWpCoreCriteria($asset)
+	public static function matchesWpCoreCriteria($asset, $assetType)
 	{
 		global $wp_version;
 
 		$src = isset($asset->src) ? $asset->src : '';
 
-		$isJQueryHandle       = in_array($asset->handle, array('jquery', 'jquery-core', 'jquery-migrate'));
-		$startsWithWpIncludes = strpos($src,'/wp-includes/') === 0;
+		$localSrc = Misc::getLocalSrc($asset->src);
+
+		$srcToUse = $src;
+
+		if (! empty($localSrc) && isset($localSrc['rel_src']) && $localSrc['rel_src']) {
+			$srcToUse = $localSrc['rel_src']; // the relative path
+		}
+
+		$isJQueryHandle       = ($assetType === 'scripts') && in_array($asset->handle, array('jquery', 'jquery-core', 'jquery-migrate'));
+		$isJQueryUpdater      = ($assetType === 'scripts') && strpos($asset->src, '/' . Misc::getPluginsDir( 'dir_name' ) . '/jquery-updater/js/jquery-') !== false;
+
+		$startsWithWpIncludes = strpos($srcToUse,'wp-includes/') === 0;
+		$startsWithWpAdmin    = strpos($srcToUse,'wp-admin/') === 0;
 		$wpCoreOnJetpackCdn   = strpos($src, '.wp.com/c/'.$wp_version.'/wp-includes/') !== false;
 
-		if (! ($isJQueryHandle || $startsWithWpIncludes || $wpCoreOnJetpackCdn)) {
-			return false;
+		$coreCssHandlesList = <<<LIST
+global-styles
+global-styles-css-custom-properties
+wp-block-directory
+wp-block-library
+wp-block-styles
+wp-block-library-theme
+wp-block-pattern
+wp-webfonts
+wp-block-post-date
+LIST;
+		$cssCoreHandles = array_merge(
+			explode("\n", $coreCssHandlesList),
+			Misc::getWpCoreCssHandlesFromWpIncludesBlocks() // Source: /wp-includes/blocks/
+		);
+
+		$coreJsHandlesList = <<<LIST
+admin-bar
+code-editor
+jquery-ui-datepicker
+LIST;
+		$jsCoreHandles = explode("\n", $coreJsHandlesList);
+
+		$isCssCoreHandleFromWpIncludesBlocks = ($assetType === 'styles')  && in_array($asset->handle, $cssCoreHandles);
+		$isJsCoreHandleFromWpIncludesBlocks  = ($assetType === 'scripts') && in_array($asset->handle, $jsCoreHandles);
+
+		if ( ! ($isJQueryHandle || $isJQueryUpdater || $startsWithWpIncludes || $startsWithWpAdmin || $isCssCoreHandleFromWpIncludesBlocks || $isJsCoreHandleFromWpIncludesBlocks || $wpCoreOnJetpackCdn) ) {
+			return false; // none of the above conditions matched, thus, this is not a WP core file
 		}
 
 		$assetAlt = $asset;

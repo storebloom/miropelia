@@ -8,9 +8,9 @@ namespace WpAssetCleanUp;
 class Menu
 {
 	/**
-	 * @var array
+	 * @var array|string[]
 	 */
-	public $allMenuPages = array();
+	public static $allMenuPages = array();
 
 	/**
 	 * @var string
@@ -27,7 +27,7 @@ class Menu
      */
     public function __construct()
     {
-    	$this->allMenuPages = array(
+    	self::$allMenuPages = array(
 		    WPACU_PLUGIN_ID . '_getting_started',
 		    WPACU_PLUGIN_ID . '_settings',
 		    WPACU_PLUGIN_ID . '_assets_manager',
@@ -45,7 +45,7 @@ class Menu
         add_action('admin_menu', array($this, 'activeMenu'));
 
         if (isset($_GET['page']) && $_GET['page'] === WPACU_PLUGIN_ID . '_go_pro') {
-        	header('Location: '.WPACU_PLUGIN_GO_PRO_URL.'?utm_source=plugin_go_pro');
+        	header('Location: '.apply_filters('wpacu_go_pro_affiliate_link', WPACU_PLUGIN_GO_PRO_URL.'?utm_source=plugin_go_pro'));
         	exit();
         }
 
@@ -148,6 +148,7 @@ class Menu
             array(new Info, 'help')
         );
 
+		// [wpacu_lite]
 	    // Upgrade to "Go Pro" | Redirects to sale page
 	    add_submenu_page(
 		    self::$_slug,
@@ -157,13 +158,14 @@ class Menu
 		    WPACU_PLUGIN_ID . '_go_pro',
 		    function() {}
 	    );
+		// [/wpacu_lite]
 
 	    // Add "Asset CleanUp Pro" Settings Link to the main "Settings" menu within the Dashboard
 	    // For easier navigation
 	    $GLOBALS['submenu']['options-general.php'][] = array(
 		    WPACU_PLUGIN_TITLE,
 		    self::getAccessCapability(),
-		    admin_url( 'admin.php?page=' . WPACU_PLUGIN_ID . '_settings'),
+		    esc_url(admin_url( 'admin.php?page=' . WPACU_PLUGIN_ID . '_settings')),
 		    WPACU_PLUGIN_TITLE,
 	    );
 
@@ -187,6 +189,14 @@ class Menu
 
 		// self::$_capability default value: "administrator"
 		return current_user_can(self::getAccessCapability());
+	}
+
+	/**
+	 * @return bool
+	 */
+	public static function isPluginPage()
+	{
+		return isset($_GET['page']) && in_array($_GET['page'], self::$allMenuPages);
 	}
 
 	/**
@@ -229,12 +239,12 @@ class Menu
 		}
 
 		// Do not show the management link to specific post types that are marked as "public", but not relevant such as "ct_template" from Oxygen Builder
-		if (in_array($post->post_type, array('ct_template', 'oxy_user_library'))) {
+		if (in_array($post->post_type, MetaBoxes::$noMetaBoxesForPostTypes)) {
 			return $actions;
 		}
 
 		// Build your links URL.
-		$url = admin_url( 'admin.php?page=wpassetcleanup_assets_manager' );
+		$url = esc_url(admin_url( 'admin.php?page=wpassetcleanup_assets_manager' ));
 
 		// Maybe put in some extra arguments based on the post status.
 		$edit_link = add_query_arg(
@@ -244,7 +254,7 @@ class Menu
 			), $url
 		);
 
-		// Only show it to the user that has "administrator" access and it's in the following list (if a certain list of admins is provided)
+		// Only show it to the user that has "administrator" access, and it's in the following list (if a certain list of admins is provided)
 		// "Settings" -> "Plugin Usage Preferences" -> "Allow managing assets to:"
 		if (self::userCanManageAssets() && Main::currentUserCanViewAssetsList()) {
 			/*
@@ -266,9 +276,7 @@ class Menu
 	 */
 	public function pluginPagesAccessDenied()
 	{
-		if ( ! (isset($_GET['page'])
-		        && strpos($_GET['page'], WPACU_PLUGIN_ID . '_') === 0
-		        && in_array($_GET['page'], $this->allMenuPages)) ) {
+		if ( ! self::isPluginPage() ) {
 			// Not an Asset CleanUp page
 			return;
 		}

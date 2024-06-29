@@ -143,9 +143,7 @@ class Browser
     const OPERATING_SYSTEM_UNKNOWN = 'unknown';
 
 	/**
-	 * Browser constructor.
-	 *
-	 * @param string $userAgent
+	 * @param $userAgent
 	 */
 	public function __construct($userAgent = '')
     {

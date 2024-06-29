@@ -4,10 +4,10 @@ Contributors: sharethis, scottstorebloom, scottmweaver
 Tags: review, sharethis, share this, impression, rating, emoji, ranking, thoughts
 Author URI: https://sharethis.com/
 Author: ShareThis
-Requires at least: 4.5
-Tested up to: 5.8
-Stable tag: 1.2.1
-Version: 1.2.1
+Requires at least: 5.5
+Tested up to: 6.0.3
+Stable tag: 1.2.2
+Version: 1.2.2
 License: GPLv2 or later
 
 Integrate ShareThis reviews seamlessly into your Wordpress site.
@@ -59,27 +59,30 @@ YES!!  To show the reviews, ratings or impressions sections on any post or page 
 
 == Changelog ==
 
+= 1.2.2 =
+* Add source
+
 = 1.2.1 =
-- Tested with WordPress 5.8
-- Code improvements.
+* Tested with WordPress 5.8
+* Code improvements.
 
 = 1.2.0 =
-- Fix review management.
-- Fix duplicate review display.
+* Fix review management.
+* Fix duplicate review display.
 
 = 1.1.2 =
-- Addition of 3 new blocks.
+* Addition of 3 new blocks.
 
 = 1.1.1 =
-- Fix is_plugin_active error
+* Fix is_plugin_active error
 
 = 1.1.0 =
-- Tested WordPress 5+ Compatibility.
-- Fixed display issues on posts.
-- Discouraged accidental duplicate reviews.
-- Fixed approval method to avoid non-approved reviews from showing.
-- Add cta button copy option.
-- Add cta button color option.
+* Tested WordPress 5+ Compatibility.
+* Fixed display issues on posts.
+* Discouraged accidental duplicate reviews.
+* Fixed approval method to avoid non-approved reviews from showing.
+* Add cta button copy option.
+* Add cta button color option.
 
 = 1.0.0 =
-- Brand new plugin submission.
+* Brand new plugin submission.

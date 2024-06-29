@@ -10,8 +10,8 @@ if (! isset($data)) {
 <?php
 if ( ! \WpAssetCleanUp\Main::instance()->currentUserCanViewAssetsList() ) {
 	?>
-    <div class="error" style="padding: 10px;">
-		<?php echo sprintf(__('Only the administrators listed here can manage CSS/JS assets: %s"Settings" &#10141; "Plugin Usage Preferences" &#10141; "Allow managing assets to:"%s. If you believe you should have access to managing CSS/JS assets, you can add yourself to that list.', 'wp-asset-clean-up'), '<a target="_blank" href="'.admin_url('admin.php?page=wpassetcleanup_settings&wpacu_selected_tab_area=wpacu-setting-plugin-usage-settings').'">', '</a>'); ?></div>
+    <div class="wpacu-error" style="padding: 10px;">
+		<?php echo sprintf(__('Only the administrators listed here can manage CSS/JS assets: %s"Settings" &#10141; "Plugin Usage Preferences" &#10141; "Allow managing assets to:"%s. If you believe you should have access to managing CSS/JS assets, you can add yourself to that list.', 'wp-asset-clean-up'), '<a target="_blank" href="'.esc_url(admin_url('admin.php?page=wpassetcleanup_settings&wpacu_selected_tab_area=wpacu-setting-plugin-usage-settings')).'">', '</a>'); ?></div>
 	<?php
 	return;
 }
@@ -25,7 +25,6 @@ if ($data['dashboard_edit_not_allowed']) {
 }
 
 $wpacuNoLoadInTargetPage = false;
-$wpacuNoLoadInTargetPageOutput = '';
 
 if ($data['show_on_front'] === 'page' && $data['page_on_front']) {
 	/*
@@ -43,53 +42,15 @@ if ($data['show_on_front'] === 'page' && $data['page_on_front']) {
 	/*
 	* Case 2: Home as latest posts (default)
 	*/
-    if (assetCleanUpHasNoLoadMatches($data['site_url'], true) === 'is_set_in_settings') { // Asset CleanUp Pro is set not to load for the front-page
-        $wpacuNoLoadInTargetPage = 'is_set_in_settings';
-        ob_start();
-        ?>
-        <p class="wpacu_verified">
-            <strong>Target URL:</strong> <a target="_blank" href="<?php echo $data['site_url']; ?>"><span><?php echo $data['site_url']; ?></span></a>
-        </p>
-        <?php
-        $msg = sprintf(__('This homepage\'s URI is matched by one of the RegEx rules you have in <strong>"Settings"</strong> -&gt; <strong>"Plugin Usage Preferences"</strong> -&gt; <strong>"Do not load the plugin on certain pages"</strong>, thus %s is not loaded on that page and no CSS/JS are to be managed. If you wish to view the CSS/JS manager, please remove the matching RegEx rule and reload this page.', 'wp-asset-clean-up'), WPACU_PLUGIN_TITLE);
-        ?>
-        <p class="wpacu-warning"
-           style="margin: 15px 0 0; padding: 10px; font-size: inherit; width: 99%;">
-                <span style="color: red;"
-                      class="dashicons dashicons-info"></span> <?php echo $msg; ?>
-        </p>
-        <?php
-        $wpacuNoLoadInTargetPageOutput = ob_get_clean();
-    } elseif (assetCleanUpHasNoLoadMatches($data['site_url'], true) === 'is_set_in_page') {
-        $wpacuNoLoadInTargetPage = 'is_set_in_page';
-        ob_start();
-        ?>
-        <p class="wpacu_verified">
-            <strong>Target URL:</strong> <a target="_blank" href="<?php echo $data['site_url']; ?>"><span><?php echo $data['site_url']; ?></span></a>
-        </p>
-        <?php
-        $msg = sprintf(__('This homepage\'s URI is matched by the rule you have in the "Page Options", thus %s is not loaded on that page and no CSS/JS are to be managed. If you wish to view the CSS/JS manager, please uncheck the option and reload this page.', 'wp-asset-clean-up'), WPACU_PLUGIN_TITLE);
-        ?>
-        <p class="wpacu-warning"
-           style="margin: 15px 0 0; padding: 10px; font-size: inherit; width: 99%;">
-                <span style="color: red;"
-                      class="dashicons dashicons-info"></span> <?php echo $msg; ?>
-        </p>
-        <?php
-        $wpacuNoLoadInTargetPageOutput = ob_get_clean();
-    }
-
     $strAdminUrl = 'admin.php?page='.WPACU_PLUGIN_ID.'_assets_manager&wpacu_rand='.uniqid(time(), true);
 
     if ( isset($_GET['wpacu_manage_dash']) || isset($_GET['force_manage_dash']) ) { // For debugging purposes
         $strAdminUrl .= '&wpacu_manage_dash';
     }
 
-    $wpacuAdminUrl = admin_url($strAdminUrl);
-
     do_action('wpacu_admin_notices');
     ?>
-    <form id="wpacu_dash_assets_manager_form" method="post" action="<?php echo $wpacuAdminUrl; ?>">
+    <form id="wpacu_dash_assets_manager_form" method="post" action="<?php echo esc_url(admin_url($strAdminUrl)); ?>">
         <input type="hidden"
                name="wpacu_manage_home_page_assets"
                value="1" />
@@ -99,8 +60,31 @@ if ($data['show_on_front'] === 'page' && $data['page_on_front']) {
                value="1" />
         <p><span class="dashicons dashicons-admin-home"></span> <?php _e('Here you can unload files loaded on the home page. "Front page displays" (from "Settings" &#187; "Reading") is set to either "Your latest posts" (in "Settings" &#187; "Reading") OR a special layout (from a theme or plugin) was enabled.', 'wp-asset-clean-up'); ?> <?php echo sprintf(__('Changes will also apply to pages such as %s etc. in case the latest blog posts are paginated.', 'wp-asset-clean-up'), '<code>/page/2</code> <code>page/3</code>'); ?></p>
         <?php
-        if ($wpacuNoLoadInTargetPage) {
-            echo $wpacuNoLoadInTargetPageOutput;
+        $wpacuNoLoadMatchesStatus = assetCleanUpHasNoLoadMatches($data['site_url'], true);
+        if ($wpacuNoLoadInTargetPage = in_array($wpacuNoLoadMatchesStatus, array('is_set_in_settings', 'is_set_in_page'))) {
+	        if ($wpacuNoLoadMatchesStatus === 'is_set_in_settings') { // Asset CleanUp Pro is set not to load for the front-page
+		        ?>
+                <p class="wpacu_verified">
+                    <strong>Target URL:</strong> <a target="_blank" href="<?php echo esc_url($data['site_url']); ?>"><span><?php echo esc_url($data['site_url']); ?></span></a>
+                </p>
+                <p class="wpacu-warning"
+                   style="margin: 15px 0 0; padding: 10px; font-size: inherit; width: 99%;">
+                <span style="color: red;"
+                      class="dashicons dashicons-info"></span> <?php echo sprintf(__('This homepage\'s URI is matched by one of the RegEx rules you have in <strong>"Settings"</strong> -&gt; <strong>"Plugin Usage Preferences"</strong> -&gt; <strong>"Do not load the plugin on certain pages"</strong>, thus %s is not loaded on that page and no CSS/JS are to be managed. If you wish to view the CSS/JS manager, please remove the matching RegEx rule and reload this page.', 'wp-asset-clean-up'), WPACU_PLUGIN_TITLE); ?>
+                </p>
+		        <?php
+	        } elseif ($wpacuNoLoadMatchesStatus === 'is_set_in_page') {
+		        ?>
+                <p class="wpacu_verified">
+                    <strong>Target URL:</strong> <a target="_blank" href="<?php echo esc_url($data['site_url']); ?>"><span><?php echo esc_url($data['site_url']); ?></span></a>
+                </p>
+                <p class="wpacu-warning"
+                   style="margin: 15px 0 0; padding: 10px; font-size: inherit; width: 99%;">
+                <span style="color: red;"
+                      class="dashicons dashicons-info"></span> <?php echo sprintf(__('This homepage\'s URI is matched by the rule you have in the "Page Options", thus %s is not loaded on that page and no CSS/JS are to be managed. If you wish to view the CSS/JS manager, please uncheck the option and reload this page.', 'wp-asset-clean-up'), WPACU_PLUGIN_TITLE); ?>
+                </p>
+		        <?php
+	        }
 
             $data['show_page_options'] = true;
 
@@ -108,6 +92,7 @@ if ($data['show_on_front'] === 'page' && $data['page_on_front']) {
                 $pageOptionsType = 'post';
             } else {
                 $pageOptionsType = 'front_page';
+                $data['post_id'] = 0;
             }
 
             $data['page_options'] = \WpAssetCleanUp\MetaBoxes::getPageOptions($data['post_id'], $pageOptionsType);
@@ -118,17 +103,14 @@ if ($data['show_on_front'] === 'page' && $data['page_on_front']) {
         ?>
             <div id="wpacu_meta_box_content">
                 <?php
-                $wpacuLoadingSpinnerFetchAssets = '<img src="'.admin_url('images/spinner.gif').'" align="top" width="20" height="20" alt="" />';
                 // "Select a retrieval way:" is set to "Direct" (default one) in "Plugin Usage Preferences" -> "Manage in the Dashboard"
                 if ($data['wpacu_settings']['dom_get_type'] === 'direct') {
-                    $wpacuDefaultFetchListStepDefaultStatus   = '<img src="'.admin_url('images/spinner.gif').'" align="top" width="20" height="20" alt="" />&nbsp; Please wait...';
-                    $wpacuDefaultFetchListStepCompletedStatus = '<span style="color: green;" class="dashicons dashicons-yes-alt"></span> Completed';
-                    ?>
-                    <div id="wpacu-list-step-default-status" style="display: none;"><?php echo $wpacuDefaultFetchListStepDefaultStatus; ?></div>
-                    <div id="wpacu-list-step-completed-status" style="display: none;"><?php echo $wpacuDefaultFetchListStepCompletedStatus; ?></div>
+                ?>
+                    <div id="wpacu-list-step-default-status" style="display: none;"><img src="<?php echo esc_url(admin_url('images/spinner.gif')); ?>" align="top" width="20" height="20" alt="" />&nbsp; Please wait...</div>
+                    <div id="wpacu-list-step-completed-status" style="display: none;"><span style="color: green;" class="dashicons dashicons-yes-alt"></span> Completed</div>
                     <div>
                         <ul class="wpacu_meta_box_content_fetch_steps">
-                            <li id="wpacu-fetch-list-step-1-wrap"><strong>Step 1</strong>: Fetch the assets from the home page... <span id="wpacu-fetch-list-step-1-status"><?php echo $wpacuDefaultFetchListStepDefaultStatus; ?></span></li>
+                            <li id="wpacu-fetch-list-step-1-wrap"><strong>Step 1</strong>: Fetch the assets from the home page... <span id="wpacu-fetch-list-step-1-status"><img src="<?php echo esc_url(admin_url('images/spinner.gif')); ?>" align="top" width="20" height="20" alt="" />&nbsp; Please wait...</li>
                             <li id="wpacu-fetch-list-step-2-wrap"><strong>Step 2</strong>: Build the list of the fetched assets and print it... <span id="wpacu-fetch-list-step-2-status"></span></li>
                         </ul>
                     </div>
@@ -136,7 +118,7 @@ if ($data['show_on_front'] === 'page' && $data['page_on_front']) {
                 } else {
                     // "Select a retrieval way:" is set to "WP Remote Post" (one AJAX call) in "Plugin Usage Preferences" -> "Manage in the Dashboard"
                     ?>
-                    <?php echo $wpacuLoadingSpinnerFetchAssets; ?>&nbsp;
+                    <img src="<?php echo esc_url(admin_url('images/spinner.gif')); ?>" align="top" width="20" height="20" alt="" />
                     <?php _e('Retrieving the loaded scripts and styles for the home page. Please wait...', 'wp-asset-clean-up');
                 }
                 ?>
@@ -155,7 +137,7 @@ if ($data['show_on_front'] === 'page' && $data['page_on_front']) {
         <div id="wpacu-update-button-area" class="no-left-margin">
             <p class="submit"><input type="submit" name="submit" id="submit" <?php if ($wpacuNoLoadInTargetPage) { echo 'style="display: inline-block;"'; } ?> class="hidden button button-primary" value="<?php esc_attr_e('Update', 'wp-asset-clean-up'); ?>"></p>
             <div id="wpacu-updating-settings" style="margin-left: 100px;">
-                <img src="<?php echo admin_url('images/spinner.gif'); ?>" align="top" width="20" height="20" alt="" />
+                <img src="<?php echo esc_url(admin_url('images/spinner.gif')); ?>" align="top" width="20" height="20" alt="" />
             </div>
         </div>
     </form>

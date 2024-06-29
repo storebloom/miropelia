@@ -1,0 +1,15 @@
+// compileCompressed: ../css/$1.css
+/*!
+ * WP Quiz by MyThemeShop
+ * https://mythemeshop.com/plugins/wp-quiz/
+ */
+@import "../../admin/scss/util";
+@import "base";
+@import "icons";
+@import "layouts/embed";
+@import "layouts/results";
+@import "layouts/quiz";
+@import "layouts/listing";
+@import "skin/flat";
+@import "skin/traditional";
+@import "quiz-types/quiz-types";

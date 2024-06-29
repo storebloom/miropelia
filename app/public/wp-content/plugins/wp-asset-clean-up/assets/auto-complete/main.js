@@ -42,9 +42,9 @@ jQuery(function($) {
         select: function(event, ui) {
             $('#wpacu-search-form-assets-manager').hide();
             $('#wpacu-post-chosen-loading-assets').show();
+            //console.log(ui.item.id);
 
-            var redirectTo = wpacu_autocomplete_search_obj.redirect_to.replace('[post_id_here]', ui.item.id);
-            window.location.href = redirectTo;
+            window.location.href = wpacu_autocomplete_search_obj.redirect_to.replace('=post_id_here', '=' + ui.item.id);
         },
         close: function(el) {
             el.target.value = '';

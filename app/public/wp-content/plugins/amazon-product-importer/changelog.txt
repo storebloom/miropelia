@@ -1,0 +1,85 @@
+*** Amazon Product Importer Extension Changelog ***
+
+2023-04-11 - version 2.3.0
+* Added a new Origin column to the admin product list to find product source later.
+* Amazon Parser upgraded
+
+2023-03-03 - version 2.2.5
+* Parser upgraded
+
+2022-10-28 - version 2.2.3
+* Parser upgraded
+
+2022-09-17 - version 2.2.2
+* Update variation issue fixed
+
+2022-08-09 - version 2.2.1
+* Upgrade Amazon parser
+* Unique SKU generator Implemented
+* The call_user_func_array function was replaced with loop as it is throwing error in some cases.
+
+2022-05-03 - version 2.2.0
+* Amazon Parser upgraded
+* Simple product image issue fixed
+
+2022-02-02 - version 2.1.0
+* Parser upgraded
+* Price with formula option added	
+
+2021-12-07 - version 2.0.2
+* Minor bug fixed
+
+2021-11-15 - version 2.0.0
+* Amazon product & variation price issue fixed
+* Product weight and dimensions import feature added
+* Amazon parser upgraded
+
+2021-10-02 - version 1.2.5
+* Amazon multiple pattern variation issue fixed
+
+2021-08-17 - version 1.2.4
+* Amazon multiple pattern issue fixed
+
+2021-08-16 - version 1.2.3
+* UTF-8 encoding issue fixed
+
+2021-07-24 - version 1.2.2
+* Import videos from A+ pages
+
+2021-07-21 - version 1.2.1
+* Minor Product Description bug fixed
+
+2021-07-20 - version 1.2.0
+* Import url pattern has been changed
+* SKU pattern has been changed, SKU will be imported same as source website.
+* SKU input box added in Chrome extension form
+* Option added to confirm if the product already exist that will be upated or not.
+* Review limit input box added in Chrome extension form.
+* Textarea field added to set find and replace text from the imported data.
+* Import the description images and change the Amazon image url with destination website url.
+
+2021-05-11 - version 1.1.2
+* Description and image bug fixed
+
+2021-03-08 - version 1.1.0
+* [ADD] Import customer reviews
+* [ADD] Affiliate feature
+
+2021-01-09 - version 1.0.4
+* Minor bug fixed
+
+2021-01-04 - version 1.0.3
+* Minor bug fixed
+
+2020-12-20 - version 1.0.2
+* [ADD] Import product features
+* [FIX] Books images
+* [FIX] Books price
+* [FIX] Books description
+
+
+2020-10-13 - version 1.0.1
+* Minor bug fixed
+
+2020-08-13 - version 1.0.0
+* Initial release

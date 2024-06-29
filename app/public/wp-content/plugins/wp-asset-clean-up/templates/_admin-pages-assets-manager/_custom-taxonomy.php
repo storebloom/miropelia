@@ -8,11 +8,12 @@ if (! isset($data)) {
 
 $baseNamePageType = str_replace('.php', '', basename(__FILE__));
 $baseNamePageType = trim($baseNamePageType, '_');
-
-$lockedForPro = str_replace('[wpacu_chosen_page_type]', $baseNamePageType, $data['locked_for_pro']);
 ?>
 <div style="margin: 25px 0 0;">
-    <p><?php echo $lockedForPro; ?></p>
+    <p><?php echo wp_kses(
+		    str_replace('[wpacu_chosen_page_type]', $baseNamePageType, $data['locked_for_pro']),
+		    array('span' => array('class' => array()), 'a' => array('href' => array()))
+	    ); ?></p>
     <hr />
     
     <p>Popular examples: 'product_cat' created by WooCommerce, 'download_category' created by Easy Digital Downloads etc. &#10230; <a target="_blank" href="https://wordpress.org/support/article/taxonomies/"><?php _e('read more', 'wp-asset-clean-up'); ?></a></p>

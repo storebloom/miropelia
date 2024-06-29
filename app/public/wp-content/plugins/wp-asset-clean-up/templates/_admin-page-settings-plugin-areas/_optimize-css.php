@@ -14,12 +14,8 @@ global $wp_version;
 
 $tabIdArea = 'wpacu-setting-optimize-css';
 $styleTabContent = ($selectedTabArea === $tabIdArea) ? 'style="display: table-cell;"' : '';
-
-// [wpacu_lite]
-$availableForPro = '<a class="go-pro-link-no-style" target="_blank" href="' . WPACU_PLUGIN_GO_PRO_URL . '?utm_source=plugin_usage_settings&utm_medium=local_fonts_optimization"><span class="wpacu-tooltip" style="width: 186px;">'.__('This is a feature available in the Pro version! Unlock it!', 'wp-asset-clean-up').'</span> <img style="opacity: 0.6;" width="20" height="20" src="'.WPACU_PLUGIN_URL.'/assets/icons/icon-lock.svg" valign="top" alt="" /></a>';
-// [/wpacu_lite]
 ?>
-<div id="<?php echo $tabIdArea; ?>" class="wpacu-settings-tab-content" <?php echo $styleTabContent; ?>>
+<div id="<?php echo esc_attr($tabIdArea); ?>" class="wpacu-settings-tab-content" <?php echo wp_kses($styleTabContent, array('style' => array())); ?>>
     <h2 class="wpacu-settings-area-title"><?php _e('Minify / Combine loaded CSS files to reduce total page size and the number of HTTP requests', 'wp-asset-clean-up'); ?></h2>
 	<?php
     $wpRocketIssues = array();
@@ -40,6 +36,9 @@ $availableForPro = '<a class="go-pro-link-no-style" target="_blank" href="' . WP
 	}
 	?>
     <table class="wpacu-form-table">
+        <?php
+        $minifyCssDisabled = ! empty($data['is_optimize_css_enabled_by_other_party']);
+        ?>
         <tr valign="top">
             <th scope="row" class="setting_title">
                 <label for="wpacu_minify_css_enable"><?php _e('CSS Files Minification', 'wp-asset-clean-up'); ?></label>
@@ -51,7 +50,11 @@ $availableForPro = '<a class="go-pro-link-no-style" target="_blank" href="' . WP
                            data-target-opacity="wpacu_minify_css_area"
                            type="checkbox"
                            <?php
-                           echo (($data['minify_loaded_css'] == 1) ? 'checked="checked"' : '');
+                           if ($minifyCssDisabled) {
+                               echo 'disabled="disabled"';
+                           } else {
+	                           echo ($data['minify_loaded_css'] == 1) ? 'checked="checked"' : '';
+                           }
                            ?>
                            name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[minify_loaded_css]"
                            value="1" /> <span class="wpacu_slider wpacu_round"></span> </label>
@@ -60,33 +63,33 @@ $availableForPro = '<a class="go-pro-link-no-style" target="_blank" href="' . WP
 	             <?php _e('You might want to minify the local files, the inline CSS code within STYLE tags or both.', 'wp-asset-clean-up'); ?>
 
                 <?php
-                if (! empty($data['is_optimize_css_enabled_by_other_party'])) {
+                if ($minifyCssDisabled) {
                     ?>
                     <div style="border-left: 4px solid green; background: #f2faf2; padding: 10px; margin-top: 10px;">
                         <ul style="margin: 0;">
                             <li>This option is locked as optimize/minify stylesheets (CSS) is already enabled in the following plugins: <strong><?php echo implode(', ', $data['is_optimize_css_enabled_by_other_party']); ?></strong>. <?php echo WPACU_PLUGIN_TITLE; ?> works together with the mentioned plugin(s).</li>
-                            <li>Eliminate the bloat first via <a href="<?php echo admin_url('admin.php?page=wpassetcleanup_assets_manager'); ?>">CSS & JAVASCRIPT LOAD MANAGER</a>, then minify the remaining CSS with any plugin you prefer.</li>
+                            <li>Eliminate the bloat first via <a href="<?php echo esc_url(admin_url('admin.php?page=wpassetcleanup_assets_manager')); ?>">CSS & JAVASCRIPT LOAD MANAGER</a>, then minify the remaining CSS with any plugin you prefer.</li>
                         </ul>
                     </div>
                     <?php
                 }
 
 				$minifyCssExceptionsAreaStyle = empty($data['is_optimize_css_enabled_by_other_party']) && ($data['minify_loaded_css'] == 1) ? 'opacity: 1;' : 'opacity: 0.4;';
-				?>
-                <div id="wpacu_minify_css_area" style="<?php echo $minifyCssExceptionsAreaStyle; ?>">
-                    <!-- -->
-
+                ?>
+                <div id="wpacu_minify_css_area" style="<?php echo esc_attr($minifyCssExceptionsAreaStyle); ?>">
                     <div style="margin-top: 8px; padding: 12px; background: #f2faf2; border-radius: 10px;">
                         <ul style="margin: 0;">
                             <li style="float: left; margin-right: 30px; margin-bottom: 0; line-height: 32px;" class="wpacu-fancy-radio">
                                 <label for="minify_loaded_css_for_link_href_radio">
                                     <input id="minify_loaded_css_for_link_href_radio"
                                            style="margin: -1px 0 0;"
-						                <?php echo (in_array($data['minify_loaded_css_for'], array('href', '')) ? 'checked="checked"' : ''); ?>
+                                            <?php
+                                            echo in_array($data['minify_loaded_css_for'], array('href', '')) ? 'checked="checked"' : '';
+                                            ?>
                                            type="radio"
                                            name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[minify_loaded_css_for]"
                                            value="href" />
-                                    &nbsp;<?php _e('LINK tags with "href" attribute', 'wp-asset-clean-up'); ?> (<?php echo __('default', 'wp-asset-clean-up'); ?>)
+                                    &nbsp;<?php _e('LINK tags with "href" attribute', 'wp-asset-clean-up'); ?> (<?php _e('default', 'wp-asset-clean-up'); ?>)
                                 </label>
                             </li>
                             <li style="float: left; margin-right: 30px; margin-bottom: 0; line-height: 32px;" class="wpacu-fancy-radio">
@@ -121,7 +124,7 @@ $availableForPro = '<a class="go-pro-link-no-style" target="_blank" href="' . WP
                                         <textarea style="width: 100%;"
                                                   rows="4"
                                                   id="wpacu_minify_css_exceptions"
-                                                  name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[minify_loaded_css_exceptions]"><?php echo $data['minify_loaded_css_exceptions']; ?></textarea>
+                                                  name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[minify_loaded_css_exceptions]"><?php echo esc_textarea($data['minify_loaded_css_exceptions']); ?></textarea>
                         </label>
                     </div>
                     <ul style="list-style: none; margin-left: 18px; margin-bottom: 0;">
@@ -143,7 +146,7 @@ $availableForPro = '<a class="go-pro-link-no-style" target="_blank" href="' . WP
         <tr>
             <td colspan="2" style="padding: 0;">
                 <div class="wpacu-combine-notice-default wpacu_hide" style="line-height: 22px; background: #f8f8f8; border-left: 4px solid #008f9c; padding: 10px; margin: 0 0 15px;">
-                    <strong><?php _e('NOTE', 'wp-asset-clean-up'); ?>:</strong> <?php echo __('Concatenating assets is no longer a recommended practice in HTTP/2', 'wp-asset-clean-up'); ?>. &nbsp; <a id="wpacu-http2-info-css-target" href="#wpacu-http2-info-css"><?php _e('Read more', 'wp-asset-clean-up'); ?></a> &nbsp;/&nbsp; <a class="wpacu_verify_http2_protocol" target="_blank" href="https://tools.keycdn.com/http2-test"><strong><?php _e('Verify if the website is delivered through the HTTP/2 network protocol', 'wp-asset-clean-up'); ?></strong></a>
+                    <strong><?php _e('NOTE', 'wp-asset-clean-up'); ?>:</strong> <?php _e('Concatenating assets is no longer a recommended practice in HTTP/2', 'wp-asset-clean-up'); ?>. &nbsp; <a id="wpacu-http2-info-css-target" href="#wpacu-http2-info-css"><?php _e('Read more', 'wp-asset-clean-up'); ?></a> &nbsp;/&nbsp; <a class="wpacu_verify_http2_protocol" target="_blank" href="https://tools.keycdn.com/http2-test"><strong><?php _e('Verify if the website is delivered through the HTTP/2 network protocol', 'wp-asset-clean-up'); ?></strong></a>
                 </div>
                 <div class="wpacu-combine-notice-http-2-detected wpacu_hide" style="line-height: 22px; background: #f8f8f8; border-left: 4px solid #008f9c; padding: 10px; margin: 0 0 15px;">
                     <span class="wpacu_http2_protocol_is_supported" style="color: green; font-weight: 400;"><span class="dashicons dashicons-yes-alt"></span> Your website `<span style="font-weight: 500;"><?php echo get_site_url(); ?></span>` is delivered through the HTTP/2 network protocol, thus, the website will be as fast without using this feature which might require maintenance once in a while.</span> <a class="wpacu-http2-info-css-target" href="#wpacu-http2-info-css"><?php _e('Read more', 'wp-asset-clean-up'); ?></a>
@@ -151,19 +154,26 @@ $availableForPro = '<a class="go-pro-link-no-style" target="_blank" href="' . WP
             </td>
         </tr>
 
+        <?php
+        $combineCssDisabled = ! empty($data['is_optimize_css_enabled_by_other_party']);
+        ?>
         <tr valign="top">
             <th scope="row" class="setting_title">
                 <label for="wpacu_combine_loaded_css_enable"><?php _e('Combine loaded CSS (Stylesheets) into fewer files', 'wp-asset-clean-up'); ?></label>
                 <p class="wpacu_subtitle"><small><em><?php _e('Helps reducing the number of HTTP Requests even further', 'wp-asset-clean-up'); ?></em></small></p>
             </th>
             <td>
-                <label class="wpacu_switch <?php if (! empty($data['is_optimize_css_enabled_by_other_party'])) { echo 'wpacu_disabled'; } ?>">
+                <label class="wpacu_switch <?php if ($combineCssDisabled) { echo 'wpacu_disabled'; } ?>">
                     <input id="wpacu_combine_loaded_css_enable"
                            data-target-opacity="wpacu_combine_loaded_css_info_area"
                            type="checkbox"
-					    <?php
-					    echo (in_array($data['combine_loaded_css'], array('for_admin', 'for_all', 1)) ? 'checked="checked"' : '');
-					    ?>
+                            <?php
+                            if ($combineCssDisabled) {
+                                echo 'disabled="disabled"';
+                            } else {
+                                echo in_array( $data['combine_loaded_css'], array( 'for_admin', 'for_all', 1 ) ) ? 'checked="checked"' : '';
+                            }
+                            ?>
                            name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[combine_loaded_css]"
                            value="1" /> <span class="wpacu_slider wpacu_round"></span> </label>
 
@@ -175,7 +185,7 @@ $availableForPro = '<a class="go-pro-link-no-style" target="_blank" href="' . WP
                     <div style="border-left: 4px solid green; background: #f2faf2; padding: 10px; margin-top: 10px;">
                         <ul style="margin: 0;">
                             <li>This option is locked as optimize/minify stylesheets (CSS) is already enabled in the following plugins: <strong><?php echo implode(', ', $data['is_optimize_css_enabled_by_other_party']); ?></strong></li>
-                            <li><?php echo WPACU_PLUGIN_TITLE; ?> works together with the mentioned plugin(s). Eliminate the bloat first via <a href="<?php echo admin_url('admin.php?page=wpassetcleanup_assets_manager'); ?>">CSS & JAVASCRIPT LOAD MANAGER</a>, then concatenate (if necessary) the remaining CSS with any plugin you prefer.</li>
+                            <li><?php echo WPACU_PLUGIN_TITLE; ?> works together with the mentioned plugin(s). Eliminate the bloat first via <a href="<?php echo esc_url(admin_url('admin.php?page=wpassetcleanup_assets_manager')); ?>">CSS & JAVASCRIPT LOAD MANAGER</a>, then concatenate (if necessary) the remaining CSS with any plugin you prefer.</li>
                         </ul>
                     </div>
 				    <?php
@@ -193,7 +203,7 @@ $availableForPro = '<a class="go-pro-link-no-style" target="_blank" href="' . WP
                                            type="radio"
                                            name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[combine_loaded_css_for]"
                                            value="guests" />
-                                    &nbsp;<?php _e('Apply it only for guest visitors', 'wp-asset-clean-up'); ?> (<?php echo __('default', 'wp-asset-clean-up'); ?>)
+                                    &nbsp;<?php _e('Apply it only for guest visitors', 'wp-asset-clean-up'); ?> (<?php _e('default', 'wp-asset-clean-up'); ?>)
                                 </label>
                             </li>
                             <li style="float: left; margin-bottom: 0; line-height: 32px;" class="wpacu-fancy-radio">
@@ -221,7 +231,7 @@ $availableForPro = '<a class="go-pro-link-no-style" target="_blank" href="' . WP
                                     <textarea style="width: 100%;"
                                               rows="4"
                                               id="combine_loaded_css_exceptions"
-                                              name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[combine_loaded_css_exceptions]"><?php echo $data['combine_loaded_css_exceptions']; ?></textarea>
+                                              name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[combine_loaded_css_exceptions]"><?php echo esc_textarea($data['combine_loaded_css_exceptions']); ?></textarea>
                         </label>
 
                         <p>Pattern Examples (you don't have to add the full URL, as it's recommended to use relative paths):</p>
@@ -233,7 +243,7 @@ $availableForPro = '<a class="go-pro-link-no-style" target="_blank" href="' . WP
                     <hr />
                     <p style="margin: 8px 0 4px;"><span style="color: #ffc107;" class="dashicons dashicons-lightbulb"></span> This feature will not work <strong>IF</strong>:</p>
                     <ul style="margin-top: 0; margin-left: 35px; list-style: disc;">
-                        <li>"Test Mode" is enabled, this feature will not take effect for the guest users and it will apply the changes only for you.</li>
+                        <li>"Test Mode" is enabled, this feature will not take effect for the guest users, and it will apply the changes only for you.</li>
                         <li>The URL has query strings (e.g. an URL such as //www.yourdomain.com/product/title-here/?param=1&amp;param_two=value_here)</li>
                     </ul>
                 </div>
@@ -262,7 +272,7 @@ $availableForPro = '<a class="go-pro-link-no-style" target="_blank" href="' . WP
                 <?php
                 $inlineCssFiles = ($data['inline_css_files'] == 1) ? 'opacity: 1;' : 'opacity: 0.4;';
                 ?>
-                <div id="wpacu_inline_css_files_info_area" style="<?php echo $inlineCssFiles; ?>">
+                <div id="wpacu_inline_css_files_info_area" style="<?php echo esc_attr($inlineCssFiles); ?>">
                     <p style="margin-top: 8px; padding: 10px; background: #f2faf2;">
                         <label for="wpacu_inline_css_files_below_size_checkbox">
                             <input id="wpacu_inline_css_files_below_size_checkbox"
@@ -281,7 +291,7 @@ $availableForPro = '<a class="go-pro-link-no-style" target="_blank" href="' . WP
                                     <textarea style="width: 100%;"
                                               rows="4"
                                               id="wpacu_inline_css_files_list"
-                                              name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[inline_css_files_list]"><?php echo $data['inline_css_files_list']; ?></textarea>
+                                              name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[inline_css_files_list]"><?php echo esc_textarea($data['inline_css_files_list']); ?></textarea>
                         </label>
                         <p style="margin-bottom: 6px;"><strong>Examples</strong> (you don't have to add the full URL, as it's recommended to use relative paths, especially if you use dev/staging environments or change the domain name of your website):</p>
                         <code>/wp-content/plugins/plugin-title/styles/small-file.css<br />/wp-content/themes/my-wp-theme-dir/css/small.css</code>
@@ -295,7 +305,7 @@ $availableForPro = '<a class="go-pro-link-no-style" target="_blank" href="' . WP
         <!-- Pro Feature -->
         <tr valign="top">
             <th scope="row" class="setting_title">
-                <label style="cursor: auto;"><?php _e('Defer CSS Loaded in the <code>&lt;BODY&gt;</code> (Footer)', 'wp-asset-clean-up'); ?> <?php echo $availableForPro; ?></label>
+                <label style="cursor: auto;"><?php _e('Defer CSS Loaded in the <code>&lt;BODY&gt;</code> (Footer)', 'wp-asset-clean-up'); ?> <a class="go-pro-link-no-style" target="_blank" href="<?php echo apply_filters('wpacu_go_pro_affiliate_link', WPACU_PLUGIN_GO_PRO_URL.'?utm_source=plugin_usage_settings&utm_medium=local_fonts_optimization'); ?>"><span class="wpacu-tooltip" style="width: 186px;"><?php _e('This is a feature available in the Pro version! Unlock it!', 'wp-asset-clean-up'); ?></span> <img style="opacity: 0.6;" width="20" height="20" src="<?php echo esc_url(WPACU_PLUGIN_URL.'/assets/icons/icon-lock.svg'); ?>" valign="top" alt="" /></a></label>
             </th>
             <td>
                 <div>
@@ -331,11 +341,11 @@ $availableForPro = '<a class="go-pro-link-no-style" target="_blank" href="' . WP
 
                 &nbsp;<?php _e('Avoid loading the whole WP environment whenever a dynamic request is made such as <code>/?custom-css=value_here</code>, or <code>/wp-content/plugins/plugin-name-here/css/generate-style.php?ver=1</code>', 'wp-asset-clean-up'); ?>.
                 <hr />
-                <p>e.g. <code>&lt;link type="text/css" href="//yourwebsite.com/wp-content/plugins/plugin-name-here/css/generate-style.php?ver=<?php echo $wp_version; ?>" /&gt;</code></p>
+                <p>e.g. <code>&lt;link type="text/css" href="//yourwebsite.com/wp-content/plugins/plugin-name-here/css/generate-style.php?ver=<?php echo esc_html($wp_version); ?>" /&gt;</code></p>
                 <?php
                 $cacheDynamicLoadedCssAreaStyle = ($data['cache_dynamic_loaded_css'] == 1) ? 'opacity: 1;' : 'opacity: 0.4;';
                 ?>
-                <div id="wpacu_cache_dynamic_loaded_css_info_area" style="<?php echo $cacheDynamicLoadedCssAreaStyle; ?>">
+                <div id="wpacu_cache_dynamic_loaded_css_info_area" style="<?php echo esc_attr($cacheDynamicLoadedCssAreaStyle); ?>">
                     <p>Some plugins and themes have options to create your own CSS/layout and save it within the Dashboard. Instead of creating static CSS files from the saved settings, the changes you made are retrieved from the database and the CSS content is created "on the fly", thus using more resources by loading the whole WP environment and make MySQL (or whatever database type if used) requests in order to print the CSS content. <?php echo WPACU_PLUGIN_TITLE; ?> detects such requests and caches the output for faster retrieval. This very important especially if your website has lots of visits (imagine WordPress loading several times only from one visitor) and you're on a shared environment with limited resources. This will also make the user experience better by decreasing the page rendering time.</p>
                 </div>
             </td>

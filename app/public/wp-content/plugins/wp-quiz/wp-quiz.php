@@ -3,7 +3,7 @@
  * Plugin Name: WP Quiz
  * Plugin URI:  https://mythemeshop.com/plugins/wp-quiz/
  * Description: WP Quiz lets you easily add polished, responsive and modern quizzes to your site or blog! Increase engagement and shares while building your mailing list! WP Quiz makes it easy!
- * Version:     2.0.6
+ * Version:     2.0.10
  * Author:      MyThemeShop
  * Author URI:  https://mythemeshop.com/
  *

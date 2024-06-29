@@ -2,14 +2,14 @@
 /**
  * Plugin Name: ShareThis Reviews
  * Description: Simple and functional reviews plugin including ratings and impressions.
- * Version: 1.2.1
+ * Version: 1.2.2
  * Author: ShareThis
  * Author URI: https://sharethis.com/
  * Text Domain: sharethis-reviews
  * Domain Path: /languages
  * License:     GPL v2 or later
 
-Copyright 2019 ShareThis
+Copyright 2022 ShareThis
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

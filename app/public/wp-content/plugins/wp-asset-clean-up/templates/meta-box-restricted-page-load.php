@@ -38,9 +38,9 @@ if ($data['bulk_unloaded_type'] === 'post_type') {
 	?>
     <p>
 		<?php if ($isWooPage) { ?>
-            <img src="<?php echo $iconShown; ?>" alt="" style="height: 40px !important; margin-top: -6px; margin-right: 5px;" align="middle" /> <strong>WooCommerce</strong>
+            <img src="<?php echo esc_url($iconShown); ?>" alt="" style="height: 40px !important; margin-top: -6px; margin-right: 5px;" align="middle" /> <strong>WooCommerce</strong>
 		<?php } ?>
-		<?php if (! $iconShown) { ?><span style="color: #0f6cab;" class="dashicons dashicons-admin-<?php echo $dashIconPart; ?>"></span> <?php } ?> <u><?php echo $data['post_type']; ?></u> <?php if ($data['post_type'] !== 'post') {  echo 'post'; } ?> type.
+		<?php if (! $iconShown) { ?><span style="color: #0f6cab;" class="dashicons dashicons-admin-<?php echo esc_attr($dashIconPart); ?>"></span> <?php } ?> <u><?php echo esc_html($data['post_type']); ?></u> <?php if ($data['post_type'] !== 'post') {  echo 'post'; } ?> type.
     </p>
 	<?php
 }
@@ -48,29 +48,24 @@ if ($data['bulk_unloaded_type'] === 'post_type') {
 if ($data['status'] === 5) {
 	?>
     <p class="wpacu_verified">
-        <strong>Page URL:</strong> <a target="_blank" href="<?php echo $data['fetch_url']; ?>"><span><?php echo $data['fetch_url']; ?></span></a>
+        <strong>Page URL:</strong> <a target="_blank" href="<?php echo esc_url($data['fetch_url']); ?>"><span><?php echo esc_url($data['fetch_url']); ?></span></a>
     </p>
-	<?php
-	$msg =__('This page\'s URL is matched by one of the RegEx rules you have in <strong>"Settings"</strong> -&gt; <strong>"Plugin Usage Preferences"</strong> -&gt; <strong>"Do not load the plugin on certain pages"</strong>, thus Asset CleanUp Pro is not loaded on that page and no CSS/JS are to be managed. If you wish to view the CSS/JS manager, please remove the matching RegEx rule and reload this page.', 'wp-asset-clean-up');
-	?>
     <p class="wpacu-warning"
        style="margin: 15px 0 0; padding: 10px; font-size: inherit; width: 99%;">
             <span style="color: red;"
-                  class="dashicons dashicons-info"></span> <?php echo $msg; ?>
+                  class="dashicons dashicons-info"></span> <?php _e('This page\'s URL is matched by one of the RegEx rules you have in <strong>"Settings"</strong> -&gt; <strong>"Plugin Usage Preferences"</strong> -&gt; <strong>"Do not load the plugin on certain pages"</strong>, thus Asset CleanUp Pro is not loaded on that page and no CSS/JS are to be managed. If you wish to view the CSS/JS manager, please remove the matching RegEx rule and reload this page.', 'wp-asset-clean-up'); ?>
     </p>
 	<?php
 } elseif ($data['status'] === 6) {
 	?>
     <p class="wpacu_verified">
-        <strong>Page URL:</strong> <a target="_blank" href="<?php echo $data['fetch_url']; ?>"><span><?php echo $data['fetch_url']; ?></span></a>
+        <strong>Page URL:</strong> <a target="_blank" href="<?php echo esc_url($data['fetch_url']); ?>"><span><?php echo esc_url($data['fetch_url']); ?></span></a>
     </p>
-	<?php
-	$msg = sprintf(__('This page\'s URI is matched by the rule you have in the "Page Options", thus %s is not loaded on that page and no CSS/JS are to be managed. If you wish to view the CSS/JS manager, please uncheck the following option shown below: <em>"Do not load Asset CleanUp Pro on this page (this will disable any functionality of the plugin"</em>.', 'wp-asset-clean-up'), WPACU_PLUGIN_TITLE);
-	?>
+
     <p class="wpacu-warning"
        style="margin: 15px 0 0; padding: 10px; font-size: inherit; width: 99%;">
                 <span style="color: red;"
-                      class="dashicons dashicons-info"></span> <?php echo $msg; ?>
+                      class="dashicons dashicons-info"></span> <?php echo sprintf(__('This page\'s URI is matched by the rule you have in the "Page Options", thus %s is not loaded on that page and no CSS/JS are to be managed. If you wish to view the CSS/JS manager, please uncheck the following option shown below: <em>"Do not load Asset CleanUp Pro on this page (this will disable any functionality of the plugin"</em>.', 'wp-asset-clean-up'), WPACU_PLUGIN_TITLE); ?>
     </p>
 
     <?php

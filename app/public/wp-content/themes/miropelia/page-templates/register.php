@@ -11,9 +11,7 @@ get_header();
 ?>
 <main id="primary" class="site-main">
 	<div class="container">
-		<div id="login">
-		    <?php the_content(); ?>
-		</div>
+        <?php the_content(); ?>
 	</div>
 </main>
 <?php

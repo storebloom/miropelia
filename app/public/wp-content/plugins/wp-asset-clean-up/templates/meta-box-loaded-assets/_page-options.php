@@ -11,14 +11,14 @@ if ( ! (isset($data['show_page_options']) && $data['show_page_options']) ) {
 // or via "Do not load Asset CleanUp Pro on this page (this will disable any functionality of the plugin)"
 if (isset($data['page_options_with_assets_manager_no_load']) && $data['page_options_with_assets_manager_no_load']) {
 ?>
-        <style>
-        .wpacu-page-options a.wpacu-assets-collapsible {
-            cursor: default;
-        }
-        .wpacu-page-options a.wpacu-assets-collapsible.wpacu-assets-collapsible-active:after {
-            content: '';
-        }
-        </style>
+    <style>
+    .wpacu-page-options a.wpacu-assets-collapsible {
+        cursor: default;
+    }
+    .wpacu-page-options a.wpacu-assets-collapsible.wpacu-assets-collapsible-active:after {
+        content: '';
+    }
+    </style>
     <div class="wpacu-assets-collapsible-wrap wpacu-wrap-area wpacu-page-options">
         <a class="wpacu-assets-collapsible wpacu-assets-collapsible-active" href="#wpacu-assets-collapsible-content-page-options">
             <span class="dashicons dashicons-admin-generic"></span>&nbsp; Page Options
@@ -28,12 +28,12 @@ if (isset($data['page_options_with_assets_manager_no_load']) && $data['page_opti
 			include_once __DIR__.'/_page-options-inner.php';
 			?>
             <img style="display: none;"
-                 class="wpacu-ajax-loader"
-                 src="<?php echo WPACU_PLUGIN_URL; ?>/assets/icons/icon-ajax-loading-spinner.svg" alt="<?php echo __('Loading'); ?>..." />
+                 class="wpacu_ajax_loader"
+                 src="<?php echo esc_url(WPACU_PLUGIN_URL); ?>/assets/icons/icon-ajax-loading-spinner.svg" alt="<?php _e('Loading'); ?>..." />
         </div>
     </div>
 <?php
-// This shows along with the CSS & JS manager and it's expandable
+// This shows along with the CSS & JS manager, and it's expandable
 } elseif (isset($listAreaStatus)) {
 ?>
 <div class="wpacu-assets-collapsible-wrap wpacu-wrap-area wpacu-page-options">
@@ -45,10 +45,9 @@ if (isset($data['page_options_with_assets_manager_no_load']) && $data['page_opti
         include_once __DIR__.'/_page-options-inner.php';
         ?>
         <img style="display: none;"
-             class="wpacu-ajax-loader"
-             src="<?php echo WPACU_PLUGIN_URL; ?>/assets/icons/icon-ajax-loading-spinner.svg" alt="<?php echo __('Loading'); ?>..." />
+             class="wpacu_ajax_loader"
+             src="<?php echo esc_url(WPACU_PLUGIN_URL); ?>/assets/icons/icon-ajax-loading-spinner.svg" alt="<?php _e('Loading'); ?>..." />
     </div>
 </div>
 <?php
 }
-?>

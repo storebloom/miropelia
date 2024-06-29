@@ -36,7 +36,9 @@ class Theme extends Theme_Base
 
 		// Initiate classes.
 		$classes = array(
+            new Explore( $this ),
 			new Register( $this ),
+            new Meta_Box( $this ),
 		);
 
 		// Add classes doc hooks.
@@ -60,6 +62,7 @@ class Theme extends Theme_Base
 
 		wp_register_style( $this->assets_prefix, "{$this->dir_url}/assets/dist/css/app.css", null, time() );
         wp_register_script( $this->assets_prefix, "{$this->dir_url}/assets/dist/js/app.min.js", [], time() );
+        wp_register_script( 'explore', "{$this->dir_url}/assets/dist/js/explore.min.js", [$this->assets_prefix], time() );
 
         // reCaptcha.
         wp_register_script('recaptcha', 'https://www.google.com/recaptcha/api.js', [], '1', false);
@@ -73,5 +76,18 @@ class Theme extends Theme_Base
 	public function registerAdminAssets()
     {
         wp_register_style( $this->assets_prefix . '-admin', "{$this->dir_url}/assets/dist/css/admin.css", null, time());
+        wp_register_script( $this->assets_prefix . '-admin', "{$this->dir_url}/assets/dist/js/admin.min.js", null, time());
     }
+
+	/**
+	 * Add GTM.
+	 *
+	 * @action wp_footer
+	 */
+	public function addGTM()
+	{
+		?>
+		<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-5HJW8P2');</script>
+	<?php
+	}
 }

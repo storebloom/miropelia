@@ -1,6 +1,6 @@
 <?php
 /*
- * The file is included from _assets-hardcoded-list.php and it's relevant only for the hardcoded scripts (non-enqueued)
+ * The file is included from _assets-hardcoded-list.php, and it's relevant only for the hardcoded scripts (non-enqueued)
 */
 if (! isset($data)) {
 	exit; // no direct access
@@ -16,28 +16,28 @@ if (isset($data['handle_rows_contracted']['scripts'][$data['row']['obj']->handle
 	$dataRowStatusAttr = 'contracted';
 }
 ?>
-<tr data-script-handle-row="<?php echo $data['row']['obj']->handle; ?>"
+<tr data-script-handle-row="<?php echo htmlentities(esc_attr($data['row']['obj']->handle), ENT_QUOTES); ?>"
     data-is-hardcoded-asset="true"
     class="wpacu_asset_row">
-    <td style="position: relative;" data-wpacu-row-status="<?php echo $dataRowStatusAttr; ?>">
+    <td style="position: relative;" data-wpacu-row-status="<?php echo esc_attr($dataRowStatusAttr); ?>">
         <div class="wpacu_handle_row_expand_contract_area">
-            <a data-wpacu-handle="<?php echo $data['row']['obj']->handle; ?>"
+            <a data-wpacu-handle="<?php echo htmlentities(esc_attr($data['row']['obj']->handle), ENT_QUOTES); ?>"
                data-wpacu-handle-for="script"
                class="wpacu_handle_row_expand_contract"
-               href="#"><span class="dashicons dashicons-<?php echo $dashSign; ?>"></span></a>
+               href="#"><span class="dashicons dashicons-<?php echo esc_attr($dashSign); ?>"></span></a>
             <!-- -->
         </div>
         <?php
-        $insideIeCommentHtml = '<span class="wpacu_inside_cond_comm"><img style="vertical-align: middle;" width="25" height="25" src="'.WPACU_PLUGIN_URL.'/assets/icons/icon-ie.svg" alt="" title="Microsoft / Public domain" />&nbsp;<span style="font-weight: 400; color: #1C87CF;">Loads only in Internet Explorer based on the following condition:</span> <em>if '.$data['row']['obj']->inside_conditional_comment.'</em></span>';
+        $insideIeCommentHtml = '<span class="wpacu_inside_cond_comm"><img style="vertical-align: middle;" width="25" height="25" src="'.WPACU_PLUGIN_URL.'/assets/icons/icon-ie.svg" alt="" title="Microsoft / Public domain" />&nbsp;<span style="font-weight: 400; color: #1C87CF;">Loads only in Internet Explorer based on the following condition:</span> <em>if '.esc_html($data['row']['obj']->inside_conditional_comment).'</em></span>';
 
-        if (isset($data['row']['obj']->src) && $data['row']['obj']->src) {
+        if (isset($data['row']['obj']->src) && trim($data['row']['obj']->src)) {
 	        // Source
-	        include '_asset-script-single-row-hardcoded/_source.php';
+	        include dirname(__DIR__).'/_common/_asset-single-row-hardcoded-source.php';
 	        ?>
             <div class="wpacu_file_size_area">File Size: <?php echo apply_filters('wpacu_get_asset_file_size', $data['row']['obj'], 'for_print'); ?></div>
 	        <?php
 	        if ($data['row']['obj']->inside_conditional_comment) {
-		        echo $insideIeCommentHtml;
+		        echo \WpAssetCleanUp\Misc::stripIrrelevantHtmlTags($insideIeCommentHtml);
 	        }
 	        ?>
 		    <div class="wpacu_hardcoded_part_if_expanded">
@@ -73,7 +73,7 @@ if (isset($data['handle_rows_contracted']['scripts'][$data['row']['obj']->handle
                 }
 
                 if ($data['row']['obj']->inside_conditional_comment) {
-	                echo $insideIeCommentHtml;
+	                echo \WpAssetCleanUp\Misc::stripIrrelevantHtmlTags($insideIeCommentHtml);
                 }
                 ?>
 
@@ -84,7 +84,7 @@ if (isset($data['handle_rows_contracted']['scripts'][$data['row']['obj']->handle
                     <?php if ($enableViewMore) {
                         $wpacuViewMoreCodeBtnClass = ! is_admin() ? 'wpacu-view-more-code' : 'button';
                         ?>
-                        <p class="wpacu-view-more-link-area" style="margin: 0 !important; padding: 15px !important;"><a href="#" class="<?php echo $wpacuViewMoreCodeBtnClass; ?>"><?php _e('View more', 'wp-asset-clean-up'); ?></a></p>
+                        <p class="wpacu-view-more-link-area" style="margin: 0 !important; padding: 15px !important;"><a href="#" class="<?php echo esc_attr($wpacuViewMoreCodeBtnClass); ?>"><?php _e('View more', 'wp-asset-clean-up'); ?></a></p>
                     <?php } ?>
                 </div>
 
@@ -109,28 +109,34 @@ if (isset($data['handle_rows_contracted']['scripts'][$data['row']['obj']->handle
 	        <div class="wrap_bulk_unload_options">
 		        <?php
 		        // Unload on this page
-		        include '_asset-script-single-row-hardcoded/_unload-per-page.php';
+		        include dirname(__DIR__).'/_common_lite_locked/_asset-single-row-hardcoded-unload-per-page.php';
 
 		        // Unload site-wide (everywhere)
-		        include '_asset-script-single-row-hardcoded/_unload-site-wide.php';
+		        include dirname(__DIR__).'/_common_lite_locked/_asset-single-row-hardcoded-unload-site-wide.php';
 
 		        // Unload on all pages of [post] post type (if applicable)
-		        include '_asset-script-single-row-hardcoded/_unload-post-type.php';
+		        include dirname(__DIR__).'/_common_lite_locked/_asset-single-row-hardcoded-unload-post-type.php';
+
+		        // Unload on all pages where this [post] post type has a certain taxonomy set for it (e.g. a Tag or a Category) (if applicable)
+		        // There has to be at least a taxonomy created for this [post] post type in order to show this option
+		        if (isset($data['post_type']) && $data['post_type'] !== 'attachment' && ! empty($data['post_type_has_tax_assoc'])) {
+			        include dirname( __DIR__ ) . '/_common_lite_locked/_asset-single-row-hardcoded-unload-post-type-taxonomy.php';
+		        }
 
 		        // Unload via RegEx (if site-wide is not already chosen)
-	            include '_asset-script-single-row-hardcoded/_unload-via-regex.php';
+		        include dirname(__DIR__).'/_common_lite_locked/_asset-single-row-hardcoded-unload-via-regex.php';
 
 	            do_action('wpacu_pro_bulk_unload_output', $data, $data['row']['obj'], 'js');
 	            ?>
-	            <div class="wpacu-clearfix"></div>
+	            <div class="wpacu_clearfix"></div>
 	        </div>
 	        <?php
 	        // Handle Note
-	        include '_asset-script-single-row-hardcoded/_notes.php';
+	        include dirname(__DIR__).'/_common/_asset-single-row-notes.php';
 	        ?>
 	    </div>
         <img style="display: none;"
-             class="wpacu-ajax-loader"
-             src="<?php echo WPACU_PLUGIN_URL; ?>/assets/icons/icon-ajax-loading-spinner.svg" alt="<?php echo __('Loading'); ?>..." />
+             class="wpacu_ajax_loader"
+             src="<?php echo esc_url(WPACU_PLUGIN_URL); ?>/assets/icons/icon-ajax-loading-spinner.svg" alt="<?php echo esc_html_e('Loading'); ?>..." />
 	</td>
 </tr>

@@ -54,14 +54,16 @@ $wpacuUpdate->init();
 // Menu
 new \WpAssetCleanUp\Menu;
 
-add_action('plugins_loaded', function() use ($wpacuSettingsClass) {
-	$wpacuSettings = $wpacuSettingsClass->getAll();
+if ( ! is_admin() ) {
+	add_action( 'plugins_loaded', function() use ( $wpacuSettingsClass ) {
+		$wpacuSettings = $wpacuSettingsClass->getAll();
 
-// If "Manage in the front-end" is enabled & the admin is logged-in, do not trigger any Autoptimize caching at all
-	if ( $wpacuSettings['frontend_show'] && \WpAssetCleanUp\Menu::userCanManageAssets() && ! defined( 'AUTOPTIMIZE_NOBUFFER_OPTIMIZE' ) ) {
-		define( 'AUTOPTIMIZE_NOBUFFER_OPTIMIZE', true );
-	}
-}, -PHP_INT_MAX);
+		// If "Manage in the front-end" is enabled & the admin is logged-in, do not trigger any Autoptimize caching at all
+		if ( $wpacuSettings['frontend_show'] && \WpAssetCleanUp\Menu::userCanManageAssets() && ! defined( 'AUTOPTIMIZE_NOBUFFER_OPTIMIZE' ) ) {
+			define( 'AUTOPTIMIZE_NOBUFFER_OPTIMIZE', true );
+		}
+	}, - PHP_INT_MAX );
+}
 
 // Admin Bar (Top Area of the website when user is logged in)
 new \WpAssetCleanUp\AdminBar();

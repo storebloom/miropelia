@@ -24,6 +24,8 @@ class BulkChanges
     public $data = array();
 
     /**
+     * Includes bulk unload rules, RegEx unloads & load exceptions
+     *
      * BulkChanges constructor.
      */
     public function __construct()
@@ -49,9 +51,9 @@ class BulkChanges
 	        $values = Main::instance()->getBulkUnload('post_type', $this->wpacuPostType);
         }
 
-        if (isset($values['styles']) && ! empty($values['styles'])) {
-	        sort($values['styles']);
-        }
+	    if (isset($values['styles']) && ! empty($values['styles'])) {
+		    sort($values['styles']);
+	    }
 
 	    if (isset($values['scripts']) && ! empty($values['scripts'])) {
 		    sort($values['scripts']);
@@ -73,8 +75,8 @@ class BulkChanges
 
             // Get All Post Types
             $postTypes = get_post_types(array('public' => true));
-            $this->data['post_types_list'] = $this->filterPostTypesList($postTypes);
-        }
+		        $this->data['post_types_list'] = Misc::filterPostTypesList( $postTypes );
+	        }
 
         $this->data['values'] = $this->getCount();
 
@@ -106,6 +108,47 @@ class BulkChanges
         }
 
         return $postTypes;
+    }
+
+	/**
+	 * @param $postTypesList
+	 * @param $currentPostType
+	 */
+	public static function buildPostTypesListDd($postTypesList, $currentPostType)
+    {
+        $ddList = array();
+
+	    foreach ($postTypesList as $postTypeKey => $postTypeValue) {
+	        if (in_array($postTypeKey, array('post', 'page', 'attachment'))) {
+		        $ddList['WordPress (default)'][$postTypeKey] = $postTypeValue;
+            } else {
+		        $ddList['Custom Post Types (Singular pages)'][$postTypeKey] = $postTypeValue;
+
+		        $list = Main::instance()->getBulkUnload('custom_post_type_archive_'.$postTypeKey);
+
+		        // At least one of the buckets ('styles' or 'scripts') needs to contain something
+		        if (! empty($list['styles']) || ! empty($list['scripts'])) {
+			        $ddList['Custom Post Types (Archive pages)'][ 'wpacu_custom_post_type_archive_'.$postTypeKey ] = $postTypeValue. ' (archive page)';
+		        }
+            }
+	    }
+	    ?>
+        <select id="wpacu_post_type_select" name="wpacu_post_type">
+		    <?php
+            foreach ($ddList as $groupLabel => $groupPostTypesList) {
+                echo '<optgroup label="'.$groupLabel.'">';
+
+                foreach ($groupPostTypesList as $postTypeKey => $postTypeValue) {
+                    ?>
+                    <option <?php if ($currentPostType === $postTypeKey) { echo 'selected="selected"'; } ?> value="<?php echo esc_attr($postTypeKey); ?>"><?php echo esc_html($postTypeValue); ?></option>
+		            <?php
+                }
+
+	            echo '</optgroup>';
+            }
+            ?>
+        </select>
+        <?php
     }
 
     /**

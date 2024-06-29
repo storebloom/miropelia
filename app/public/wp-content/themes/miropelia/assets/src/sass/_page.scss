@@ -1,5 +1,15 @@
 #primary {
   .container {
+
+    .youtube-container {
+      width: 600px;
+
+      iframe, img {
+        height: auto;
+        width: 600px;
+      }
+    }
+
     margin-top: 40px;
     &>div:not(.wp-block-cover):not(.wpcf7):not(.container),
     &>h1,
@@ -62,6 +72,10 @@ html {
       top: 0;
       width: 230px;
       z-index: -1;
+
+      @media (max-width: $small) {
+        left: -7rem;
+      }
     }
 
     &:after {
@@ -75,6 +89,10 @@ html {
       transform: rotateY(180deg);
       width: 230px;
       z-index: -1;
+
+      @media (max-width: $small) {
+        right: -7rem;
+      }
     }
   }
 }

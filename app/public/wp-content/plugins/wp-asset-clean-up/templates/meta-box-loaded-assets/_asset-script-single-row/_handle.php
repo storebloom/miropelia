@@ -8,7 +8,7 @@ if ( ! isset($data, $isCoreFile, $hideCoreFiles, $jqueryIconHtmlHandle, $childHa
 }
 ?>
 <div class="wpacu_handle">
-	<label for="script_<?php echo $data['row']['obj']->handle; ?>"> <?php _e('Handle:', 'wp-asset-clean-up'); ?> <strong><span style="color: green;"><?php echo $data['row']['obj']->handle; ?></span></strong> <?php if (in_array($data['row']['obj']->handle, array('jquery', 'jquery-core', 'jquery-migrate'))) { echo '&nbsp;'.$jqueryIconHtmlHandle; } ?></label>
+	<label for="script_<?php echo htmlentities(esc_attr($data['row']['obj']->handle), ENT_QUOTES); ?>"> <?php _e('Handle:', 'wp-asset-clean-up'); ?> <strong><span style="color: green;"><?php echo esc_attr($data['row']['obj']->handle); ?></span></strong> <?php if (in_array($data['row']['obj']->handle, array('jquery', 'jquery-core', 'jquery-migrate'))) { echo '&nbsp;'.$jqueryIconHtmlHandle; } ?></label>
 	&nbsp;<em>* JavaScript (.js)</em>
     <?php
     if ($data['row']['obj']->handle === 'swiper') {
@@ -32,7 +32,7 @@ if ( ! isset($data, $isCoreFile, $hideCoreFiles, $jqueryIconHtmlHandle, $childHa
 
 	// Any conditions set such as "IE" or "lt IE 8"?
     $dataRowExtra = (array)$data['row']['obj']->extra;
-	// Notify the user the assets load only on Internet Explorer
+    // Notify the user the assets load only on Internet Explorer
 	if ( isset( $dataRowExtra['conditional'] ) && $dataRowExtra['conditional'] && strpos( $dataRowExtra['conditional'], 'IE' ) !== false ) {
         echo '&nbsp;&nbsp;<span><img style="vertical-align: middle;" width="25" height="25" src="'.WPACU_PLUGIN_URL.'/assets/icons/icon-ie.svg" alt="" title="Microsoft / Public domain" />&nbsp;<span style="font-weight: 400; color: #1C87CF;">Loads only in Internet Explorer based on the following condition:</span> <em> if '.$dataRowExtra['conditional'].'</em></span>';
     }
@@ -40,6 +40,7 @@ if ( ! isset($data, $isCoreFile, $hideCoreFiles, $jqueryIconHtmlHandle, $childHa
 </div>
 <?php
 $ignoreChild = (isset($data['ignore_child']['scripts'][$data['row']['obj']->handle]) && $data['ignore_child']['scripts'][$data['row']['obj']->handle]);
+if ($ignoreChild) { $data['row']['at_least_one_rule_set'] = true; }
 
 if (! empty($childHandles)) {
 	?>
@@ -69,7 +70,7 @@ if (! empty($childHandles)) {
 	                $color = 'green';
 	                if (in_array($childHandle, $data['unloaded_js_handles'])) {
 	                    $color = '#cc0000';
-	                    $title = __('This JS handle is already unloaded.', 'wp-asset-clean-up');
+	                    $title = esc_html__('This JS handle is already unloaded.', 'wp-asset-clean-up');
 	                }
                     $childHandlesOutput .= '<a title="'.$title.'" style="color:'.$color.';font-weight:300;" href="#wpacu_script_row_'.$childHandle.'">'.$childHandle.'</a>, ';
                 }
@@ -78,11 +79,11 @@ if (! empty($childHandles)) {
                 </span>
             </em>
             <div class="wpacu_hide_if_handle_row_contracted">
-                <label for="script_<?php echo $data['row']['obj']->handle; ?>_ignore_children">
-                    &#10230; <input id="script_<?php echo $data['row']['obj']->handle; ?>_ignore_children"
+                <label for="script_<?php echo htmlentities(esc_attr($data['row']['obj']->handle), ENT_QUOTES); ?>_ignore_children">
+                    &#10230; <input id="script_<?php echo htmlentities(esc_attr($data['row']['obj']->handle), ENT_QUOTES); ?>_ignore_children"
                                     type="checkbox"
                                     <?php if ($ignoreChild) { ?>checked="checked"<?php } ?>
-                                    name="<?php echo WPACU_FORM_ASSETS_POST_KEY; ?>[scripts][<?php echo $data['row']['obj']->handle; ?>][ignore_child]"
+                                    name="<?php echo WPACU_FORM_ASSETS_POST_KEY; ?>[scripts][<?php echo htmlentities(esc_attr($data['row']['obj']->handle), ENT_QUOTES); ?>][ignore_child]"
                                     value="1" /> <small><?php _e('Ignore dependency rule and keep the "children" loaded', 'wp-asset-clean-up'); ?>
                     <?php if (in_array($data['row']['obj']->handle, \WpAssetCleanUp\Main::instance()->keepChildrenLoadedForHandles['js'])) { echo '(recommended)'; } ?>
                     </small>
@@ -96,6 +97,6 @@ if (! empty($childHandles)) {
 } elseif ($ignoreChild) {
 	// Keep the option enabled in case ignoring other dependencies was already chosen in a different page (e.g. in some pages a handle can have a dependency, in others it might not have any)
 	?>
-    <input type="hidden" name="<?php echo WPACU_FORM_ASSETS_POST_KEY; ?>[scripts][<?php echo $data['row']['obj']->handle; ?>][ignore_child]" value="1" />
+    <input type="hidden" name="<?php echo WPACU_FORM_ASSETS_POST_KEY; ?>[scripts][<?php echo htmlentities(esc_attr($data['row']['obj']->handle), ENT_QUOTES); ?>][ignore_child]" value="1" />
 	<?php
 }

@@ -12,11 +12,11 @@ if (isset($data['row']['obj']->deps) && ! empty($data['row']['obj']->deps)) {
 
 	if (is_array($data['row']['obj']->deps)) {
 		$dependsOnText = (count($data['row']['obj']->deps) === 1)
-			? __('"Child" of one "parent" JS file:', 'wp-asset-clean-up')
-			: sprintf(__('"Child" of %s JS "parent" files:', 'wp-asset-clean-up'),
+			? esc_html__('"Child" of one "parent" JS file:', 'wp-asset-clean-up')
+			: sprintf(esc_html__('"Child" of %s JS "parent" files:', 'wp-asset-clean-up'),
 				count($data['row']['obj']->deps));
 	} else {
-		$dependsOnText = __('"Child" of "parent" JS file(s):', 'wp-asset-clean-up');
+		$dependsOnText = esc_html__('"Child" of "parent" JS file(s):', 'wp-asset-clean-up');
 	}
 
 	$depsOutput .= $dependsOnText.' ';

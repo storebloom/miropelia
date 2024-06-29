@@ -18,16 +18,16 @@ include_once '_top-area.php';
     ?></p>
     <p><em><?php echo sprintf(
             __('To unlock all features and get premium support, you can %supgrade to the Pro version%s.', 'wp-asset-clean-up'),
-            '<a href="'.WPACU_PLUGIN_GO_PRO_URL.'?utm_source=plugin_license">', '</a>'
+            '<a href="'.apply_filters('wpacu_go_pro_affiliate_link', WPACU_PLUGIN_GO_PRO_URL.'?utm_source=plugin_license').'">', '</a>'
         );
     ?></em></p>
 
     <div class="wrap-upgrade-info">
         <p><span class="dashicons dashicons-info"></span> <?php echo sprintf(
                 __('If you already purchased the Pro version and you don\'t know how to activate it, %sfollow the steps from the "Help" section%s.', 'wp-asset-clean-up'),
-                '<a href="'.admin_url('admin.php?page=wpassetcleanup_get_help').'">', '</a>'
+                '<a href="'.esc_url(admin_url('admin.php?page=wpassetcleanup_get_help')).'">', '</a>'
             );
         ?></p>
-        <div class="wpacu-clearfix"></div>
+        <div class="wpacu_clearfix"></div>
     </div>
 </div>

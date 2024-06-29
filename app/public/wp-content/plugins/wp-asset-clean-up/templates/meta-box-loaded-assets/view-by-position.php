@@ -51,12 +51,23 @@ if (! empty($data['all']['styles']) || ! empty($data['all']['scripts'])) {
                 }
             }
             ?>
-            <div class="wpacu-assets-collapsible-wrap wpacu-by-position wpacu-wrap-area wpacu-<?php echo $positionMain; ?>">
-                <a class="wpacu-assets-collapsible <?php if ($listAreaStatus !== 'contracted') { ?>wpacu-assets-collapsible-active<?php } ?>" href="#wpacu-assets-collapsible-content-<?php echo $positionMain; ?>">
-                    <?php echo $positionsText[$positionMain]; ?> &#10141; Total files: <?php echo $totalFiles; ?>
+            <div class="wpacu-assets-collapsible-wrap wpacu-by-position wpacu-wrap-area wpacu-<?php echo esc_attr($positionMain); ?>">
+                <a class="wpacu-assets-collapsible <?php if ($listAreaStatus !== 'contracted') { ?>wpacu-assets-collapsible-active<?php } ?>" href="#wpacu-assets-collapsible-content-<?php echo esc_attr($positionMain); ?>">
+	                <?php echo wp_kses($positionsText[$positionMain], array('span' => array('class' => array()))); ?> &#10141; Total files: <?php echo (int)$totalFiles; ?>
                 </a>
 
                 <div class="wpacu-assets-collapsible-content <?php if ($listAreaStatus !== 'contracted') { ?>wpacu-open<?php } ?>">
+                    <?php if (count($values) > 0) { ?>
+                        <div class="wpacu-area-toggle-all-assets wpacu-right">
+                            <a class="wpacu-area-contract-all-assets wpacu_area_handles_row_expand_contract"
+                               data-wpacu-area="<?php echo esc_html($positionMain); ?>_assets" href="#">Contract</a>
+                            |
+                            <a class="wpacu-area-expand-all-assets wpacu_area_handles_row_expand_contract"
+                               data-wpacu-area="<?php echo esc_html($positionMain); ?>_assets" href="#">Expand</a>
+                            All Assets
+                        </div>
+                    <?php } ?>
+
                     <?php if ($positionMain === 'head') { ?>
                         <p class="wpacu-assets-note">The files below (if any) are loaded within <em>&lt;head&gt;</em> and <em>&lt;/head&gt;</em> tags. The output is done through <em>wp_head()</em> WordPress function which should be located before the closing <em>&lt;/head&gt;</em> tag of your theme.</p>
                     <?php } elseif ($positionMain === 'body') { ?>
@@ -64,10 +75,11 @@ if (! empty($data['all']['styles']) || ! empty($data['all']['scripts'])) {
                     <?php } ?>
 
                     <?php if (count($values) > 0) { ?>
-                        <table class="wpacu_list_table wpacu_list_by_position wpacu_widefat wpacu_striped">
+                        <table class="wpacu_list_table wpacu_list_by_position wpacu_widefat wpacu_striped"
+                               data-wpacu-area="<?php echo esc_html($positionMain); ?>_assets">
                             <tbody>
                             <?php
-                            echo $assetRowsOutput;
+                            echo \WpAssetCleanUp\Misc::stripIrrelevantHtmlTags($assetRowsOutput);
                             ?>
                             </tbody>
                         </table>
@@ -82,8 +94,8 @@ if (! empty($data['all']['styles']) || ! empty($data['all']['scripts'])) {
 if ( isset( $data['all']['hardcoded'] ) && ! empty( $data['all']['hardcoded'] ) ) {
 	$data['print_outer_html'] = true; // AJAX call from the Dashboard
 	include_once __DIR__ . '/_assets-hardcoded-list.php';
-} elseif (isset($hardcodedManageAreaHtml, $data['is_frontend_view']) && $data['is_frontend_view']) {
-	echo $hardcodedManageAreaHtml; // AJAX call from the front-end view
+} elseif (isset($data['is_frontend_view']) && $data['is_frontend_view']) {
+	echo \WpAssetCleanUp\HardcodedAssets::getHardCodedManageAreaForFrontEndView($data); // AJAX call from the front-end view
 }
 /*
 * -----------------------

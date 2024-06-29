@@ -4,7 +4,7 @@ namespace Yoast\WP\SEO\Actions\Wincher;
 
 use Exception;
 use WP_Post;
-use WPSEO_Meta;
+use WPSEO_Utils;
 use Yoast\WP\SEO\Config\Wincher_Client;
 use Yoast\WP\SEO\Helpers\Options_Helper;
 use Yoast\WP\SEO\Repositories\Indexable_Repository;
@@ -19,21 +19,21 @@ class Wincher_Keyphrases_Action {
 	 *
 	 * @var string
 	 */
-	const KEYPHRASES_ADD_URL = 'https://api.wincher.com/beta/websites/%s/keywords/bulk';
+	public const KEYPHRASES_ADD_URL = 'https://api.wincher.com/beta/websites/%s/keywords/bulk';
 
 	/**
 	 * The Wincher tracked keyphrase retrieval URL.
 	 *
 	 * @var string
 	 */
-	const KEYPHRASES_URL = 'https://api.wincher.com/beta/yoast/%s';
+	public const KEYPHRASES_URL = 'https://api.wincher.com/beta/yoast/%s';
 
 	/**
 	 * The Wincher delete tracked keyphrase URL.
 	 *
 	 * @var string
 	 */
-	const KEYPHRASE_DELETE_URL = 'https://api.wincher.com/beta/websites/%s/keywords/%s';
+	public const KEYPHRASE_DELETE_URL = 'https://api.wincher.com/beta/websites/%s/keywords/%s';
 
 	/**
 	 * The Wincher_Client instance.
@@ -59,8 +59,8 @@ class Wincher_Keyphrases_Action {
 	/**
 	 * Wincher_Keyphrases_Action constructor.
 	 *
-	 * @param Wincher_Client       $client         The API client.
-	 * @param Options_Helper       $options_helper The options helper.
+	 * @param Wincher_Client       $client               The API client.
+	 * @param Options_Helper       $options_helper       The options helper.
 	 * @param Indexable_Repository $indexable_repository The indexables repository.
 	 */
 	public function __construct(
@@ -89,7 +89,7 @@ class Wincher_Keyphrases_Action {
 			);
 
 			// Enforce arrrays to ensure a consistent way of preparing the request.
-			if ( ! is_array( $keyphrases ) ) {
+			if ( ! \is_array( $keyphrases ) ) {
 				$keyphrases = [ $keyphrases ];
 			}
 
@@ -107,7 +107,7 @@ class Wincher_Keyphrases_Action {
 
 			$formatted_keyphrases = \array_values(
 				\array_map(
-					function ( $keyphrase ) {
+					static function ( $keyphrase ) {
 						return [
 							'keyword' => $keyphrase,
 							'groups'  => [],
@@ -117,15 +117,15 @@ class Wincher_Keyphrases_Action {
 				)
 			);
 
-			$results = $this->client->post( $endpoint, \WPSEO_Utils::format_json_encode( $formatted_keyphrases ) );
+			$results = $this->client->post( $endpoint, WPSEO_Utils::format_json_encode( $formatted_keyphrases ) );
 
 			if ( ! \array_key_exists( 'data', $results ) ) {
 				return $this->to_result_object( $results );
 			}
 
 			// The endpoint returns a lot of stuff that we don't want/need.
-			$results['data'] = array_map(
-				function( $keyphrase ) {
+			$results['data'] = \array_map(
+				static function ( $keyphrase ) {
 					return [
 						'id'         => $keyphrase['id'],
 						'keyword'    => $keyphrase['keyword'],
@@ -180,15 +180,27 @@ class Wincher_Keyphrases_Action {
 	 * Gets the keyphrase data for the passed keyphrases.
 	 * Retrieves all available data if no keyphrases are provided.
 	 *
-	 * @param array  $used_keyphrases The currently used keyphrases. Optional.
-	 * @param string $permalink       The current permalink. Optional.
+	 * @param array|null  $used_keyphrases The currently used keyphrases. Optional.
+	 * @param string|null $permalink       The current permalink. Optional.
+	 * @param string|null $start_at        The position start date. Optional.
 	 *
 	 * @return object The keyphrase chart data.
 	 */
-	public function get_tracked_keyphrases( $used_keyphrases = null, $permalink = null ) {
+	public function get_tracked_keyphrases( $used_keyphrases = null, $permalink = null, $start_at = null ) {
 		try {
 			if ( $used_keyphrases === null ) {
 				$used_keyphrases = $this->collect_all_keyphrases();
+			}
+
+			// If we still have no keyphrases the API will return an error, so
+			// don't even bother sending a request.
+			if ( empty( $used_keyphrases ) ) {
+				return $this->to_result_object(
+					[
+						'data'   => [],
+						'status' => 200,
+					]
+				);
 			}
 
 			$endpoint = \sprintf(
@@ -198,10 +210,11 @@ class Wincher_Keyphrases_Action {
 
 			$results = $this->client->post(
 				$endpoint,
-				\WPSEO_Utils::format_json_encode(
+				WPSEO_Utils::format_json_encode(
 					[
 						'keywords' => $used_keyphrases,
 						'url'      => $permalink,
+						'start_at' => $start_at,
 					]
 				),
 				[
@@ -213,9 +226,7 @@ class Wincher_Keyphrases_Action {
 				return $this->to_result_object( $results );
 			}
 
-			if ( ! empty( $used_keyphrases ) ) {
-				$results['data'] = $this->filter_results_by_used_keyphrases( $results['data'], $used_keyphrases );
-			}
+			$results['data'] = $this->filter_results_by_used_keyphrases( $results['data'], $used_keyphrases );
 
 			// Extract the positional data and assign it to the keyphrase.
 			$results['data'] = \array_combine(
@@ -251,13 +262,13 @@ class Wincher_Keyphrases_Action {
 			$keyphrases[] = $primary_keyphrase->primary_focus_keyword;
 		}
 
-		if ( YoastSEO()->helpers->product->is_premium() ) {
-			$additional_keywords = \json_decode( WPSEO_Meta::get_value( 'focuskeywords', $post->ID ), true );
-
-			$keyphrases = \array_merge( $keyphrases, $additional_keywords );
-		}
-
-		return $keyphrases;
+		/**
+		 * Filters the keyphrases collected by the Wincher integration from the post.
+		 *
+		 * @param array $keyphrases The keyphrases array.
+		 * @param int   $post_id    The ID of the post.
+		 */
+		return \apply_filters( 'wpseo_wincher_keyphrases_from_post', $keyphrases, $post->ID );
 	}
 
 	/**
@@ -266,8 +277,6 @@ class Wincher_Keyphrases_Action {
 	 * @return array
 	 */
 	protected function collect_all_keyphrases() {
-		global $wpdb;
-
 		// Collect primary keyphrases first.
 		$keyphrases = \array_column(
 			$this->indexable_repository
@@ -281,30 +290,12 @@ class Wincher_Keyphrases_Action {
 			'primary_focus_keyword'
 		);
 
-		if ( YoastSEO()->helpers->product->is_premium() ) {
-			// Collect all related keyphrases.
-			$meta_key = WPSEO_Meta::$meta_prefix . 'focuskeywords';
-
-			$query = "
-				SELECT meta_value
-				FROM $wpdb->postmeta
-				JOIN $wpdb->posts ON {$wpdb->posts}.id = {$wpdb->postmeta}.post_id
-				WHERE meta_key = '$meta_key' AND post_status != 'trash'
-			";
-
-			// phpcs:ignore -- ignoring since it's complaining about not using prepare when it's perfectly safe here.
-			$results = $wpdb->get_results( $query );
-
-			if ( $results ) {
-				foreach ( $results as $row ) {
-					$additional_keywords = \json_decode( $row->meta_value, true );
-					if ( $additional_keywords !== null ) {
-						$additional_keywords = \array_column( $additional_keywords, 'keyword' );
-						$keyphrases          = \array_merge( $keyphrases, $additional_keywords );
-					}
-				}
-			}
-		}
+		/**
+		 * Filters the keyphrases collected by the Wincher integration from all the posts.
+		 *
+		 * @param array $keyphrases The keyphrases array.
+		 */
+		$keyphrases = \apply_filters( 'wpseo_wincher_all_keyphrases', $keyphrases );
 
 		// Filter out empty entries.
 		return \array_filter( $keyphrases );
@@ -321,7 +312,7 @@ class Wincher_Keyphrases_Action {
 	protected function filter_results_by_used_keyphrases( $results, $used_keyphrases ) {
 		return \array_filter(
 			$results,
-			function( $result ) use ( $used_keyphrases ) {
+			static function ( $result ) use ( $used_keyphrases ) {
 				return \in_array( $result['keyword'], \array_map( 'strtolower', $used_keyphrases ), true );
 			}
 		);
@@ -336,7 +327,7 @@ class Wincher_Keyphrases_Action {
 	 * @return bool Whether the limit is exceeded.
 	 */
 	protected function would_exceed_limits( $keyphrases, $limits ) {
-		if ( ! is_array( $keyphrases ) ) {
+		if ( ! \is_array( $keyphrases ) ) {
 			$keyphrases = [ $keyphrases ];
 		}
 
@@ -344,7 +335,7 @@ class Wincher_Keyphrases_Action {
 			return false;
 		}
 
-		return ( count( $keyphrases ) + $limits->usage ) > $limits->limit;
+		return ( \count( $keyphrases ) + $limits->usage ) > $limits->limit;
 	}
 
 	/**
@@ -356,7 +347,7 @@ class Wincher_Keyphrases_Action {
 	 */
 	protected function to_result_object( $result ) {
 		if ( \array_key_exists( 'data', $result ) ) {
-			$result['results'] = $result['data'];
+			$result['results'] = (object) $result['data'];
 
 			unset( $result['data'] );
 		}

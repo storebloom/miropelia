@@ -20,9 +20,11 @@ var FollowButtons = ( function( $, wp ) {
 		boot: function( data ) {
 			this.data = data;
 
-			$( document ).ready( function() {
-				this.init();
-			}.bind( this ) );
+			$( document ).ready(
+				function() {
+					this.init();
+				}.bind( this )
+			);
 		},
 
 		/**
@@ -40,9 +42,6 @@ var FollowButtons = ( function( $, wp ) {
 			// Check if platform has changed its button config.
 			this.checkIfChanged();
 
-			// Check if buttons are enabled or disabled on both ends.
-			this.markSelected();
-
 			// Check for non WP Share Buttons.
 			this.shareButtonsExists();
 		},
@@ -51,219 +50,277 @@ var FollowButtons = ( function( $, wp ) {
 		 * Initiate listeners.
 		 */
 		listen: function() {
-			var self = this,
+			var self  = this,
 				timer = '';
 
+			// Enable tool submit.
+			const enableButtons = document.querySelectorAll( '.enable-tool' );
+
+			if ( enableButtons ) {
+				enableButtons.forEach( enableButton => {
+					enableButton.addEventListener( 'click', ( e ) => {
+						e.stopPropagation();
+						e.preventDefault();
+
+						self.updateButtons( enableButton.dataset.button, 'On' );
+					} );
+				} );
+			}
+
+			// Disable tool submit.
+			const disableButtons = document.querySelectorAll( '.disable-tool' );
+
+			if ( disableButtons ) {
+				disableButtons.forEach( disableButton => {
+					disableButton.addEventListener( 'click', ( e ) => {
+						e.stopPropagation();
+						e.preventDefault();
+
+						self.updateButtons( disableButton.dataset.button, 'Off' );
+					} );
+				} );
+			}
+
 			// On off button events.
-			this.$container.on( 'click', '.share-on, .share-off', function() {
+			this.$container.on(
+				'click',
+				'.share-on, .share-off',
+				function() {
 
-				// Revert to default color.
-				$( this ).closest( 'div' ).find( 'div.label-text' ).css( 'color', '#8d8d8d' );
+					// Revert to default color.
+					$( this ).closest( 'div' ).find( 'div.label-text' ).css( 'color', '#8d8d8d' );
 
-				// Change the input selected color to white.
-				$( this ).find( '.label-text' ).css( 'color', '#ffffff' );
+					// Change the input selected color to white.
+					$( this ).find( '.label-text' ).css( 'color', '#ffffff' );
 
-				// If turning on show recommendation notice.
-				if ( $( this ).hasClass( 'share-on' ) ) {
-					self.postPageTriggered();
+					// If turning on show recommendation notice.
+					if ( $( this ).hasClass( 'share-on' ) ) {
+						self.postPageTriggered();
+					}
 				}
-			} );
+			);
 
 			// Copy text from read only input fields.
-			this.$container.on( 'click', '#copy-shortcode, #copy-template', function() {
-				self.copyText( $( this ).closest( 'div' ).find( 'input' ) );
-			} );
+			this.$container.on(
+				'click',
+				'#copy-shortcode, #copy-template',
+				function() {
+					self.copyText( $( this ).closest( 'div' ).find( 'input' ) );
+				}
+			);
 
 			// Open close options and update platform and WP on off status.
-			this.$container.on( 'click', '.enable-buttons .share-on, .enable-buttons .share-off', function() {
-				var type = $( this ).find( 'div.label-text' ).html();
+			this.$container.on(
+				'click',
+				'.enable-buttons .share-on, .enable-buttons .share-off',
+				function() {
+					var type = $( this ).find( 'div.label-text' ).html();
 
-				self.updateButtons( 'inline-follow', type, 'click' );
-			} );
+					self.updateButtons( 'inline-follow', type, 'click' );
+				}
+			);
 
 			// Toggle button menus when arrows are clicked.
-			this.$container.on( 'click', 'span.st-arrow', function() {
-				var type = $( this ).html();
+			this.$container.on(
+				'click',
+				'span.st-arrow',
+				function() {
+					var type = $( this ).html();
 
-				self.updateButtons( 'inline-follow', type, '' );
-			} );
+					self.updateButtons( 'inline-follow', type, '' );
+				}
+			);
 
 			// Click reset buttons.
-			this.$container.on( 'click', 'p.submit #reset', function() {
-				var type = $( this )
+			this.$container.on(
+				'click',
+				'p.submit #reset',
+				function() {
+					var type = $( this )
 					.closest( 'p.submit' )
 					.prev()
 					.find( '.enable-buttons' )
 					.attr( 'id' );
 
-				self.setDefaults( type );
-			} );
+					self.setDefaults( type );
+				}
+			);
 
 			// Toggle margin control buttons.
-			this.$container.on( 'click', 'button.margin-control-button', function() {
-				var status = $( this ).hasClass( 'active-margin' );
+			this.$container.on(
+				'click',
+				'button.margin-control-button',
+				function() {
+					var status = $( this ).hasClass( 'active-margin' );
 
-				self.activateMargin( this, status );
-			} );
+					self.activateMargin( this, status );
+				}
+			);
 
 			// Button alignment.
-			this.$container.on( 'click', '.button-alignment .alignment-button', function() {
-				$( '.button-alignment .alignment-button[data-selected="true"]' )
+			this.$container.on(
+				'click',
+				'.button-alignment .alignment-button',
+				function() {
+					$( '.button-alignment .alignment-button[data-selected="true"]' )
 					.attr( 'data-selected', 'false' );
-				$( this ).attr( 'data-selected', 'true' );
+					$( this ).attr( 'data-selected', 'true' );
 
-				self.loadPreview( '' );
-			} );
-
-			$( 'body' ).on( 'click', '.item label', function() {
-				var checked = $( this ).siblings( 'input' ).is( ':checked' );
-
-				$( '.sharethis-inline-follow-buttons' ).removeClass( 'st-has-labels' );
-
-				if ( ! checked ) {
-					$( this ).closest( '.st-radio-config' ).find( '.item' ).each( function() {
-						$( this ).find( 'input' ).prop( 'checked', false );
-					} );
-
-					$( this ).siblings( 'input' ).prop( 'checked', true );
+					self.loadPreview( '' );
 				}
+			);
 
-				self.loadPreview( '' );
-			} );
+			$( 'body' ).on(
+				'click',
+				'.item label',
+				function() {
+					var checked = $( this ).siblings( 'input' ).is( ':checked' );
+
+					$( '.sharethis-inline-follow-buttons' ).removeClass( 'st-has-labels' );
+
+					if ( ! checked ) {
+						$( this ).closest( '.st-radio-config' ).find( '.item' ).each(
+							function() {
+								$( this ).find( 'input' ).prop( 'checked', false );
+							}
+						);
+
+						$( this ).siblings( 'input' ).prop( 'checked', true );
+					}
+
+					self.loadPreview( '' );
+				}
+			);
 
 			// All levers.
-			this.$container.on( 'click', '.item div.switch', function() {
-				self.loadPreview( '' );
-			} );
+			this.$container.on(
+				'click',
+				'.item div.switch',
+				function() {
+					self.loadPreview( '' );
+				}
+			);
 
 			// CTA text.
-			this.$container.on( 'keyup', '.cta-text input', function() {
-				self.loadPreview( '' );
-			} );
+			this.$container.on(
+				'keyup',
+				'.cta-text input',
+				function() {
+					self.loadPreview( '' );
+				}
+			);
 
 			// Minimum count.
-			this.$container.on( 'change', '#radius-selector', function() {
-				self.loadPreview( '' );
-			} );
+			this.$container.on(
+				'change',
+				'#radius-selector',
+				function() {
+					self.loadPreview( '' );
+				}
+			);
 
 			// Add profile to network.
-			this.$container.on( 'keyup', '#st-network-urls .center-align .profile_link', function() {
-				clearTimeout( timer );
+			this.$container.on(
+				'keyup',
+				'#st-network-urls .center-align .profile_link',
+				function() {
+					clearTimeout( timer );
 
-				timer = setTimeout( function() {
-					self.loadPreview( '' );
-				}.bind( this ), 1000 );
-			} );
+					timer = setTimeout(
+						function() {
+							self.loadPreview( '' );
+						}.bind( this ),
+						1000
+					);
+				}
+			);
 
 			// Select or deselect a network.
-			this.$container.on( 'click', '.follow-buttons .follow-button', function() {
-				var selection = $( this ).attr( 'data-selected' ),
-					follow = $( this ).attr( 'data-network' );
+			this.$container.on(
+				'click',
+				'.follow-buttons .follow-button',
+				function() {
+					var selection = $( this ).attr( 'data-selected' ),
+					follow        = $( this ).attr( 'data-network' );
 
-				if ( 'true' === selection ) {
-					$( this ).attr( 'data-selected', 'false' );
-					$( '.center-align[data-network="' + follow + '"]' ).attr( 'data-selected', 'false' );
-					$( '.sharethis-selected-networks > div > div[data-network="' + follow + '"]' ).remove();
-				} else {
-					$( this ).attr( 'data-selected', 'true' );
-					$( '.center-align[data-network="' + follow + '"]' ).attr( 'data-selected', 'true' );
-					$( '.sharethis-selected-networks > div' ).append( '<div class="st-btn" data-network="' + follow + '" style="display: inline-block;"></div>' );
+					if ( 'true' === selection ) {
+						$( this ).attr( 'data-selected', 'false' );
+						$( '.center-align[data-network="' + follow + '"]' ).attr( 'data-selected', 'false' );
+						$( '.sharethis-selected-networks > div > div[data-network="' + follow + '"]' ).remove();
+					} else {
+						$( this ).attr( 'data-selected', 'true' );
+						$( '.center-align[data-network="' + follow + '"]' ).attr( 'data-selected', 'true' );
+						$( '.sharethis-selected-networks > div' ).append( '<div class="st-btn" data-network="' + follow + '" style="display: inline-block;"></div>' );
+					}
+
+					self.loadPreview( '' );
 				}
-
-				self.loadPreview( '' );
-			} );
+			);
 
 			// Add class to preview when scrolled to.
-			$( window ).on( 'scroll', function() {
-				if ( undefined === $( '.selected-button' ).offset() ) {
-					return;
-				}
+			$( window ).on(
+				'scroll',
+				function() {
+					if ( undefined === $( '.selected-button' ).offset() ) {
+						return;
+					}
 
-				var stickyTop = $( '.selected-button' ).offset().top;
+					var stickyTop = $( '.selected-button' ).offset().top;
 
-				if ( $( window ).scrollTop() >= stickyTop ) {
-					$( '.sharethis-selected-networks' ).addClass( 'sharethis-prev-stick' );
-				} else {
-					$( '.sharethis-selected-networks' ).removeClass( 'sharethis-prev-stick' );
+					if ( $( window ).scrollTop() >= stickyTop ) {
+						$( '.sharethis-selected-networks' ).addClass( 'sharethis-prev-stick' );
+					} else {
+						$( '.sharethis-selected-networks' ).removeClass( 'sharethis-prev-stick' );
+					}
 				}
-			} );
+			);
 
 			// Submit configurations.
-			$( '.sharethis-wrap form' ).submit( function() {
-				self.loadPreview( 'submit', 'inline-follow' );
-			} );
+			$( '.sharethis-wrap form' ).submit(
+				function() {
+					self.loadPreview( 'submit', 'inline-follow' );
+				}
+			);
 
 			// Tooltip.
-			this.$container.on( 'mouseover', '.tooltip-icon', function() {
-				var tooltip = $( this ).attr( 'data-tooltip' ),
-					position = $( this ).position(),
-					leftPos = position.left + 20,
-					topPos = position.top - 20;
+			this.$container.on(
+				'mouseover',
+				'.tooltip-icon',
+				function() {
+					var tooltip = $( this ).attr( 'data-tooltip' ),
+					position    = $( this ).position(),
+					leftPos     = position.left + 20,
+					topPos      = position.top - 20;
 
-				$( '.tooltip-message-over' ).fadeIn( 500 ).html( tooltip ).css( { 'top': topPos + 'px', 'left': leftPos + 'px' } );
-			} );
+					$( '.tooltip-message-over' ).fadeIn( 500 ).html( tooltip ).css( { 'top': topPos + 'px', 'left': leftPos + 'px' } );
+				}
+			);
 
 			// Tooltip out.
-			this.$container.on( 'mouseleave', '.tooltip-icon', function() {
-				$( '.tooltip-message-over' ).fadeOut( 500 );
-			} );
+			this.$container.on(
+				'mouseleave',
+				'.tooltip-icon',
+				function() {
+					$( '.tooltip-message-over' ).fadeOut( 500 );
+				}
+			);
 
 			// Close notice.
-			$( 'body' ).on( 'click', '.notice-dismiss', function() {
-				$( this ).parent( '.notice.is-dismissible' ).hide();
-			} );
-		},
-
-		/**
-		 * Change font color of selected buttons.
-		 * Also decide whether to update WP enable / disable status or just show / hide menu options.
-		 */
-		markSelected: function() {
-			var iConfigSet = null !== this.$config && undefined !== this.$config[ 'inline-follow-buttons' ],
-				iturnOn,
-				iturnOff,
-				inlineFollowEnable;
-
-			// Check if api call is successful and if inline buttons are enabled.  Use WP data base if not.
-			if ( iConfigSet ) {
-				inlineFollowEnable = this.$config[ 'inline-follow-buttons' ][ 'enabled' ]; // Dot notation cannot be used due to dashes in name.
-			} else {
-				if ( undefined !== this.data.buttonConfig[ 'inline-follow' ] ) {
-					inlineFollowEnable = this.data.buttonConfig[ 'inline-follow' ][ 'enabled' ];
+			$( 'body' ).on(
+				'click',
+				'.notice-dismiss',
+				function() {
+					$( this ).parent( '.notice.is-dismissible' ).hide();
 				}
-			}
-
-			// Decide whether to update WP database or just show / hide menu options.
-			if ( ! iConfigSet || (
-					undefined !== this.data.buttonConfig[ 'inline-follow' ] && this.data.buttonConfig[ 'inline-follow' ][ 'enabled' ] === this.$config[ 'inline-follow-buttons' ][ 'enabled' ] ) ) { // Dot notation cannot be used due to dashes in name.
-				iturnOn = 'show';
-				iturnOff = 'hide';
-			} else {
-				iturnOn = 'On';
-				iturnOff = 'Off';
-			}
-
-			// If enabled show button configuration.
-			if ( 'true' === inlineFollowEnable || true === inlineFollowEnable ) {
-				$( '.inline-follow-platform' ).css( 'display', 'table-footer-group' );
-				this.updateButtons( 'inline-follow', iturnOn );
-				$( '#inline-follow label.share-on input' ).prop( 'checked', true );
-			} else {
-				$( '.inline-follow-platform' ).hide();
-				this.updateButtons( 'inline-follow', iturnOff );
-				$( '#inline-follow label.share-off input' ).prop( 'checked', true );
-			}
-
-			// Change button font color based on status.
-			$( '.share-on input:checked, .share-off input:checked' ).closest( 'label' ).find( 'span.label-text' ).css( 'color', '#ffffff' );
+			);
 		},
 
 		/**
 		 * Check the platform has updated the button configs.
 		 */
 		checkIfChanged: function() {
-			var iTs = this.$config[ 'inline-follow-buttons' ],
-				myITs = this.data.buttonConfig[ 'inline-follow' ];
+			var iTs   = this.$config[ 'inline-follow-buttons' ],
+				myITs = this.data.buttonConfig['inline-follow'];
 
 			// Set variables if array exists.
 			if ( undefined !== iTs ) {
@@ -294,62 +351,26 @@ var FollowButtons = ( function( $, wp ) {
 		 * @param event
 		 */
 		updateButtons: function( button, type, event ) {
-			var pTypes = [ 'show', 'On', '►', 'true' ],
-				aTypes = [ 'show', 'hide', '►', '▼' ],
-				timer = '';
+			const self = this;
 
-			// If not one of the show types then hide.
-			if ( -1 !== $.inArray( type, pTypes ) ) {
-
-				// Show the button configs.
-				$( '.sharethis-wrap form .form-table tr' ).not( ':eq(0)' ).show();
-
-				// Show the submit / reset buttons.
-				$( '.sharethis-wrap form .submit' ).show();
-
-				// Change the icon next to title.
-				$( '.sharethis-wrap h2 span' ).html( '&#9660;' );
-
-				// Platform config.
-				$( '.inline-follow-platform' ).css( 'display', 'table-footer-group' );
-
-				if ( 'click' === event ) {
-					this.loadPreview( 'turnon', button );
-				}
-
-				// Set option value for button.
-				wp.ajax.post( 'update_buttons', {
-					type: button.toLowerCase(),
-					onoff: 'On',
+			// Set option value for button.
+			wp.ajax.post(
+				'update_follow_buttons',
+				{
+					type: 'inline-follow',
+					onoff: type,
 					nonce: this.data.nonce
-				} ).always( function() {
-				} );
-			} else {
-
-				// Hide the button configs.
-				$( '.sharethis-wrap form .form-table tr' ).not( ':eq(0)' ).hide();
-
-				// Hide the submit / reset buttons.
-				$( '.sharethis-wrap form .submit' ).hide();
-
-				// Change the icon next to title.
-				$( '.sharethis-wrap h2 span' ).html( '&#9658;' );
-
-				// Platform config.
-				$( '.inline-follow-platform' ).hide();
-
-				if ( 'click' === event ) {
-					this.loadPreview( 'turnoff', 'inline-follow' );
 				}
-
-				// Set option value for button.
-				wp.ajax.post( 'update_buttons', {
-					type: button.toLowerCase(),
-					onoff: 'Off',
-					nonce: this.data.nonce
-				} ).always( function() {
-				} );
-			}
+			).always(
+				function() {
+					// If not one of the show types then hide.
+					if ( 'On' === type ) {
+						self.loadPreview( 'turnon', button );
+					} else {
+						self.loadPreview( 'turnoff', button );
+					}
+				}
+			);
 		},
 
 		/**
@@ -366,7 +387,7 @@ var FollowButtons = ( function( $, wp ) {
 		 * Add the reset buttons to share buttons menu
 		 */
 		createReset: function() {
-			var button = '<input type="button" id="reset" class="button button-primary" value="Reset">',
+			var button     = '<input type="button" id="reset" class="button button-primary" value="Reset">',
 				newButtons = $( '.sharethis-wrap form .submit' ).append( button ).clone();
 		},
 
@@ -376,38 +397,45 @@ var FollowButtons = ( function( $, wp ) {
 		 * @param type
 		 */
 		setDefaults: function( type ) {
-			wp.ajax.post( 'set_follow_default_settings', {
-				type: type,
-				nonce: this.data.nonce
-			} ).always( function() {
-				if ( 'both' !== type ) {
-					location.href = location.pathname + '?page=sharethis-follow-buttons&reset=' + type;
-				} else {
-					location.reload();
+			wp.ajax.post(
+				'set_follow_default_settings',
+				{
+					type: type,
+					nonce: this.data.nonce
 				}
-			} );
+			).always(
+				function() {
+					if ( 'both' !== type ) {
+						  location.href = location.pathname + '?page=sharethis-share-buttons&reset=' + type;
+					} else {
+						location.reload();
+					}
+				}
+			);
 		},
 
 		/**
 		 * Get current config data from user.
 		 */
 		getConfig: function() {
-			var result = null,
+			var result    = null,
 				callExtra = 'secret=' + this.data.secret;
 
 			if ( 'undefined' === this.data.secret || undefined === this.data.secret ) {
 				callExtra = 'token=' + this.data.token;
 			}
 
-			$.ajax( {
-				url: 'https://platform-api.sharethis.com/v1.0/property/?' + callExtra + '&id=' + this.data.propertyid,
-				method: 'GET',
-				async: false,
-				contentType: 'application/json; charset=utf-8',
-				success: function( results ) {
-					result = results;
+			$.ajax(
+				{
+					url: 'https://platform-api.sharethis.com/v1.0/property/?' + callExtra + '&id=' + this.data.propertyid,
+					method: 'GET',
+					async: false,
+					contentType: 'application/json; charset=utf-8',
+					success: function( results ) {
+						result = results;
+					}
 				}
-			} );
+			);
 
 			return result;
 		},
@@ -445,15 +473,20 @@ var FollowButtons = ( function( $, wp ) {
 				return;
 			}
 
-			$( '.follow-buttons .follow-button' ).each( function() {
-				$( this ).attr( 'data-selected', false );
-			} );
+			$( '.follow-buttons .follow-button, #st-network-urls .center-align' ).each(
+				function() {
+					$( this ).attr( 'data-selected', false );
+				}
+			);
 
 			// Follows.
-			$.each( config[ 'networks' ], function( index, value ) {
-				$( '.follow-buttons .follow-button[data-network="' + value + '"]' ).attr( 'data-selected', 'true' );
-				$( '#st-network-urls .center-align[data-network="' + value + '"]' ).attr( 'data-selected', 'true' );
-			} );
+			$.each(
+				config[ 'networks' ],
+				function( index, value ) {
+					$( '.follow-buttons .follow-button[data-network="' + value + '"]' ).attr( 'data-selected', 'true' );
+					$( '#st-network-urls .center-align[data-network="' + value + '"]' ).attr( 'data-selected', 'true' );
+				}
+			);
 
 			// Alignment.
 			$( '.button-alignment .alignment-button[data-selected="true"]' ).attr( 'data-selected', 'false' );
@@ -464,9 +497,12 @@ var FollowButtons = ( function( $, wp ) {
 			$( '.label-position #' + config['action_pos'] ).siblings( 'input' ).prop( 'checked', true );
 
 			// Profiles.
-			$.each( config.profiles, function( name, value ) {
-				$( '#st-network-urls .center-align[data-network="' + name + '"]' ).find( 'input.profile_link' ).val( value );
-			} );
+			$.each(
+				config.profiles,
+				function( name, value ) {
+					$( '#st-network-urls .center-align[data-network="' + name + '"]' ).find( 'input.profile_link' ).val( value );
+				}
+			);
 
 			// CTA.
 			$( 'div.call-to-action' ).find( 'input' ).prop( 'checked', ( 'false' !== config['action_enable'] && false !== config['action_enable'] ) );
@@ -564,65 +600,67 @@ var FollowButtons = ( function( $, wp ) {
 				this.setConfigFields( 'inline-follow', '', '' );
 			}
 
-			var bAlignment = $( '.button-alignment .alignment-button[data-selected="true"]' ).attr( 'data-alignment' ),
-				self = this,
-				bSize = $( '.button-size .item input:checked' ).siblings( 'label' ).html(),
-				actionCopy = $( '.cta-text input' ).val(),
+			var bAlignment   = $( '.button-alignment .alignment-button[data-selected="true"]' ).attr( 'data-alignment' ),
+				self         = this,
+				bSize        = $( '.button-size .item input:checked' ).siblings( 'label' ).html(),
+				actionCopy   = $( '.cta-text input' ).val(),
 				enableAction = $( '.cta-on-off' )
 					.find( 'input' )
 					.is( ':checked' ),
 				extraSpacing = $( '.extra-spacing' )
 					.find( 'input' )
 					.is( ':checked' ),
-				bRadius = $( '#radius-selector' ).val() + 'px',
-				lPosition = $( '.label-position .item input:checked' ).siblings( 'label' ).html(),
-				follows = [],
+				bRadius      = $( '#radius-selector' ).val() + 'px',
+				lPosition    = $( '.label-position .item input:checked' ).siblings( 'label' ).html(),
+				follows      = [],
 				size,
-				spacing = 0,
+				spacing      = 0,
 				padding,
 				fontSize,
 				config,
 				beforeConfig,
-				theFirst = false,
+				theFirst     = false,
 				wpConfig,
-				timer = '',
+				timer        = '',
 				upConfig,
 				theData,
-				enabled = false,
+				enabled      = false,
 				networkName,
 				networkProfile,
-				profiles = {};
+				profiles     = {};
 
 			if ( undefined !== lPosition ) {
 				lPosition = lPosition.toLowerCase();
 			}
 
-			$( '#st-network-urls .center-align[data-selected="true"]' ).each( function( index ) {
-				networkName = $( this ).attr( 'data-network' );
-				networkProfile = $( this ).find( '.profile_link' ).val();
-				profiles[ networkName ] = networkProfile;
-			} );
+			$( '#st-network-urls .center-align[data-selected="true"]' ).each(
+				function( index ) {
+					networkName             = $( this ).attr( 'data-network' );
+					networkProfile          = $( this ).find( '.profile_link' ).val();
+					profiles[ networkName ] = networkProfile;
+				}
+			);
 
 			if ( 'Small' === bSize ) {
-				size = 32;
+				size     = 32;
 				fontSize = 11;
-				padding = 8;
+				padding  = 8;
 
 				$( '#radius-selector' ).attr( 'max', 16 );
 			}
 
 			if ( 'Medium' === bSize ) {
-				size = 40;
+				size     = 40;
 				fontSize = 12;
-				padding = 10;
+				padding  = 10;
 
 				$( '#radius-selector' ).attr( 'max', 20 );
 			}
 
 			if ( 'Large' === bSize ) {
-				size = 48;
+				size     = 48;
 				fontSize = 16;
-				padding = 12;
+				padding  = 12;
 
 				$( '#radius-selector' ).attr( 'max', 26 );
 			}
@@ -631,12 +669,14 @@ var FollowButtons = ( function( $, wp ) {
 				spacing = 8;
 			}
 
-			if ( 'initial' === type && undefined !== this.data.buttonConfig[ 'inline-follow' ][ 'networks' ] ) {
-				follows = this.data.buttonConfig[ 'inline-follow' ][ 'networks' ];
+			if ( 'initial' === type && undefined !== this.data.buttonConfig[ 'networks' ] ) {
+				follows = this.data.buttonConfig[ 'networks' ];
 			} else {
-				$( '.sharethis-selected-networks > div .st-btn' ).each( function( index ) {
-					follows[ index ] = $( this ).attr( 'data-network' );
-				} );
+				$( '.sharethis-selected-networks > div .st-btn' ).each(
+					function( index ) {
+						follows[ index ] = $( this ).attr( 'data-network' );
+					}
+				);
 			}
 
 			if ( 'sync-platform' === type && undefined !== this.$config[ 'inline-follow-buttons' ] ) {
@@ -644,24 +684,28 @@ var FollowButtons = ( function( $, wp ) {
 			}
 
 			// If newly turned on use selected networks.
-			if ( 'turnon' === type || undefined !== this.data.buttonConfig[ button ] && undefined === this.data.buttonConfig[ button ]['networks'] ) {
+			if ( 'turnon' === type || undefined !== this.data.buttonConfig && undefined === this.data.buttonConfig['networks'] ) {
 				follows = [];
 
-				$( '.follow-buttons .follow-button[data-selected="true"]' ).each( function( index ) {
-					follows[ index ] = $( this ).attr( 'data-network' );
-				} );
+				$( '.follow-buttons .follow-button[data-selected="true"]' ).each(
+					function( index ) {
+						follows[ index ] = $( this ).attr( 'data-network' );
+					}
+				);
 			}
 
 			if ( 'submit' === type ) {
 				follows = [];
 
-				$( '.sharethis-selected-networks > div .st-btn' ).each( function( index ) {
-					follows[ index ] = $( this ).attr( 'data-network' );
-				} );
+				$( '.sharethis-selected-networks > div .st-btn' ).each(
+					function( index ) {
+						follows[ index ] = $( this ).attr( 'data-network' );
+					}
+				);
 			}
 
 			// If submited or turned on make sure enabled setting is set properly.
-			if ( undefined !== this.$config[ 'inline-follow-buttons' ] && undefined !== this.$config[ 'inline-follow-buttons' ][ 'enabled' ] ) {
+			if ( undefined !== this.$config && undefined !== this.$config[ 'inline-follow-buttons' ] && undefined !== this.$config[ 'inline-follow-buttons' ][ 'enabled' ] ) {
 				enabled = 'true' === this.$config[ 'inline-follow-buttons' ][ 'enabled' ] ||
 						  true === this.$config[ 'inline-follow-buttons' ][ 'enabled' ] ||
 						  true === this.$tempEnable;
@@ -706,18 +750,21 @@ var FollowButtons = ( function( $, wp ) {
 
 				// If first load ever.
 				if ( 'initial-platform' === type && undefined !== this.data.buttonConfig[ 'inline-follow' ] && undefined === this.data.buttonConfig[ 'inline-follow' ][ 'updated_at' ] && undefined !== this.$config[ 'inline-follow-buttons' ][ 'updated_at' ] ) {
-					config = beforeConfig;
+					config            = beforeConfig;
 					config.updated_at = this.$config[ 'inline-follow-buttons' ][ 'updated_at' ];
-					config.networks = this.data.buttonConfig[ 'inline-follow' ][ 'networks' ];
+					config.networks   = this.data.buttonConfig[ 'inline-follow' ][ 'networks' ];
 				}
 
 				if ( 'turnon' === type ) {
-					config.enabled = true;
+					config.enabled  = true;
 					config.networks = [ 'facebook', 'twitter', 'instagram', 'youtube' ];
 
-					$.each( config.networks, function( index, value ) {
-						$( '.follow-buttons .follow-button[data-selected="' + value + '"]' ).attr( 'data-selected', 'true' );
-					} );
+					$.each(
+						config.networks,
+						function( index, value ) {
+							$( '.follow-buttons .follow-button[data-selected="' + value + '"]' ).attr( 'data-selected', 'true' );
+						}
+					);
 
 					// Set temp enable to true.
 					this.$tempEnable = true;
@@ -735,71 +782,86 @@ var FollowButtons = ( function( $, wp ) {
 						'inline-follow': this.$config[ 'inline-follow-buttons' ]
 					};
 
-					wp.ajax.post( 'set_follow_button_config', {
-						button: 'platform',
-						config: upConfig,
-						first: theFirst,
-						type: 'login',
-						nonce: this.data.nonce
-					} ).always( function( results ) {
-						location.reload();
-					}.bind( this ) );
+					wp.ajax.post(
+						'set_follow_button_config',
+						{
+							button: 'platform',
+							config: upConfig,
+							first: theFirst,
+							type: 'login',
+							nonce: this.data.nonce
+						}
+					).always(
+						function( results ) {
+							location.reload();
+						}.bind( this )
+					);
 				} else {
-					wp.ajax.post( 'set_follow_button_config', {
-						button: button,
-						config: config,
-						first: false,
-						nonce: this.data.nonce
-					} ).always( function( results ) {
+					wp.ajax.post(
+						'set_follow_button_config',
+						{
+							button: 'inline-follow',
+							config: config,
+							first: false,
+							nonce: this.data.nonce
+						}
+					);
 
-						if ( 'initial-platform' !== type || (
-								undefined !== this.data.buttonConfig[ button ] && undefined === this.data.buttonConfig[ button ][ 'updated_at' ]
-							) ) {
-							config.enabled = 'true' === config.enabled || true === config.enabled;
+					if ( 'initial-platform' !== type || (
+					undefined !== this.data.buttonConfig['inline-follow'] && undefined === this.data.buttonConfig['inline-follow'][ 'updated_at' ]
+					) ) {
+						  config.enabled = 'true' === config.enabled || true === config.enabled;
 
-							delete config.container;
-							delete config.id;
-							delete config[ 'has_spacing' ];
-							delete config[ 'fade_in' ];
-							delete config[ 'show_mobile_buttons' ];
+						  delete config.container;
+						  delete config.id;
+						  delete config[ 'has_spacing' ];
+						  delete config[ 'fade_in' ];
+						  delete config[ 'show_mobile_buttons' ];
 
-							theData = JSON.stringify( {
+						theData = JSON.stringify(
+							{
 								'secret': this.data.secret,
 								'id': this.data.propertyid,
 								'product': 'inline-follow-buttons',
 								'config': config
-							} );
+							}
+						);
 
-							// Send new button status value.
-							$.ajax( {
+						  // Send new button status value.
+						$.ajax(
+							{
 								url: 'https://platform-api.sharethis.com/v1.0/property/product',
 								method: 'POST',
 								async: false,
 								contentType: 'application/json; charset=utf-8',
 								data: theData,
 								success: function() {
-									if ( 'turnon' === type ) {
+									if ( 'turnon' === type || 'turnoff' === type ) {
 										location.reload();
 									}
 								}
-							} );
-						}
-					}.bind( this ) );
+							}
+						);
+					}
 				}
 			}
 
 			$( '.sharethis-inline-follow-buttons' ).html( '' );
+
+			config['enabled'] = true;
 
 			window.__sharethis__.href = 'https://www.sharethis.com/';
 			window.__sharethis__.load( 'inline-follow-buttons', config );
 
 			$( '.sharethis-selected-networks > div .st-btn' ).show();
 
-			$( '.sharethis-selected-networks > div' ).sortable( {
-				stop: function( event, ui ) {
-					self.loadPreview( '' );
+			$( '.sharethis-selected-networks > div' ).sortable(
+				{
+					stop: function( event, ui ) {
+						self.loadPreview( '' );
+					}
 				}
-			} );
+			);
 		}
 	};
 } )( window.jQuery, window.wp );

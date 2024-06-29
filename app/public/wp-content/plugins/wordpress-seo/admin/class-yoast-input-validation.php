@@ -99,6 +99,8 @@ class Yoast_Input_Validation {
 	 *
 	 * @param array $descriptions An associative array of error descriptions.
 	 *                            For each entry, the key must be the setting variable.
+	 *
+	 * @return void
 	 */
 	public static function set_error_descriptions( $descriptions = [] ) {
 		$defaults = [
@@ -124,7 +126,7 @@ class Yoast_Input_Validation {
 			),
 			'linkedin_url'    => sprintf(
 				/* translators: %s: additional message with the submitted invalid value */
-				esc_html__( 'Please check the format of the Linkedin URL you entered. %s', 'wordpress-seo' ),
+				esc_html__( 'Please check the format of the LinkedIn URL you entered. %s', 'wordpress-seo' ),
 				self::get_dirty_value_message( 'linkedin_url' )
 			),
 			'msverify'        => sprintf(
@@ -164,7 +166,7 @@ class Yoast_Input_Validation {
 			),
 			'youtube_url'     => sprintf(
 				/* translators: %s: additional message with the submitted invalid value */
-				esc_html__( 'Please check the format of the Youtube URL you entered. %s', 'wordpress-seo' ),
+				esc_html__( 'Please check the format of the YouTube URL you entered. %s', 'wordpress-seo' ),
 				self::get_dirty_value_message( 'youtube_url' )
 			),
 		];

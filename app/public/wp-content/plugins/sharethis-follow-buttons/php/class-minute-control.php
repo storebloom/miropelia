@@ -56,12 +56,18 @@ class Minute_Control {
 		if ( in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) {
 			wp_enqueue_style( "{$this->plugin->assets_prefix}-meta-box" );
 			wp_enqueue_script( "{$this->plugin->assets_prefix}-meta-box" );
-			wp_add_inline_script( "{$this->plugin->assets_prefix}-meta-box", sprintf( 'MinuteControl.boot( %s );',
-				wp_json_encode( array(
-					'postid' => $post->ID,
-					'nonce' => wp_create_nonce( $this->plugin->meta_prefix ),
-				) )
-			) );
+			wp_add_inline_script(
+				"{$this->plugin->assets_prefix}-meta-box",
+				sprintf(
+					'MinuteControl.boot( %s );',
+					wp_json_encode(
+						array(
+							'postid' => $post->ID,
+							'nonce'  => wp_create_nonce( $this->plugin->meta_prefix ),
+						)
+					)
+				)
+			);
 		}
 	}
 
@@ -88,10 +94,10 @@ class Minute_Control {
 
 		// Get all needed options for meta boxes.
 		$options = get_option( 'sharethis_inline-follow_settings' );
-		$enable = get_option( 'sharethis_inline-follows' );
+		$enable  = get_option( 'sharethis_inline-follows' );
 
 		// Include the meta box template.
-		include_once( "{$this->plugin->dir_path}/templates/minute-control/meta-box.php" );
+		include_once "{$this->plugin->dir_path}/templates/minute-control/meta-box.php";
 	}
 
 	/**
@@ -107,23 +113,23 @@ class Minute_Control {
 		}
 
 		// Set and sanitize post values.
-		$type = isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : ''; // WPCS: input var okay.
-		$onoff = 'true' === sanitize_text_field( wp_unslash( $_POST['checked'] ) ) ? 'on' : 'off'; // WPCS: input var okay.
-		$opposite = 'true' === sanitize_text_field( wp_unslash( $_POST['checked'] ) ) ? 'off' : 'on'; // WPCS: input var okay.
+		$type      = isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : ''; // WPCS: input var okay.
+		$onoff     = 'true' === sanitize_text_field( wp_unslash( $_POST['checked'] ) ) ? 'on' : 'off'; // WPCS: input var okay.
+		$opposite  = 'true' === sanitize_text_field( wp_unslash( $_POST['checked'] ) ) ? 'off' : 'on'; // WPCS: input var okay.
 		$placement = '' !== sanitize_text_field( wp_unslash( $_POST['placement'] ) ) ? '_' . sanitize_text_field( wp_unslash( $_POST['placement'] ) ) : ''; // WPCS: input var okay.
-		$postid = intval( wp_unslash( $_POST['postid'] ) ); // WPCS: input var okay.
+		$postid    = intval( wp_unslash( $_POST['postid'] ) ); // WPCS: input var okay.
 
 		// Create remaining variables needed for list placement.
 		$post_info = get_post( $postid );
 		$post_type = $post_info->post_type;
-		$option = 'sharethis_inline-follow_' . $post_type . $placement . '_' . $onoff;
-		$oppose = 'sharethis_inline-follow_' . $post_type . $placement . '_' . $opposite;
-		$title = $post_info->post_title;
+		$option    = 'sharethis_inline-follow_' . $post_type . $placement . '_' . $onoff;
+		$oppose    = 'sharethis_inline-follow_' . $post_type . $placement . '_' . $opposite;
+		$title     = $post_info->post_title;
 
 		// Get current list and opposing list options.
-		$current_list = get_option( $option );
+		$current_list   = get_option( $option );
 		$current_oppose = get_option( $oppose );
-		$current_list = isset( $current_list ) && null !== $current_list && false !== $current_list ? $current_list : '';
+		$current_list   = isset( $current_list ) && null !== $current_list && false !== $current_list ? $current_list : '';
 		$current_oppose = isset( $current_oppose ) && null !== $current_oppose && false !== $current_oppose ? $current_oppose : '';
 
 		// Add post id and title to current list.
@@ -136,7 +142,7 @@ class Minute_Control {
 		}
 
 		// Remove item from opposing list.
-		if ( is_array( $current_oppose ) && array() !== $current_oppose && in_array( (int) $postid, array_map( 'intval',  $current_oppose ), true ) ) {
+		if ( is_array( $current_oppose ) && array() !== $current_oppose && in_array( (int) $postid, array_map( 'intval', $current_oppose ), true ) ) {
 			unset( $current_oppose[ $title ] );
 			delete_option( $oppose );
 		}
@@ -161,11 +167,11 @@ class Minute_Control {
 
 		$default_option = get_option( 'sharethis_inline-follow_settings' );
 		$default_option = isset( $default_option ) && null !== $default_option && false !== $default_option ? $default_option : '';
-		$default = $default_option[ "sharethis_inline-follow_{$post_type}{$placement}" ];
+		$default        = $default_option[ "sharethis_inline-follow_{$post_type}{$placement}" ];
 
 		foreach ( $options as $answer => $option ) {
-			$current_list = get_option( $option );
-			$current_list = isset( $current_list ) && null !== $current_list && false !== $current_list ? $current_list : '';
+			$current_list  = get_option( $option );
+			$current_list  = isset( $current_list ) && null !== $current_list && false !== $current_list ? $current_list : '';
 			$answer_minute = (
 				is_array( $current_list )
 				&&
@@ -214,7 +220,7 @@ class Minute_Control {
 
 		// Get inline settings.
 		$follow_settings = get_option( 'sharethis_inline-follow_settings', true );
-		$excerpt = null !== $follow_settings && false !== $follow_settings && 'true' === $follow_settings['sharethis_excerpt'] ? true : false;
+		$excerpt         = null !== $follow_settings && false !== $follow_settings && 'true' === $follow_settings['sharethis_excerpt'] ? true : false;
 
 		if ( $excerpt && is_archive() || $excerpt && is_home() ) {
 			return $content . $this->get_follow_container( $follow_settings, 'sharethis_excerpt', $post );
@@ -224,7 +230,7 @@ class Minute_Control {
 
 		if ( null !== $follow_settings && false !== $follow_settings && is_array( $follow_settings ) ) {
 			foreach ( $follow_settings as $type => $value ) {
-				$position = $this->get_position( $type, $value );
+				$position  = $this->get_position( $type, $value );
 				$container = $this->get_follow_container( $follow_settings, $type );
 
 				if ( '' !== $position ) {
@@ -256,7 +262,7 @@ class Minute_Control {
 		$data_url = 'sharethis_excerpt' === $type && '' !== $post ? esc_attr( 'data-url=' . get_permalink( $post->ID ) ) : '';
 		$margin_t = isset( $settings[ "{$type}_margin_top" ] ) ? $settings[ "{$type}_margin_top" ] . 'px' : '';
 		$margin_b = isset( $settings[ "{$type}_margin_bottom" ] ) ? $settings[ "{$type}_margin_bottom" ] . 'px' : '';
-		$margin = '';
+		$margin   = '';
 
 		if ( ! in_array( '', array( $margin_t, $margin_b ), true ) ) {
 			$margin = 'margin-top: ' . $margin_t . '; margin-bottom: ' . $margin_b . ';';
@@ -283,7 +289,7 @@ class Minute_Control {
 
 		// Get inline settings.
 		$follow_settings = get_option( 'sharethis_follow_settings' );
-		$container = $this->get_follow_container( $follow_settings, 'sharethis_follow_excerpt', $post );
+		$container       = $this->get_follow_container( $follow_settings, 'sharethis_follow_excerpt', $post );
 
 		if ( null === $follow_settings || false === $follow_settings || ! is_array( $follow_settings ) ) {
 			return $excerpt;
@@ -306,16 +312,16 @@ class Minute_Control {
 	private function get_position( $type, $value ) {
 		global $post;
 
-		if ( !isset( $post->ID ) ) {
+		if ( ! isset( $post->ID ) ) {
 			return;
 		}
 
-		$page_option_on = get_option( $type . '_on' );
+		$page_option_on  = get_option( $type . '_on' );
 		$page_option_off = get_option( $type . '_off' );
-		$page_option_on = is_array( $page_option_on ) ? array_values( $page_option_on ) : array();
+		$page_option_on  = is_array( $page_option_on ) ? array_values( $page_option_on ) : array();
 		$page_option_off = is_array( $page_option_off ) ? array_values( $page_option_off ) : array();
-		$type_array = explode( '_', $type );
-		$position = '';
+		$type_array      = explode( '_', $type );
+		$position        = '';
 
 		$show = (
 			'true' === $value
@@ -343,13 +349,20 @@ class Minute_Control {
 	 * @action enqueue_block_editor_assets
 	 */
 	public function enqueue_custom_blocks() {
-		wp_enqueue_script( "{$this->plugin->assets_prefix}-blocks", "{$this->plugin->dir_url}js/blocks.js", array( 'wp-blocks', 'wp-editor', 'wp-element', 'wp-components' ), time(), true );
+		wp_enqueue_script(
+			"{$this->plugin->assets_prefix}-blocks",
+			"{$this->plugin->dir_url}js/blocks.js",
+			array( 'wp-blocks', 'wp-element', 'wp-components' ),
+			filemtime( "{$this->plugin->dir_path}js/blocks.js" ),
+			true
+		);
 	}
 
 	/**
 	 * Register new block category for share buttons.
 	 *
-	 * @param array $categories The current block categories.
+	 * @param array    $categories The current block categories.
+	 * @param \WP_Post $post       The post object.
 	 *
 	 * @filter block_categories 999
 	 */
@@ -357,12 +370,12 @@ class Minute_Control {
 		if ( ! is_plugin_active( 'sharethis-share-buttons/sharethis-share-buttons.php' ) ) {
 			return array_merge(
 				$categories,
-				[
-					[
+				array(
+					array(
 						'slug'  => 'st-blocks',
 						'title' => __( 'ShareThis Blocks', 'sharethis-share-buttons' ),
-					],
-				]
+					),
+				)
 			);
 		}
 

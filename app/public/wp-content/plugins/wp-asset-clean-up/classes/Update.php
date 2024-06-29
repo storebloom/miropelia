@@ -41,12 +41,12 @@ class Update
 	 */
 	public function __construct()
 	{
-	    $homePageSettingsUpdatedText      = __('The homepage\'s settings were updated. Please make sure the homepage\'s cache is cleared (if you\'re using a caching plugin or a server-side caching solution) to immediately have the changes applied for every visitor.', 'wp-asset-clean-up');
+	    $homePageSettingsUpdatedText      = esc_html__('The homepage\'s settings were updated. Please make sure the homepage\'s cache is cleared (if you\'re using a caching plugin or a server-side caching solution) to immediately have the changes applied for every visitor.', 'wp-asset-clean-up');
 		$this->afterSubmitMsg['homepage'] = <<<HTML
 <span class="dashicons dashicons-yes"></span> {$homePageSettingsUpdatedText}
 HTML;
 
-		$pageSettingsUpdatedText      = __('This page\'s settings were updated. Please make sure the page\'s cache is cleared (if you\'re using a caching plugin or a server-side caching solution) to immediately have the changes applied for every visitor.', 'wp-asset-clean-up');
+		$pageSettingsUpdatedText      = esc_html__('This page\'s settings were updated. Please make sure the page\'s cache is cleared (if you\'re using a caching plugin or a server-side caching solution) to immediately have the changes applied for every visitor.', 'wp-asset-clean-up');
 		$this->afterSubmitMsg['page'] = <<<HTML
 <span class="dashicons dashicons-yes"></span> {$pageSettingsUpdatedText}
 HTML;
@@ -66,7 +66,7 @@ HTML;
 			$invalidNonceText .= ' '. sprintf(__('The value of <strong>max_input_vars</strong> is <strong>%d</strong>. You might need to increase it to a higher number.'), $maxInputVarsValue);
         }
 
-		$invalidNonceText .= ' <a target="_blank" href="https://www.assetcleanup.com/docs/?p=1346">'.__('How to fix it?', 'wp-asset-clean-up').'</a>';
+		$invalidNonceText .= ' <a target="_blank" href="https://www.assetcleanup.com/docs/?p=1346">'.esc_html__('How to fix it?', 'wp-asset-clean-up').'</a>';
 
 		$this->afterSubmitMsg['invalid_nonce_error'] = <<<HTML
 <span style="color: #cc0000;" class="dashicons dashicons-dismiss"></span> {$invalidNonceText}
@@ -83,20 +83,27 @@ HTML;
 
         // After post/page is saved - update your styles/scripts lists
         // This triggers ONLY in the Dashboard after "Update" button is clicked (on Edit mode)
-        add_action('save_post', array($this, 'savePost'));
+        add_action('save_post', array($this, 'savePosts'));
 
-        // This is to update the permalink for the post in "Page Options" if the following option was ever used for the post: "Do not load Asset CleanUp Pro on this page (this will disable any functionality of the plugin)"
-	    add_action('post_updated', array($this, 'afterPostUpdate'), 10, 3);
+        // Are there any plugins such as "WPML Multilingual CMS" that have the same page translated in several languages
+        // each having its own ID in the "posts" table? Make sure to sync all of them whenever a specific page setting is applied
+        add_filter('wpacu_get_all_assoc_post_ids', array($this, 'getAllAssocPostIds'));
 
         // Clear cache (via AJAX) only if the user is logged-in (with the right privileges)
 	    add_action('wp_ajax_' . WPACU_PLUGIN_ID . '_clear_cache', array($this, 'ajaxClearCache'), PHP_INT_MAX);
 
-	    // After an update, preload the page for the guest view (the preload for the admin is done within script.min.js own plugin file)
-	    add_action('wp_ajax_' . WPACU_PLUGIN_ID . '_preload', array($this, 'ajaxPreloadGuest'), PHP_INT_MAX);
+	    // After an update, preload the page for the guest view; the preload for the admin is done within /assets/script.min.js
+	    add_action('wp_ajax_' . WPACU_PLUGIN_ID . '_preload',     array($this, 'ajaxPreloadGuest'), PHP_INT_MAX);
+
+        // Clear cache (via AJAX) for other plugins after post/page update
+	    add_action('wp_ajax_' . WPACU_PLUGIN_ID . '_cache_enabler_clear_cache', array($this, 'ajaxCacheEnablerClearCache'), PHP_INT_MAX);
 
 	    // e.g. when "+" or "-" is used within an asset's row (CSS/JS manager), the state is updated in the background to be remembered
-	    add_action( 'wp_ajax_' . WPACU_PLUGIN_ID . '_update_asset_row_state', array($this, 'ajaxUpdateAssetRowState') );
-	    add_action( 'wp_ajax_nopriv_' . WPACU_PLUGIN_ID . '_update_asset_row_state', array($this, 'ajaxUpdateAssetRowState') );
+	    add_action( 'wp_ajax_' . WPACU_PLUGIN_ID . '_update_asset_row_state',              array($this, 'ajaxUpdateAssetRowState') );
+	    add_action( 'wp_ajax_nopriv_' . WPACU_PLUGIN_ID . '_update_asset_row_state',       array($this, 'ajaxUpdateAssetRowState') );
+
+	    add_action( 'wp_ajax_' . WPACU_PLUGIN_ID . '_area_update_assets_row_state',        array($this, 'ajaxAreaUpdateAssetsRowState') );
+	    add_action( 'wp_ajax_nopriv_' . WPACU_PLUGIN_ID . '_area_update_assets_row_state', array($this, 'ajaxAreaUpdateAssetsRowState') );
     }
 
 	/**
@@ -158,7 +165,7 @@ HTML;
         self::updateAssetListLayoutSettings();
 
         // Form submitted from the homepage
-	    // e.g. from a page such as latest blog posts, not a static page that was selected as home page)
+	    // e.g. from a page such as latest blog posts, not a static page that was selected as home page
         if (Misc::isHomePage() && Misc::getShowOnFront() !== 'page') {
 	        $wpacuNoLoadAssets = Misc::getVar('post', WPACU_PLUGIN_ID, array());
 
@@ -175,8 +182,7 @@ HTML;
         }
 
         if ($postId > 0) {
-            $post = get_post($postId);
-            $this->savePost($post->ID, $post);
+            $this->savePosts($postId);
             return;
         }
 
@@ -253,6 +259,91 @@ HTML;
 	    exit();
     }
 
+	/**
+     * This could save the existent post and its associated posts if a plugin such as "WPML - The WordPress Multilingual Plugin" is used
+     * and there are languages associated with this post
+     *
+	 * @param $postId
+	 *
+	 * @return void
+	 */
+	public function savePosts($postId)
+    {
+	    $postIdsToUpdate = array($postId); // default (it's just this one if there aren't any associated posts)
+
+        $anyAssocPostIds = apply_filters('wpacu_get_all_assoc_post_ids', $postId);
+
+        if ( ! empty($anyAssocPostIds)) {
+            foreach ($anyAssocPostIds as $assocPostId) {
+                $postIdsToUpdate[] = $assocPostId;
+            }
+        }
+
+	    $postIdsToUpdate = array_unique($postIdsToUpdate);
+
+        foreach ($postIdsToUpdate as $postIdToUpdate) {
+		    $postObj = get_post( $postIdToUpdate );
+		    $this->savePost( $postIdToUpdate, $postObj );
+	    }
+    }
+
+	/**
+	 * @param $postId
+	 *
+	 * @return array
+	 */
+	public function getAllAssocPostIds($postId)
+    {
+	    $assocPostIds = array();
+
+        // "WPML Multilingual CMS" compatibility: Syncing post changes on all its associated translated posts
+        // e.g. if a page in Spanish is having a CSS unloaded, then that unload will also apply for the German version of the page
+        // If, for any reason, one wants to stop syncing on translated pages, the following snippet could be used in functions.php (Child Theme)
+        // add_filter('wpacu_manage_assets_update_sync_wpml_translated_posts', '__return_false');
+        if (Misc::isPluginActive('sitepress-multilingual-cms/sitepress.php')
+            && apply_filters('wpacu_manage_assets_update_sync_wpml_translated_posts', true)) {
+            $translations = self::getAnyAssocTranslationsForWpml($postId);
+
+            if ( ! empty($translations) ) {
+	            foreach ( $translations as $translation ) {
+                    if (isset($translation->element_id) && $translation->element_id) {
+	                    $assocPostIds[] = (int) $translation->element_id;
+                    }
+	            }
+            }
+        }
+
+        return array_unique($assocPostIds);
+    }
+
+	/**
+	 * @param $postId
+	 *
+	 * @return mixed|null
+	 */
+	public static function getAnyAssocTranslationsForWpml($postId)
+    {
+        global $wpdb;
+
+        // This may or might not be the main post which has the default language (usually English)
+        // and all other posts were created as an association with this language
+        // We'll need to check that
+        // Source: https://techoverflow.net/2017/03/08/get-the-original-language-post-id-for-wpml-translated-posts/
+        $sqlQuery = <<<SQL
+SELECT trans2.element_id
+FROM `{$wpdb->prefix}icl_translations` AS trans1
+INNER JOIN `{$wpdb->prefix}icl_translations` AS trans2 ON (trans2.trid = trans1.trid)
+WHERE trans1.element_id='%d' AND trans2.source_language_code IS NULL
+SQL;
+	    $sqlQueryPrepared = $wpdb->prepare($sqlQuery, array($postId));
+        $mainLanguagePostId = $wpdb->get_var($sqlQueryPrepared);
+
+	    $type = apply_filters( 'wpml_element_type', get_post_type( $mainLanguagePostId ) );
+	    $trid = apply_filters( 'wpml_element_trid', false, $mainLanguagePostId, $type );
+
+	    return apply_filters( 'wpml_get_element_translations', array(), $trid, $type );
+    }
+
     /**
      * Save post metadata when a post is saved (not for the "Latest Blog Posts" home page type)
      * Only for post type
@@ -269,7 +360,19 @@ HTML;
 		    global $post;
 	    }
 
-	    if (! isset($post->ID) || ! isset($post->post_type)) {
+	    if ( ! isset( $post->ID, $post->post_type ) ) {
+		    return;
+	    }
+
+	    // Has to be a public post type
+	    $obj = get_post_type_object($post->post_type);
+
+	    if ( ! isset($obj->public) || $obj->public < 1 ) {
+		    return;
+	    }
+
+	    // only for admins
+	    if (! Menu::userCanManageAssets()) {
 		    return;
 	    }
 
@@ -282,18 +385,6 @@ HTML;
     	if (! Misc::getVar('post', 'wpacu_unload_assets_area_loaded')) {
     	    return;
 	    }
-
-        // Has to be a public post type
-        $obj = get_post_type_object($post->post_type);
-
-        if ($obj->public < 1) {
-            return;
-        }
-
-        // only for admins
-        if (! Menu::userCanManageAssets()) {
-            return;
-        }
 
         $wpacuNoLoadAssets = Misc::getVar('post', WPACU_PLUGIN_ID, array());
 
@@ -313,9 +404,9 @@ HTML;
             }
 
             if (! $noUpdate) {
-                $jsonNoAssetsLoadList = json_encode($wpacuNoLoadAssets);
+                $jsonNoAssetsLoadList = wp_json_encode($wpacuNoLoadAssets);
 
-                if (! add_post_meta($postId, '_' . WPACU_PLUGIN_ID . '_no_load', $jsonNoAssetsLoadList, true)) {
+	            if (! add_post_meta($postId, '_' . WPACU_PLUGIN_ID . '_no_load', $jsonNoAssetsLoadList, true)) {
                     update_post_meta($postId, '_' . WPACU_PLUGIN_ID . '_no_load', $jsonNoAssetsLoadList);
                 }
             }
@@ -326,7 +417,7 @@ HTML;
 
         // If globally disabled, make an exception to load for submitted assets
         $this->saveLoadExceptions('post', $postId);
-        $this->saveLoadExceptionsPostType();
+        $this->saveLoadExceptionsPostType($post->post_type);
 
 	    // Add / Remove Site-wide Unloads
 	    $this->updateEverywhereUnloads();
@@ -355,17 +446,19 @@ HTML;
         // Clear them if the caching timing expired as they are not relevant anymore and reduce the disk's space
 	    OptimizeCommon::clearJsonStorageForPost($postId, true);
 
+        self::afterPostUpdate($postId);
+
 	    // Note: Cache is cleared (except the JSON files related to CSS/JS combine option) after the post/page is updated via a separate AJAX call
 	    // To avoid the usage of too much memory (good for shared environments) and avoid any memory related errors showing up to the user which could be confusing
     }
 
 	/**
-     * This takes action when the CSS/JS manager from edit post/page is used
+     * This is to update the permalink for the post in "Page Options" if the following option was ever used for the post: "Do not load Asset CleanUp Pro on this page (this will disable any functionality of the plugin)"
+     * This takes action when the CSS/JS manager is updated for a specific post (e.g. post, page, attachment, custom post type)
      *
 	 * @param $postId
-	 * @param $after
 	 */
-	public function afterPostUpdate($postId, $afterPostObj, $beforePostObj)
+	public static function afterPostUpdate($postId)
     {
         global $wpdb;
 
@@ -380,10 +473,8 @@ HTML;
 	        return;
         }
 
-	    if ($afterPostObj->post_name !== $beforePostObj->post_name) {
-		    $postPageOptions['_page_uri'] = Misc::getPageUri($postId);
-		    update_post_meta($postId, '_' . WPACU_PLUGIN_ID . '_page_options', json_encode(Misc::filterList($postPageOptions)));
-        }
+        $postPageOptions['_page_uri'] = Misc::getPageUri($postId);
+        update_post_meta($postId, '_' . WPACU_PLUGIN_ID . '_page_options', wp_json_encode(Misc::filterList($postPageOptions)));
     }
 
     /**
@@ -408,10 +499,10 @@ HTML;
 	    // Was the Assets List Layout changed?
 	    self::updateAssetListLayoutSettings();
 
-        $jsonNoAssetsLoadList = json_encode( $wpacuNoLoadAssets );
-        Misc::addUpdateOption( WPACU_PLUGIN_ID . '_front_page_no_load', $jsonNoAssetsLoadList );
+        $jsonNoAssetsLoadList = wp_json_encode( $wpacuNoLoadAssets );
+	    Misc::addUpdateOption( WPACU_PLUGIN_ID . '_front_page_no_load', $jsonNoAssetsLoadList );
 
-        // If globally disabled, make an exception to load for submitted assets
+	    // If globally disabled, make an exception to load for submitted assets
         $this->saveLoadExceptions('front_page');
 
         // Add / Remove Site-wide Unloads
@@ -446,7 +537,18 @@ HTML;
     {
 	?>
 	    <div class="updated notice wpacu-notice is-dismissible">
-		    <p><?php echo $this->afterSubmitMsg['homepage']; ?></p>
+            <p><?php echo wp_kses(
+				    $this->afterSubmitMsg['homepage'],
+				    array(
+                       'style'  => array(),
+                       'class'  => array(),
+                       'strong' => array(),
+                       'a' => array(
+                           'target' => array(),
+                           'href'   => array()
+                       )
+                    )
+			    ); ?></p>
 	    </div>
 	<?php
     }
@@ -458,7 +560,18 @@ HTML;
 	{
 		?>
         <div class="updated notice wpacu-notice is-dismissible">
-            <p><?php echo $this->afterSubmitMsg['page']; ?></p>
+            <p><?php echo wp_kses(
+                    $this->afterSubmitMsg['page'],
+		            array(
+			            'style'  => array(),
+			            'class'  => array(),
+			            'strong' => array(),
+			            'a' => array(
+				            'target' => array(),
+				            'href'   => array()
+			            )
+		            )
+                ); ?></p>
         </div>
 		<?php
 	}
@@ -469,8 +582,19 @@ HTML;
 	public function changesNotMadeInvalidNonce()
     {
         ?>
-        <div class="error notice wpacu-error is-dismissible">
-            <p><?php echo $this->afterSubmitMsg['invalid_nonce_error']; ?></p>
+        <div class="notice wpacu-error is-dismissible">
+            <p><?php echo wp_kses(
+                    $this->afterSubmitMsg['invalid_nonce_error'],
+		            array(
+			            'style'  => array(),
+			            'class'  => array(),
+			            'strong' => array(),
+			            'a' => array(
+				            'target' => array(),
+				            'href'   => array()
+			            )
+		            )
+                ); ?></p>
         </div>
         <?php
     }
@@ -495,7 +619,7 @@ HTML;
             return;
         }
 
-        $loadExceptionsStyles = $loadExceptionsScripts = array();
+        $loadExceptions = array('styles' => array(), 'scripts' => array());
 
         // [Start] Clear existing list first
         if ($type === 'post') {
@@ -507,54 +631,39 @@ HTML;
 
         // Load Exception
         // On this page or page type such as 404, search, etc.
-        if (isset($_POST['wpacu_styles_load_it']) && ! empty($_POST['wpacu_styles_load_it'])) {
-            foreach ($_POST['wpacu_styles_load_it'] as $wpacuHandle) {
-                // Do not append it if the global unload is removed
-                if (isset($_POST['wpacu_options_styles'][$wpacuHandle])
-                    && $_POST['wpacu_options_styles'][$wpacuHandle] === 'remove') {
-                    continue;
-                }
-                $loadExceptionsStyles[] = $wpacuHandle;
-            }
+        foreach (array('styles', 'scripts') as $assetType) {
+            $postKey    = ($assetType === 'styles') ? 'wpacu_styles_load_it' : 'wpacu_scripts_load_it';
+            $optionsKey = ($assetType === 'styles') ? 'wpacu_options_styles' : 'wpacu_options_scripts';
+	        if ( isset( $_POST[$postKey] ) && ! empty( $_POST[$postKey] ) ) {
+		        foreach ( $_POST[$postKey] as $wpacuHandle ) {
+			        // Do not append it if the global unload is removed
+			        if ( isset( $_POST[$optionsKey][ $wpacuHandle ] )
+			             && $_POST[$optionsKey][ $wpacuHandle ] === 'remove' ) {
+				        continue;
+			        }
+			        $loadExceptions[$assetType][] = $wpacuHandle;
+		        }
+	        }
         }
 
-        if (! empty($_POST['wpacu_scripts_load_it'])) {
-            foreach ($_POST['wpacu_scripts_load_it'] as $wpacuHandle) {
-                // Do not append it if the global unload is removed
-                if (isset($_POST['wpacu_options_scripts'][$wpacuHandle])
-                    && $_POST['wpacu_options_scripts'][$wpacuHandle] === 'remove') {
-                    continue;
-                }
-                $loadExceptionsScripts[] = $wpacuHandle;
-            }
-        }
-
-        if (! empty($loadExceptionsStyles) || ! empty($loadExceptionsScripts)) {
+        if (! empty($loadExceptions['styles']) || ! empty($loadExceptions['scripts'])) {
             // Default
             $list =  array('styles' => array(), 'scripts' => array());
 
             // Build list
-            if (! empty($loadExceptionsStyles)) {
-                foreach ($loadExceptionsStyles as $postHandle) {
-                    $list['styles'][] = $postHandle;
-                }
+            foreach ( array('styles', 'scripts') as $assetType ) {
+	            if ( ! empty( $loadExceptions[$assetType] ) ) {
+		            foreach ( $loadExceptions[$assetType] as $postHandle ) {
+			            $list[$assetType][] = $postHandle;
+		            }
+	            }
+
+	            if (is_array($list[$assetType])) {
+		            $list[$assetType] = array_unique($list[$assetType]);
+	            }
             }
 
-            if (! empty($loadExceptionsScripts)) {
-                foreach ($loadExceptionsScripts as $postHandle) {
-                    $list['scripts'][] = $postHandle;
-                }
-            }
-
-            if (is_array($list['styles'])) {
-                $list['styles'] = array_unique($list['styles']);
-            }
-
-            if (is_array($list['scripts'])) {
-                $list['scripts'] = array_unique($list['scripts']);
-            }
-
-            $jsonLoadExceptions = json_encode(Misc::filterList($list));
+            $jsonLoadExceptions = wp_json_encode(Misc::filterList($list));
 
             if ( $type === 'post' && (! add_post_meta($postId, '_' . WPACU_PLUGIN_ID . '_load_exceptions', $jsonLoadExceptions, true)) ) {
                 update_post_meta( $postId, '_' . WPACU_PLUGIN_ID . '_load_exceptions', $jsonLoadExceptions );
@@ -567,33 +676,44 @@ HTML;
 	/**
 	 *
 	 */
-	public function saveLoadExceptionsPostType()
+	public function saveLoadExceptionsPostType($wpacuPostType)
     {
 	    // On all pages belonging to a (custom) post type (e.g. WooCommerce product page)
-	    if (isset($_POST['wpacu_styles_load_it_post_type']) && ! empty($_POST['wpacu_styles_load_it_post_type'])) {
-		    $wpacuPostType = key($_POST['wpacu_styles_load_it_post_type']);
-		    $loadExceptionsStyles = $_POST['wpacu_styles_load_it_post_type'][$wpacuPostType];
-		    }
+	    $referenceKey = WPACU_FORM_ASSETS_POST_KEY;
 
-	    if (isset($_POST['wpacu_scripts_load_it_post_type']) && ! empty($_POST['wpacu_scripts_load_it_post_type'])) {
-		    $wpacuPostType = key($_POST['wpacu_scripts_load_it_post_type']);
-		    $loadExceptionsScripts = $_POST['wpacu_scripts_load_it_post_type'][$wpacuPostType];
-	    }
+	    $loadExceptions = array('styles' => array(), 'scripts' => array());
 
-	    if ((! empty($loadExceptionsStyles) || ! empty($loadExceptionsScripts)) && (isset($wpacuPostType) && $wpacuPostType)) {
+	    // From v1.2.0.5
+        if (isset($_POST[$referenceKey]['styles']) || isset($_POST[$referenceKey]['scripts'])) {
+            foreach (array('styles', 'scripts') as $assetType) {
+	            if ( isset( $_POST[ $referenceKey ][$assetType] ) && ! empty( $_POST[ $referenceKey ][$assetType] ) ) {
+		            foreach ( $_POST[ $referenceKey ][$assetType] as $assetHandle => $values ) {
+			            $assetValue = isset( $values['load_it_post_type'] ) && $values['load_it_post_type'] ? $values['load_it_post_type'] : ''; // '1' or ''
+			            $loadExceptions[$assetType][ $assetHandle ] = $assetValue;
+		            }
+	            }
+            }
+        } else {
+	        // Prior to v1.2.0.5
+	        foreach (array('styles', 'scripts') as $assetType) {
+	            $indexKey = 'wpacu_'.$assetType.'_load_it_post_type';
+		        if ( isset( $_POST[$indexKey] ) && ! empty( $_POST[$indexKey] ) ) {
+			        $wpacuPostType = key( $_POST[$indexKey] );
+			        $loadExceptions[$assetType] = $_POST[$indexKey][ $wpacuPostType ];
+		        }
+	        }
+        }
+
+	    if ((! empty($loadExceptions['styles']) || ! empty($loadExceptions['scripts'])) && (isset($wpacuPostType) && $wpacuPostType)) {
 		    // Default
 		    $listToSave = array( 'styles' => array(), 'scripts' => array() );
 
 		    // Build list
-		    if (! empty($loadExceptionsStyles)) {
-		        $listToSave['styles'] = $loadExceptionsStyles;
+		    foreach (array('styles', 'scripts') as $assetType) {
+		        $listToSave[$assetType] = ( ! empty( $loadExceptions[$assetType] ) ) ? $loadExceptions[$assetType] : array();
 		    }
 
-		    if (! empty($loadExceptionsScripts)) {
-		        $listToSave['scripts'] = $loadExceptionsScripts;
-		    }
-
-		    $jsonLoadExceptionsToAdd = json_encode(array($wpacuPostType => $listToSave));
+		    $jsonLoadExceptionsToAdd = wp_json_encode(array($wpacuPostType => $listToSave));
 
 		    $optionToUpdate = WPACU_PLUGIN_ID . '_post_type_load_exceptions';
 
@@ -607,7 +727,7 @@ HTML;
                 if (isset($existingList[$wpacuPostType])) {
                     foreach ($listToSave as $assetType => $assetValues) {
                         foreach ($assetValues as $assetHandle => $assetValue) {
-                            $existingList[ $wpacuPostType ][ $assetType ][ $assetHandle ] = $assetValue;
+	                        $existingList[ $wpacuPostType ][ $assetType ][ $assetHandle ] = $assetValue;
                         }
                     }
                 } else {
@@ -615,29 +735,29 @@ HTML;
                 }
 
                 // Clear empty (redundant) values
-			    foreach ($existingList as $wpacuPostType => $assetTypes) {
+			    foreach ($existingList as $wpacuPostTypeDb => $assetTypes) {
 				    foreach ($assetTypes as $assetType => $assetValues) {
 				        if (empty($assetValues)) {
-				            unset($existingList[$wpacuPostType][$assetType]);
+				            unset($existingList[$wpacuPostTypeDb][$assetType]);
 				        }
 
 				        foreach ($assetValues as $assetHandle => $assetValue) {
 					        if ( $assetValue === '' ) {
-						        unset( $existingList[ $wpacuPostType ][ $assetType ][ $assetHandle ] );
+						        unset( $existingList[ $wpacuPostTypeDb ][ $assetType ][ $assetHandle ] );
 					        }
 
-					        if (empty($existingList[ $wpacuPostType ][ $assetType ])) {
-						        unset( $existingList[$wpacuPostType][$assetType] );
+					        if (empty($existingList[ $wpacuPostTypeDb ][ $assetType ])) {
+						        unset( $existingList[$wpacuPostTypeDb][$assetType] );
 					        }
 
-					        if (empty($existingList[$wpacuPostType])) {
-						        unset($existingList[$wpacuPostType]);
+					        if (empty($existingList[$wpacuPostTypeDb])) {
+						        unset($existingList[$wpacuPostTypeDb]);
 					        }
 				        }
 				    }
 			    }
 
-			    Misc::addUpdateOption( $optionToUpdate, json_encode($existingList) );
+			    Misc::addUpdateOption( $optionToUpdate, wp_json_encode($existingList) );
 		    } else {
 			    Misc::addUpdateOption( $optionToUpdate, $jsonLoadExceptionsToAdd );
 		    }
@@ -689,7 +809,7 @@ HTML;
 		    }
 	    }
 
-	    Misc::addUpdateOption($optionToUpdate, json_encode(Misc::filterList($existingList)));
+	    Misc::addUpdateOption($optionToUpdate, wp_json_encode(Misc::filterList($existingList)));
     }
 
 	/**
@@ -716,21 +836,20 @@ HTML;
 		    // instead of updating it as an empty entry
 		    if ( empty( $pageOptions ) ) {
 			    delete_post_meta( $postId, '_' . WPACU_PLUGIN_ID . '_page_options' );
-
 			    return;
 		    }
 
 		    // Save the page URI as it's needed instead of get_permalink() that can't be called too early (e.g. outside an action hook or in a MU plugin)
 		    $pageOptions['_page_uri'] = Misc::getPageUri($postId);
 
-		    $pageOptionsJson = json_encode( Misc::filterList($pageOptions) );
+		    $pageOptionsJson = wp_json_encode( Misc::filterList($pageOptions) );
 
 		    if ( ! add_post_meta( $postId, '_' . WPACU_PLUGIN_ID . '_page_options', $pageOptionsJson, true ) ) {
 			    update_post_meta( $postId, '_' . WPACU_PLUGIN_ID . '_page_options', $pageOptionsJson );
 		    }
 	    } elseif ($type === 'front_page') {
             /*
-             * For the homepage (e.g. latest posts), but not a page set as homepage
+             * For the homepage (e.g. the latest posts), but not a page set as homepage
              */
 		    $existingListJson = get_option(WPACU_PLUGIN_ID . '_global_data');
 		    $existingListData = Main::instance()->existingList($existingListJson, array());
@@ -738,7 +857,7 @@ HTML;
 
 		    $existingList['page_options']['homepage'] = $pageOptions;
 
-		    Misc::addUpdateOption( WPACU_PLUGIN_ID . '_global_data', json_encode(Misc::filterList($existingList)));
+		    Misc::addUpdateOption(WPACU_PLUGIN_ID . '_global_data', wp_json_encode(Misc::filterList($existingList)));
 	    }
 	}
 
@@ -798,7 +917,7 @@ HTML;
 	        }
         }
 
-        Misc::addUpdateOption( WPACU_PLUGIN_ID . '_global_unload', json_encode(Misc::filterList($existingList)));
+        Misc::addUpdateOption(WPACU_PLUGIN_ID . '_global_unload', wp_json_encode(Misc::filterList($existingList)));
     }
 
 	/**
@@ -866,7 +985,7 @@ HTML;
             }
 
             if ($isUpdated) {
-                Misc::addUpdateOption(WPACU_PLUGIN_ID . '_global_unload', json_encode(Misc::filterList($existingList)));
+                Misc::addUpdateOption(WPACU_PLUGIN_ID . '_global_unload', wp_json_encode(Misc::filterList($existingList)));
             }
         }
 
@@ -940,7 +1059,7 @@ HTML;
             }
         }
 
-	    Misc::addUpdateOption( WPACU_PLUGIN_ID . '_bulk_unload', json_encode(Misc::filterList($existingList)));
+	    Misc::addUpdateOption( WPACU_PLUGIN_ID . '_bulk_unload', wp_json_encode(Misc::filterList($existingList)));
     }
 
     /**
@@ -1021,7 +1140,7 @@ HTML;
 	            }
             }
 
-	        Misc::addUpdateOption( WPACU_PLUGIN_ID . '_bulk_unload', json_encode(Misc::filterList($existingList)));
+	        Misc::addUpdateOption(WPACU_PLUGIN_ID . '_bulk_unload', wp_json_encode(Misc::filterList($existingList)));
         }
 
         return $isUpdated;
@@ -1049,31 +1168,21 @@ HTML;
 	    $existingListData = Main::instance()->existingList($existingListJson, $existingListEmpty);
 	    $existingList = $existingListData['list'];
 
-	    if (isset($_POST['wpacu_handle_notes']['styles']) && ! empty($_POST['wpacu_handle_notes']['styles'])) {
-            foreach ($_POST['wpacu_handle_notes']['styles'] as $styleHandle => $styleNote) {
-                $styleNote = stripslashes($styleNote);
+	    foreach (array('styles', 'scripts') as $assetType) {
+		    if ( isset( $_POST['wpacu_handle_notes'][$assetType] ) && ! empty( $_POST['wpacu_handle_notes'][$assetType] ) ) {
+			    foreach ( $_POST['wpacu_handle_notes'][$assetType] as $assetHandle => $assetNote ) {
+				    $assetNote = stripslashes( $assetNote );
 
-                if ($styleNote === '' && isset($existingList['styles'][$globalKey][$styleHandle])) {
-                    unset($existingList['styles'][$globalKey][$styleHandle]);
-                } elseif ($styleNote !== '') {
-                    $existingList['styles'][$globalKey][$styleHandle] = $styleNote;
-                }
-            }
+				    if ( $assetNote === '' && isset( $existingList[$assetType][ $globalKey ][ $assetHandle ] ) ) {
+					    unset( $existingList[$assetType][ $globalKey ][ $assetHandle ] );
+				    } elseif ( $assetNote !== '' ) {
+					    $existingList[$assetType][ $globalKey ][ $assetHandle ] = $assetNote;
+				    }
+			    }
+		    }
 	    }
 
-        if (isset($_POST['wpacu_handle_notes']['scripts']) && ! empty($_POST['wpacu_handle_notes']['scripts'])) {
-	        foreach ( $_POST['wpacu_handle_notes']['scripts'] as $scriptHandle => $scriptNote ) {
-		        $scriptNote = stripslashes( $scriptNote );
-
-		        if ( $scriptNote === '' && isset( $existingList['scripts'][ $globalKey ][ $scriptHandle ] ) ) {
-			        unset( $existingList['scripts'][ $globalKey ][ $scriptHandle ] );
-		        } elseif ( $scriptNote !== '' ) {
-			        $existingList['scripts'][ $globalKey ][ $scriptHandle ] = $scriptNote;
-		        }
-	        }
-        }
-
-	    Misc::addUpdateOption($optionToUpdate, json_encode(Misc::filterList($existingList)));
+	    Misc::addUpdateOption($optionToUpdate, wp_json_encode(Misc::filterList($existingList)));
     }
 
 	/**
@@ -1083,18 +1192,26 @@ HTML;
 	{
 		// No $mainVarToUse passed? Then it's a $_POST
 		// Check if $_POST is empty via Misc::isValidRequest()
+		$useGlobalPost = false;
+
 		if (empty($mainVarToUse)) {
 		    if ( (isset($_POST[WPACU_FORM_ASSETS_POST_KEY]['styles']) && ! empty($_POST[WPACU_FORM_ASSETS_POST_KEY]['styles']))
                 || (isset($_POST[WPACU_FORM_ASSETS_POST_KEY]['scripts']) && ! empty($_POST[WPACU_FORM_ASSETS_POST_KEY]['scripts'])) ) {
 			    $mainVarToUse = self::updateIgnoreChildAdapt($_POST[WPACU_FORM_ASSETS_POST_KEY]); // New form fields (starting from v1.1.9.9)
 		    } elseif (Misc::isValidRequest('post', 'wpacu_ignore_child')) {
-			    $mainVarToUse = $_POST;
+			    $useGlobalPost = true;
 			} else {
 		        return;
 		    }
 		}
 
-		if (! isset($mainVarToUse['wpacu_ignore_child']['styles']) && ! isset($mainVarToUse['wpacu_ignore_child']['scripts'])) {
+		if (! $useGlobalPost && isset($mainVarToUse['wpacu_ignore_child'])) {
+			$bucketToUse = $mainVarToUse['wpacu_ignore_child'];
+		} else if (isset($_POST['wpacu_ignore_child'])) {
+			$bucketToUse = $_POST['wpacu_ignore_child'];
+		}
+
+		if (! isset($bucketToUse['styles']) && ! isset($bucketToUse['scripts'])) {
 			return;
 		}
 
@@ -1107,31 +1224,21 @@ HTML;
 		$existingListData = Main::instance()->existingList($existingListJson, $existingListEmpty);
 		$existingList = $existingListData['list'];
 
-		if (isset($mainVarToUse['wpacu_ignore_child']['styles']) && ! empty($mainVarToUse['wpacu_ignore_child']['styles'])) {
-			foreach ($mainVarToUse['wpacu_ignore_child']['styles'] as $styleHandle => $styleVal) {
-				$styleVal = trim($styleVal);
+		foreach (array('styles','scripts') as $assetType) {
+			if ( isset( $bucketToUse[$assetType] ) && ! empty( $bucketToUse[$assetType] ) ) {
+				foreach ( $bucketToUse[$assetType] as $assetHandle => $assetVal ) {
+					$assetVal = trim( $assetVal );
 
-				if ($styleVal === '' && isset($existingList['styles'][$globalKey][$styleHandle])) {
-					unset($existingList['styles'][$globalKey][$styleHandle]);
-				} elseif ($styleVal !== '') {
-					$existingList['styles'][$globalKey][$styleHandle] = $styleVal;
+					if ( $assetVal === '' && isset( $existingList[$assetType][ $globalKey ][ $assetHandle ] ) ) {
+						unset( $existingList[$assetType][ $globalKey ][ $assetHandle ] );
+					} elseif ( $assetVal !== '' ) {
+						$existingList[$assetType][ $globalKey ][ $assetHandle ] = $assetVal;
+					}
 				}
 			}
 		}
 
-		if (isset($mainVarToUse['wpacu_ignore_child']['scripts']) && ! empty($mainVarToUse['wpacu_ignore_child']['scripts'])) {
-			foreach ($mainVarToUse['wpacu_ignore_child']['scripts'] as $scriptHandle => $scriptVal) {
-				$scriptVal = trim($scriptVal); // should be '1' (meaning it's true)
-
-				if ($scriptVal === '' && isset($existingList['scripts'][$globalKey][$scriptHandle])) {
-					unset($existingList['scripts'][$globalKey][$scriptHandle]);
-				} elseif ($scriptVal !== '') {
-					$existingList['scripts'][$globalKey][$scriptHandle] = $scriptVal;
-				}
-			}
-		}
-
-		Misc::addUpdateOption($optionToUpdate, json_encode(Misc::filterList($existingList)));
+		Misc::addUpdateOption($optionToUpdate, wp_json_encode(Misc::filterList($existingList)));
 	}
 
 	/**
@@ -1193,9 +1300,19 @@ HTML;
             $existingList[$keyList][ $globalKey ][ $handle ] = 1; // "contracted"
         }
 
-		Misc::addUpdateOption($optionToUpdate, json_encode(Misc::filterList($existingList)));
+		Misc::addUpdateOption($optionToUpdate, wp_json_encode(Misc::filterList($existingList)));
 
-        return $existingList[$keyList][$globalKey];
+        $toReturn = array();
+
+        if (isset($existingList['styles'][$globalKey])) {
+	        $toReturn['styles'] = $existingList['styles'][$globalKey];
+        }
+
+		if (isset($existingList['scripts'][$globalKey])) {
+			$toReturn['scripts'] = $existingList['scripts'][$globalKey];
+        }
+
+        return $toReturn;
 	}
 
 	/**
@@ -1228,7 +1345,7 @@ HTML;
 				// Strip other unused information including the 'handle' (no need to have it twice as it's already in one of the array's keys)
 				unset( $assetArray['handle'], $assetArray['textdomain'], $assetArray['translations_path'] );
 
-				// Some handles don't have an "src" value such as "woocommerce-inline"
+				// Some handles don't have a "src" value such as "woocommerce-inline"
 				if (isset($assetArray['src']) && $assetArray['src']) {
 					$assetArray['src'] = Misc::assetFromHrefToRelativeUri( $assetArray['src'], $assetKey );
 				}
@@ -1250,8 +1367,8 @@ HTML;
 							if ( $assetArray['output'] !== $outputMin ) {
 								$assetArray['output_min'] = $outputMin;
 							}
-						} elseif ( ( strpos( $assetHandle, 'wpacu_hardcoded_link_' ) === 0 ) || ( strpos( $assetHandle,
-									'wpacu_hardcoded_style_' ) === 0 ) ) {
+						} elseif ( ( strpos( $assetHandle, 'wpacu_hardcoded_link_' ) === 0 )
+                                   || ( strpos( $assetHandle, 'wpacu_hardcoded_style_' ) === 0 ) ) {
 							$outputMin = \WpAssetCleanUp\OptimiseAssets\MinifyCss::applyMinification( $assetArray['output'] );
 							if ( $assetArray['output'] !== $outputMin ) {
 								$assetArray['output_min'] = $outputMin;
@@ -1265,7 +1382,7 @@ HTML;
 			}
 		}
 
-		update_option($optionToUpdate, json_encode(Misc::filterList($existingList)));
+		update_option($optionToUpdate, wp_json_encode(Misc::filterList($existingList)));
 	}
 
 	/**
@@ -1282,12 +1399,12 @@ HTML;
 	 */
 	public function ajaxClearCache()
 	{
-		if ( ! isset($_POST['wpacu_nonce']) ) {
+		if ( ! isset($_REQUEST['wpacu_nonce']) ) {
 			echo 'Error: The security nonce was not sent for verification. Location: '.__METHOD__;
 			return;
 		}
 
-		if ( ! wp_verify_nonce($_POST['wpacu_nonce'], 'wpacu_ajax_clear_cache_nonce') ) {
+		if ( ! wp_verify_nonce($_REQUEST['wpacu_nonce'], 'wpacu_ajax_clear_cache_nonce') ) {
 			echo 'Error: The security check has failed. Location: '.__METHOD__;
 			exit();
 		}
@@ -1301,6 +1418,29 @@ HTML;
 
 	    exit();
 	}
+
+	/**
+	 * @return void
+	 */
+	public function ajaxCacheEnablerClearCache()
+    {
+	    if ( ! isset($_REQUEST['wpacu_nonce']) ) {
+		    echo 'Error: The security nonce was not sent for verification. Location: '.__METHOD__;
+		    return;
+	    }
+
+	    if ( ! wp_verify_nonce($_REQUEST['wpacu_nonce'], 'wpacu_ajax_clear_cache_enabler_cache_nonce') ) {
+		    echo 'Error: The security check has failed. Location: '.__METHOD__;
+		    exit();
+	    }
+
+	    if (! Menu::userCanManageAssets()) {
+		    echo 'Error: Not enough privileges to clear the cache.';
+		    exit();
+	    }
+
+        OptimizeCommon::clearCacheEnablerCache('ajax_call');
+    }
 
 	/**
 	 * This is triggered when /admin/admin-ajax.php is called (default WordPress AJAX handler)
@@ -1383,5 +1523,50 @@ HTML;
 	    }
 
 	    exit();
+    }
+
+	/**
+     * Update state for all assets within a plugin
+     *
+	 * @return void
+	 */
+	public function ajaxAreaUpdateAssetsRowState()
+    {
+        if (isset($_POST['wpacu_area_update_assets_row_state'])) {
+	        if ( ! isset( $_POST['action'], $_POST['wpacu_area_assets_row_state'], $_POST['wpacu_area_handles'], $_POST['wpacu_nonce'] )
+	             || ! Menu::userCanManageAssets() ) {
+		        return;
+	        }
+
+	        if ( $_POST['wpacu_area_update_assets_row_state'] !== 'yes' ) {
+		        return;
+	        }
+
+	        if ( ! isset($_POST['wpacu_nonce']) ) {
+		        echo 'Error: The security nonce was not sent for verification. Location: '.__METHOD__;
+		        return;
+	        }
+
+	        if ( ! wp_verify_nonce($_POST['wpacu_nonce'], 'wpacu_area_update_assets_row_state_nonce') ) {
+		        echo 'Error: The security check has failed. Location: '.__METHOD__;
+		        return;
+	        }
+
+	        $areaAllAssetsRowState = $_POST['wpacu_area_assets_row_state'];
+
+            if ( ! empty($_POST['wpacu_area_handles']) && is_array($_POST['wpacu_area_handles']) ) {
+                foreach ($_POST['wpacu_area_handles'] as $areaAssetHandleFormat) {
+	                $areaAssetHandleFor = substr(strrchr($areaAssetHandleFormat, '_'), 1);
+                    $areaAssetHandle    = substr($areaAssetHandleFormat, 0, -(strlen($areaAssetHandleFor) + 1));
+
+	                echo 'New State: '.$areaAllAssetsRowState.' / Handle: '.$areaAssetHandle . ' / For: '.$areaAssetHandleFor."\n";
+
+	                $newContractedList = self::updateHandleRowStatus( $areaAllAssetsRowState, $areaAssetHandle, $areaAssetHandleFor );
+	                echo "<pre>" . print_r( $newContractedList, true );
+                }
+            }
+
+	        exit();
+        }
     }
 }

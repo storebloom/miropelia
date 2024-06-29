@@ -2,7 +2,7 @@
 /*
  * No direct access to this file
  */
-if (! isset($data)) {
+if (! isset($data, $selectedTabArea)) {
 	exit;
 }
 
@@ -10,26 +10,22 @@ $tabIdArea = 'wpacu-setting-local-fonts';
 $styleTabContent = ($selectedTabArea === $tabIdArea) ? 'style="display: table-cell;"' : '';
 
 $ddOptions = array(
-	'swap' => 'swap (most used)',
-	'auto' => 'auto',
-	'block' => 'block',
+	'swap'     => 'swap (most used)',
+	'auto'     => 'auto',
+	'block'    => 'block',
 	'fallback' => 'fallback',
 	'optional' => 'optional'
 );
-
-// [wpacu_lite]
-$availableForPro = '<a class="go-pro-link-no-style" target="_blank" href="' . WPACU_PLUGIN_GO_PRO_URL . '?utm_source=plugin_usage_settings&utm_medium=local_fonts_optimization"><span class="wpacu-tooltip" style="width: 186px;">'.__('This is a feature available in the Pro version! Unlock it!', 'wp-asset-clean-up').'</span> <img style="opacity: 0.6;" width="20" height="20" src="'.WPACU_PLUGIN_URL.'/assets/icons/icon-lock.svg" valign="top" alt="" /></a>';
-// [/wpacu_lite]
 ?>
-<div id="<?php echo $tabIdArea; ?>" class="wpacu-settings-tab-content" <?php echo $styleTabContent; ?>>
-    <h2 class="wpacu-settings-area-title"><?php _e('Local Fonts Optimization', 'wp-asset-clean-up'); ?></h2>
+<div id="<?php echo esc_attr($tabIdArea); ?>" class="wpacu-settings-tab-content" <?php echo wp_kses($styleTabContent, array('style' => array())); ?>>
+    <h2 class="wpacu-settings-area-title"><?php esc_html_e('Local Fonts Optimization', 'wp-asset-clean-up'); ?></h2>
     <table class="wpacu-form-table">
         <tr valign="top">
             <th scope="row" class="setting_title">
-			    <?php echo sprintf(__('Apply %s CSS property value', 'wp-asset-clean-up'), '<span style="background: #f5f5f5; padding: 4px;">font-display:</span>'); ?>
+			    <?php echo sprintf(esc_html__('Apply %s CSS property value', 'wp-asset-clean-up'), '<span style="background: #f5f5f5; padding: 4px;">font-display:</span>'); ?>
             </th>
             <td>
-	            <?php echo $availableForPro; ?>&nbsp;
+                <a class="go-pro-link-no-style" target="_blank" href="<?php echo apply_filters('wpacu_go_pro_affiliate_link', WPACU_PLUGIN_GO_PRO_URL.'?utm_source=plugin_usage_settings&utm_medium=local_fonts_optimization'); ?>"><span class="wpacu-tooltip" style="width: 186px;"><?php esc_html_e('This is a feature available in the Pro version! Unlock it!', 'wp-asset-clean-up'); ?></span> <img style="opacity: 0.6;" width="20" height="20" src="<?php echo esc_url(WPACU_PLUGIN_URL.'/assets/icons/icon-lock.svg'); ?>" valign="top" alt="" /></a>&nbsp;
                 &nbsp;<select
                         <?php /* [wpacu_lite] */ ?>
                         style="opacity: 0.5;"
@@ -65,7 +61,7 @@ $availableForPro = '<a class="go-pro-link-no-style" target="_blank" href="' . WP
 
                 <hr />
 
-                <p><?php echo __('Deciding the behavior for a web font as it is loading can be an important performance tuning technique. If applied, this option ensures text remains visible during webfont load.', 'wp-asset-clean-up'); ?> <?php _e('The <code>font-display</code> CSS property defines how font files are loaded and display by the browser.', 'wp-asset-clean-up'); ?></p>
+                <p><?php esc_html_e('Deciding the behavior for a web font as it is loading can be an important performance tuning technique. If applied, this option ensures text remains visible during webfont load.', 'wp-asset-clean-up'); ?> <?php _e('The <code>font-display</code> CSS property defines how font files are loaded and display by the browser.', 'wp-asset-clean-up'); ?></p>
 
                 <strong>Read more about this:</strong>
                     <a target="_blank" href="https://css-tricks.com/hey-hey-font-display/">Hey hey `font-display`</a> &nbsp;|&nbsp;
@@ -84,7 +80,7 @@ $availableForPro = '<a class="go-pro-link-no-style" target="_blank" href="' . WP
                 <div style="margin: 0 0 6px;"><?php _e('If you wish to preload any of the Local Font Files (ending in .woff, .woff2, .ttf etc.), you can add their URI here like in the examples below (one per line)', 'wp-asset-clean-up'); ?>:</div>
                 <textarea style="width:100%;"
                           rows="5"
-                          name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[local_fonts_preload_files]"><?php echo $data['local_fonts_preload_files']; ?></textarea>
+                          name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[local_fonts_preload_files]"><?php echo esc_textarea($data['local_fonts_preload_files']); ?></textarea>
                 <hr />
                 <strong>Examples:</strong>
                 <div style="margin-top: 5px;">

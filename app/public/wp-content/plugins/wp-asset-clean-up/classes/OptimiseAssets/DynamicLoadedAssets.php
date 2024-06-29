@@ -53,9 +53,9 @@ class DynamicLoadedAssets
 	}
 
 	/**
-	 * "Simple Custom CSS" (better retrieval, especially for localhost and password protected sites)
+	 * "Simple Custom CSS" (better retrieval, especially for localhost and password-protected sites)
 	 *
-	 * @return mixed|string
+	 * @return string
 	 */
 	public static function getSimpleCustomCss()
 	{

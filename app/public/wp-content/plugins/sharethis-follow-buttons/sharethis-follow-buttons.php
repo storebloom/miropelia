@@ -3,14 +3,14 @@
  * Plugin Name: ShareThis Follow Buttons
  * Plugin URI: https://www.sharethis.com/platform/follow-buttons-wordpress/
  * Description: Integrates the ShareThis Follow Buttons directly into your website.
- * Version: 1.2.1
+ * Version: 1.4.2
  * Author: ShareThis
  * Author URI: https://sharethis.com/
  * Text Domain: sharethis-follow-buttons
  * Domain Path: /languages
  * License: GPL v2 or later
  *
- * Copyright 2021 ShareThis
+ * Copyright 2024 ShareThis
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,14 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
+ *
  * @package ShareThisFollowButtons
  */
+
+/**
+ * Plugin version constant.
+ */
+const SHARETHIS_FOLLOW_BUTTONS_VERSION = '1.4.2';
 
 if ( version_compare( phpversion(), '5.3', '>=' ) ) {
 	require_once __DIR__ . '/instance.php';
@@ -70,7 +76,7 @@ add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'sharethis_fol
  */
 function sharethis_follow_buttons_add_action_links( $links ) {
 	$mylinks = array(
-		'<a href="' . admin_url( 'admin.php?page=sharethis-general' ) . '">Settings</a>',
+		'<a href="' . admin_url( 'admin.php?page=sharethis-share-buttons' ) . '">Settings</a>',
 	);
 	return array_merge( $links, $mylinks );
 }

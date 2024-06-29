@@ -23,15 +23,15 @@ if (! isset($data)) {
 <p class="area-title"><?php _e('Higher Revenue', 'wp-asset-clean-up'); ?> <span style="font-size: 24px;"><img draggable="false" class="wpacu-emoji" alt="💯" src="https://s.w.org/images/core/emoji/12.0.0-1/svg/1f4af.svg" /></span></p>
 <p><?php _e('Just about any major retailer is taking site speed as a very important factor for increasing conversions.', 'wp-asset-clean-up'); ?> <?php _e('According to Strangeloop, 57% of online customers will leave a website after waiting 3 seconds for the page to load. Moreover, 80% of those people will not return to that page. Some of them will tell others about their negative experience. This has a direct impact on the conversion rate, revenue and brand image.', 'wp-asset-clean-up'); ?></p>
 
-<p style="margin-bottom: 0;"><em>"<?php echo sprintf(__('%s of users say they\'ve felt STRESS OR ANGER while using a slow website.', 'wp-asset-clean-up'), '78%'); ?>"</em></p>
-<p style="margin-top: 5px; margin-bottom: 0;"><em>"<?php echo sprintf(__('%s of users say that slow online transaction make them ANXIOUS about the success of the transaction.', 'wp-asset-clean-up'), '44%'); ?>"</em></p>
-<p style="margin-top: 5px;"><em>"<?php echo sprintf(__('%s of people have THROWN THEIR PHONE while using a slow mobile site.', 'wp-asset-clean-up'), '4%'); ?>"</em></p>
+<p style="margin-bottom: 0;"><em>"<?php echo sprintf(esc_html__('%s of users say they\'ve felt STRESS OR ANGER while using a slow website.', 'wp-asset-clean-up'), '78%'); ?>"</em></p>
+<p style="margin-top: 5px; margin-bottom: 0;"><em>"<?php echo sprintf(esc_html__('%s of users say that slow online transaction make them ANXIOUS about the success of the transaction.', 'wp-asset-clean-up'), '44%'); ?>"</em></p>
+<p style="margin-top: 5px;"><em>"<?php echo sprintf(esc_html__('%s of people have THROWN THEIR PHONE while using a slow mobile site.', 'wp-asset-clean-up'), '4%'); ?>"</em></p>
 
 <?php add_thickbox(); ?>
 <div id="wpacu-brain-slow-website-info" style="display:none;">
 	<img alt="" style="width: 100%;"
-	     src="<?php echo WPACU_PLUGIN_URL; ?>/assets/images/your-brain-on-a-slow-website-infographic.jpg" />
+	     src="<?php echo esc_url(WPACU_PLUGIN_URL); ?>/assets/images/your-brain-on-a-slow-website-infographic.jpg" />
 </div>
 
 <span class="dashicons dashicons-format-image"></span> <a href="#TB_inline?&width=1024&height=550&inlineId=wpacu-brain-slow-website-info"
-                                                          class="thickbox"><?php echo sprintf(__('View "%s" Infographic', 'wp-asset-clean-up'), 'This Is Your Brain On A Slow Website'); ?></a>
+                                                          class="thickbox"><?php echo sprintf(esc_html__('View "%s" Infographic', 'wp-asset-clean-up'), 'This Is Your Brain On A Slow Website'); ?></a>

@@ -61,11 +61,13 @@ class Settings
 		'combine_loaded_css_for',
 		'combine_loaded_js_for',
 
-		// No longer used since v1.1.7.3 (Pro) & v1.3.6.4 (Lite)
-		//'combine_loaded_css_for_admin_only', // Since v1.1.1.4 (Pro) & v1.3.1.1 (Lite)
-
-        // [wpacu_pro]
+		// [wpacu_pro]
         'defer_css_loaded_body',
+
+        // [CRITICAL CSS]
+        'critical_css_status',
+        // [/CRITICAL CSS]
+
         // [/wpacu_pro]
 
         'cache_dynamic_loaded_css',
@@ -92,7 +94,7 @@ class Settings
         'combine_loaded_js',
 		'combine_loaded_js_exceptions',
         'combine_loaded_js_for_admin_only',
-        'combine_loaded_js_defer_body', // Applies defer="defer" to the combined file(s) within BODY tag
+        'combine_loaded_js_defer_body', // Applies 'defer="defer"' to the combined file(s) within BODY tag
         'combine_loaded_js_try_catch', // try {} catch (e) {} for each individual file within a combined file
 
 		// Minify each loaded CSS (remaining ones after unloading the useless ones)
@@ -112,6 +114,11 @@ class Settings
 		'cdn_rewrite_url_js',
 
         'disable_emojis',
+
+		// v1.2.1.2+ (Pro), v1.3.8.6 (Lite)
+		'disable_rss_feed',
+        'disable_rss_feed_message',
+
 		'disable_oembed',
 
 		// Stored in 'wpassetcleanup_global_unload' option
@@ -255,6 +262,11 @@ class Settings
 
 	        // [wpacu_pro]
             'defer_css_loaded_body' => 'moved',
+
+	        // [CRITICAL CSS]
+	        'critical_css_status' => 'on',
+	        // [/CRITICAL CSS]
+
 	        // [/wpacu_pro]
 
 	        'input_style' => 'enhanced',
@@ -268,6 +280,8 @@ class Settings
 
             // Starting from v1.3.6.9 (Lite) & v1.1.7.9 (Pro), /cart/ & /checkout/ pages are added to the exclusion list by default
             'do_not_load_plugin_patterns' => '/cart/'. "\n". '/checkout/',
+
+	        'disable_rss_feed_message' => __('There is no RSS feed available.', 'wp-asset-clean-up'),
 
 	        // [Hidden Settings]
             // They are prefixed with underscore _
@@ -308,7 +322,7 @@ class Settings
     {
     	$settings = $this->getAll();
 
-    	// When all ways to manage the assets are not enabled
+    	// When no retrieval method for fetching the assets is enabled
     	if ($settings['dashboard_show'] != 1 && $settings['frontend_show'] != 1) {
 		    ?>
 		    <div class="notice notice-warning">
@@ -318,7 +332,7 @@ class Settings
 	    }
 
 	    // After "Save changes" is clicked
-        if (get_transient('wpacu_settings_updated')) {
+        if (Misc::getVar('get', 'wpacu_selected_tab_area') && get_transient('wpacu_settings_updated')) {
             delete_transient('wpacu_settings_updated');
             ?>
             <div class="notice notice-success is-dismissible">
@@ -433,6 +447,17 @@ class Settings
 
         $settingsOption = get_option(WPACU_PLUGIN_ID . '_settings');
 
+	    $applyDefaultToNeverSaved = array(
+		    'frontend_show_exceptions',
+		    'minify_loaded_css_exceptions',
+		    'inline_css_files_below_size_input',
+		    'minify_loaded_js_exceptions',
+		    'inline_js_files_below_size_input',
+		    'clear_cached_files_after',
+		    'hide_meta_boxes_for_post_types',
+            'disable_rss_feed_message'
+	    );
+
         // If there's already a record in the database
         if ($settingsOption !== '' && is_string($settingsOption)) {
             $settings = (array)json_decode($settingsOption);
@@ -446,21 +471,9 @@ class Settings
 
                         // If it doesn't exist, it was never saved (Exception: "show_assets_meta_box")
                         // Make sure the default value is added
-	                    if (in_array($settingsKey, array('frontend_show_exceptions', 'minify_loaded_css_exceptions', 'inline_css_files_below_size_input', 'minify_loaded_js_exceptions', 'inline_js_files_below_size_input', 'clear_cached_files_after', 'hide_meta_boxes_for_post_types'))) {
+	                    if (in_array($settingsKey, $applyDefaultToNeverSaved)) {
 	                        $settings[ $settingsKey ] = isset( $this->defaultSettings[ $settingsKey ] ) ? $this->defaultSettings[ $settingsKey ] : '';
                         }
-
-	                    // Renamed "hide_assets_meta_box" to "show_assets_meta_box" (legacy)
-	                    if ( $settingsKey === 'show_assets_meta_box' && isset($settings['hide_assets_meta_box']) && $settings['hide_assets_meta_box'] == 1 ) { // legacy
-	                        $settings['show_assets_meta_box'] = '0';
-	                    }
-
-	                    // "show_assets_meta_box" is either 0 or 1
-                        // if it doesn't exist, it was never saved (the user didn't update the settings after updating to 1.2.0.1)
-                        // Thus it will be activated by default: 1
-	                    if ( ! isset($settings['show_assets_meta_box']) || $settings['show_assets_meta_box'] === '' ) {
-	                        $settings['show_assets_meta_box'] = 1;
-	                    }
                     }
                 }
 
@@ -532,18 +545,20 @@ class Settings
 	 */
 	public function filterSettings($settings)
 	{
-		// /?wpacu_test_mode (will load the page with "Test Mode" enabled disregarding the value from the plugin's "Settings")
-		// For debugging purposes (e.g. to make sure the HTML source is the same when a guest user accesses it as the one that is generated when the plugin is deactivated)
-		if ( isset($_GET['wpacu_test_mode']) ) {
-			$settings['test_mode'] = true;
+		// Renamed "hide_assets_meta_box" to "show_assets_meta_box" (legacy)
+		if ( isset($settings['show_assets_meta_box'], $settings['hide_assets_meta_box']) && $settings['hide_assets_meta_box'] == 1 ) { // legacy
+			$settings['show_assets_meta_box'] = '0';
 		}
 
-		if ( isset($_GET['wpacu_skip_test_mode']) ) {
-		    $settings['test_mode'] = false;
-        }
+		// "show_assets_meta_box" is either 0 or 1
+		// if it doesn't exist, it was never saved (the user didn't update the settings after updating to 1.2.0.1)
+		// Thus it will be activated by default: 1
+		if ( ! isset($settings['show_assets_meta_box']) || $settings['show_assets_meta_box'] === '' ) {
+			$settings['show_assets_meta_box'] = 1;
+		}
 
 		// Oxygen Builder is triggered and some users might want to trigger unload rules there to make the editor faster, especially plugin unload rules
-        // We will prevent minify/combine and other functions that will requires caching any files to avoid any errors
+        // We will prevent minify/combine and other functions that will require caching any files to avoid any errors
 		if (defined('WPACU_ALLOW_ONLY_UNLOAD_RULES') && WPACU_ALLOW_ONLY_UNLOAD_RULES) {
 		    $settings['minify_loaded_css']
                 = $settings['minify_loaded_js']
@@ -564,29 +579,7 @@ class Settings
 		    $settings['minify_loaded_js_for'] = 'all';
 		}
 
-		// /?wpacu_skip_inline_css
-        if (isset($_GET['wpacu_skip_inline_css_files'])) {
-	        $settings['inline_css_files'] = false;
-        }
-
-		// /?wpacu_skip_inline_js
-		if (isset($_GET['wpacu_skip_inline_js_files'])) {
-			$settings['inline_js_files'] = false;
-		}
-
-		// /?wpacu_manage_front -> "Manage in the Front-end" via query string request
-        // Useful when working for a client and you prefer him to view the pages (while logged-in) without the CSS/JS list at the bottom
-		if (isset($_GET['wpacu_manage_front'])) {
-			$settings['frontend_show'] = true;
-		}
-
-		// /?wpacu_manage_dash -> "Manage in the Dashboard" via query string request
-		// For debugging purposes
-		if (is_admin() && (isset($_REQUEST['wpacu_manage_dash']) || isset($_REQUEST['force_manage_dash']))) {
-			$settings['dashboard_show'] = true;
-		}
-
-		// Google Fonts Removal is enabled; make sure other related settings are nulled
+		// Google Fonts Removal is enabled; make sure other related settings are nullified
 		if ($settings['google_fonts_remove']) {
             $settings['google_fonts_combine']
                 = $settings['google_fonts_combine_type']
@@ -596,6 +589,21 @@ class Settings
                 = '';
 		}
 
+        if ((int)$settings['clear_cached_files_after'] === 0) {
+	        $settings['clear_cached_files_after'] = 1; // Starting from v1.2.3.6 (Pro)
+        }
+
+        if ( function_exists('get_rocket_option') && Misc::isPluginActive('wp-rocket/wp-rocket.php') ) {
+	        if ( ! defined( 'WPACU_WP_ROCKET_DELAY_JS_ENABLED' ) && get_rocket_option('delay_js') ) {
+		        // When "File Optimization" -- "Delay JavaScript execution" is enabled in WP Rocket
+                // Set "Settings" -- "Optimize JavaScript" -- "Combine loaded JS (JavaScript) into fewer files" to false
+                $settings['combine_loaded_js'] = '';
+                define( 'WPACU_WP_ROCKET_DELAY_JS_ENABLED', true );
+	        }
+        }
+
+		// [START] Overwrite specific settings via query string
+        // Ideally, either use /?wpacu_settings[...] OR /?wpacu_skip_test_mode (never both because they could interfere)
 		if (isset($_GET['wpacu_settings']) && is_array($_GET['wpacu_settings']) && ! empty($_GET['wpacu_settings'])) {
             foreach ($_GET['wpacu_settings'] as $settingKey => $settingValue) {
                 if ($settingValue === 'true') {
@@ -607,6 +615,39 @@ class Settings
                 $settings[$settingKey] = $settingValue;
             }
 		}
+
+		// /?wpacu_test_mode (will load the page with "Test Mode" enabled disregarding the value from the plugin's "Settings")
+		// For debugging purposes (e.g. to make sure the HTML source is the same when a guest user accesses it as the one that is generated when the plugin is deactivated)
+		if ( isset($_GET['wpacu_test_mode']) ) {
+			$settings['test_mode'] = true;
+		}
+
+		if ( isset($_GET['wpacu_skip_test_mode']) ) {
+			$settings['test_mode'] = false;
+		}
+
+		// /?wpacu_skip_inline_css
+		if (isset($_GET['wpacu_skip_inline_css_files'])) {
+			$settings['inline_css_files'] = false;
+		}
+
+		// /?wpacu_skip_inline_js
+		if (isset($_GET['wpacu_skip_inline_js_files'])) {
+			$settings['inline_js_files'] = false;
+		}
+
+		// /?wpacu_manage_front -> "Manage in the Front-end" via query string request
+		// Useful when working for a client, and you prefer him to view the pages (while logged-in) without the CSS/JS list at the bottom
+		if (isset($_GET['wpacu_manage_front'])) {
+			$settings['frontend_show'] = true;
+		}
+
+		// /?wpacu_manage_dash -> "Manage in the Dashboard" via query string request
+		// For debugging purposes
+		if (is_admin() && (isset($_REQUEST['wpacu_manage_dash']) || isset($_REQUEST['force_manage_dash']))) {
+			$settings['dashboard_show'] = true;
+		}
+		// [END] Overwrite specific settings via query string
 
 		return $settings;
 	}
@@ -630,7 +671,7 @@ class Settings
             }
         }
 
-	    if (json_encode($this->defaultSettings) === json_encode($settingsNotNull)) {
+	    if (wp_json_encode($this->defaultSettings) === wp_json_encode($settingsNotNull)) {
 	        // Do not keep a record in the database (no point of having an extra entry)
             // if the submitted values are the same as the default ones
 	        delete_option(WPACU_PLUGIN_ID . '_settings');
@@ -695,7 +736,7 @@ class Settings
             }
 
 	        // Apply 'Ignore dependency rule and keep the "children" loaded' for "dashicons" handle if Ninja Forms is active
-	        // because "nf-display" handle depends on the Dashicons and it could break the forms' styling
+	        // because "nf-display" handle depends on the Dashicons, and it could break the forms' styling
 	        if ($disableDashiconsForGuests && Misc::isPluginActive('ninja-forms/ninja-forms.php')) {
 		        $mainVarToUse = array();
 		        $mainVarToUse['wpacu_ignore_child']['styles']['dashicons'] = 1;
@@ -707,7 +748,9 @@ class Settings
 	        }
         }
 
-	    Misc::addUpdateOption(WPACU_PLUGIN_ID . '_settings', json_encode(Misc::filterList($settings)));
+	    Misc::addUpdateOption(WPACU_PLUGIN_ID . '_settings', wp_json_encode(Misc::filterList($settings)));
+
+        Misc::w3TotalCacheFlushObjectCache();
 
         // New Plugin Update (since 6 April 2020): the cache is cleared after page load via AJAX
 	    // This is done in case the cache directory is large and more time is required to clear it
@@ -885,7 +928,7 @@ class Settings
 		    $wpacuQueryString['wpacu_selected_sub_tab_area'] = $subTabArea;
         }
 
-	    wp_redirect(add_query_arg($wpacuQueryString, admin_url('admin.php')));
+	    wp_redirect(add_query_arg($wpacuQueryString, esc_url(admin_url('admin.php'))));
 	    exit();
     }
 
@@ -927,6 +970,7 @@ class Settings
 	    curl_setopt_array($ch, $curlParams);
 
 	    $response = curl_exec($ch);
+
 	    if (! $response) {
 		    echo curl_error($ch); // something else happened causing the request to fail
 	    }
@@ -943,8 +987,7 @@ class Settings
 
 	    curl_close($ch);
 
-	    echo json_encode($result);
-
+	    echo wp_json_encode($result);
 	    exit();
     }
 
@@ -1001,7 +1044,7 @@ class Settings
 	    ?>
 	    <script type="text/javascript">
 		    jQuery(document).ready(function($) {
-                $.post('<?php echo admin_url('admin-ajax.php'); ?>', {
+                $.post('<?php echo esc_url(admin_url('admin-ajax.php')); ?>', {
                     'action': '<?php echo WPACU_PLUGIN_ID; ?>_do_verifications',
                     'wpacu_nonce': '<?php echo wp_create_nonce('wpacu_do_verifications'); ?>'
                 }, function (obj) {
@@ -1033,16 +1076,16 @@ class Settings
     {
         ob_start();
         ?>
-        <select id="wpacu_assets_list_layout" style="max-width: inherit;" name="<?php echo $name; ?>">
-            <option <?php if ($value === 'by-location') { echo 'selected="selected"'; } ?> value="by-location"><?php _e('Grouped by location (themes, plugins, core &amp; external)', 'wp-asset-clean-up'); ?></option>
-            <option <?php if ($value === 'by-position') { echo 'selected="selected"'; } ?> value="by-position"><?php _e('Grouped by tag position: &lt;head&gt; &amp; &lt;body&gt;', 'wp-asset-clean-up'); ?></option>
-            <option <?php if ($value === 'by-preload') { echo 'selected="selected"'; } ?> value="by-preload"><?php _e('Grouped by preloaded or not-preloaded status', 'wp-asset-clean-up'); ?></option>
-            <option <?php if ($value === 'by-parents') { echo 'selected="selected"'; } ?> value="by-parents"><?php _e('Grouped by dependencies: Parents, Children, Independent', 'wp-asset-clean-up'); ?></option>
-            <option <?php if ($value === 'by-loaded-unloaded') { echo 'selected="selected"'; } ?> value="by-loaded-unloaded"><?php _e('Grouped by loaded or unloaded status', 'wp-asset-clean-up'); ?></option>
-            <option <?php if ($value === 'by-size') { echo 'selected="selected"'; } ?> value="by-size"><?php _e('Grouped by their size (sorted in descending order)', 'wp-asset-clean-up'); ?></option>
-            <option <?php if ($value === 'by-rules') { echo 'selected="selected"'; } ?> value="by-rules"><?php _e('Grouped by having at least one rule &amp; no rules', 'wp-asset-clean-up'); ?></option>
-            <option <?php if (in_array($value, array('two-lists', 'default'))) { echo 'selected="selected"'; } ?> value="two-lists"><?php _e('All enqueued CSS, followed by all enqueued JavaScript', 'wp-asset-clean-up'); ?></option>
-            <option <?php if ($value === 'all') { echo 'selected="selected"'; } ?> value="all"> <?php _e('All enqueues in one list', 'wp-asset-clean-up'); ?></option>
+        <select id="wpacu_assets_list_layout" style="max-width: inherit;" name="<?php echo esc_attr($name); ?>">
+            <option <?php if ($value === 'by-location') { echo 'selected="selected"'; } ?> value="by-location"><?php esc_html_e('Grouped by location (themes, plugins, core &amp; external)', 'wp-asset-clean-up'); ?></option>
+            <option <?php if ($value === 'by-position') { echo 'selected="selected"'; } ?> value="by-position"><?php esc_html_e('Grouped by tag position: &lt;head&gt; &amp; &lt;body&gt;', 'wp-asset-clean-up'); ?></option>
+            <option <?php if ($value === 'by-preload') { echo 'selected="selected"'; } ?> value="by-preload"><?php esc_html_e('Grouped by preloaded or not-preloaded status', 'wp-asset-clean-up'); ?></option>
+            <option <?php if ($value === 'by-parents') { echo 'selected="selected"'; } ?> value="by-parents"><?php esc_html_e('Grouped by dependencies: Parents, Children, Independent', 'wp-asset-clean-up'); ?></option>
+            <option <?php if ($value === 'by-loaded-unloaded') { echo 'selected="selected"'; } ?> value="by-loaded-unloaded"><?php esc_html_e('Grouped by loaded or unloaded status', 'wp-asset-clean-up'); ?></option>
+            <option <?php if ($value === 'by-size') { echo 'selected="selected"'; } ?> value="by-size"><?php esc_html_e('Grouped by their size (sorted in descending order)', 'wp-asset-clean-up'); ?></option>
+            <option <?php if ($value === 'by-rules') { echo 'selected="selected"'; } ?> value="by-rules"><?php esc_html_e('Grouped by having at least one rule &amp; no rules', 'wp-asset-clean-up'); ?></option>
+            <option <?php if (in_array($value, array('two-lists', 'default'))) { echo 'selected="selected"'; } ?> value="two-lists"><?php esc_html_e('All enqueued CSS, followed by all enqueued JavaScript', 'wp-asset-clean-up'); ?></option>
+            <option <?php if ($value === 'all') { echo 'selected="selected"'; } ?> value="all"> <?php esc_html_e('All enqueues in one list', 'wp-asset-clean-up'); ?></option>
         </select>
         <?php
         return ob_get_clean();

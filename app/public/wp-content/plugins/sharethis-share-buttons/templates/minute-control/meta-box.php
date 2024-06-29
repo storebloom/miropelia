@@ -6,6 +6,7 @@
  *
  * @package ShareThisShareButtons
  */
+
 ?>
 <div id="sharethis-meta-box">
 	<?php if ( ! in_array( $inline_enable, array( null, false, 'false' ), true ) ) : ?>

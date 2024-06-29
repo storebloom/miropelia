@@ -1,0 +1,64 @@
+// main: ../admin.scss
+
+.wq-boxes {
+	display: grid;
+	grid-gap: 30px;
+	grid-template-columns: 1fr;
+
+	@media (min-width: 600px) {
+		grid-template-columns: 1fr 1fr;
+	}
+
+	@media (min-width: 900px) {
+		grid-template-columns: 1fr 1fr 1fr;
+	}
+
+	@media (min-width: 1400px) {
+		grid-template-columns: 1fr 1fr 1fr 1fr;
+	}
+
+	@media (min-width: 1920px) {
+		grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+	}
+}
+
+.wq-box {
+	line-height: 150%;
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+	width: 100%;
+	margin: 0;
+	min-width: auto;
+
+	img {
+		width: 100%;
+		height: auto;
+	}
+
+	&__header {
+		font-size: 16px;
+		margin: 0 0 15px;
+		padding: 20px 20px 0;
+	}
+
+	&__body {
+		padding: 0 20px 20px;
+	}
+
+	&__footer {
+		-webkit-box-sizing: border-box;
+		box-sizing: border-box;
+		padding: 18px;
+		background-color: #f9f9f9;
+
+		.wq-box__title {
+			margin-top: 0;
+		}
+	}
+
+	&--no-padding {
+		.wq-box__body {
+			padding: 0;
+		}
+	}
+}

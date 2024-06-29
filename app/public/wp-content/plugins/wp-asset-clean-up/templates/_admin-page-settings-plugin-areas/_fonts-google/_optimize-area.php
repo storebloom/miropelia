@@ -145,7 +145,7 @@ HTML;
 			</ul>
 			<hr />
 
-			<p><?php echo __('Deciding the behavior for a web font as it is loading can be an important performance tuning technique. If applied, this option ensures text remains visible during webfont load.', 'wp-asset-clean-up'); ?> <?php _e('The <code>font-display</code> CSS property defines how font files are loaded and display by the browser.', 'wp-asset-clean-up'); ?></p>
+			<p><?php _e('Deciding the behavior for a web font as it is loading can be an important performance tuning technique. If applied, this option ensures text remains visible during webfont load.', 'wp-asset-clean-up'); ?> <?php _e('The <code>font-display</code> CSS property defines how font files are loaded and display by the browser.', 'wp-asset-clean-up'); ?></p>
 
 			<strong>Read more about this:</strong>
 			<a target="_blank" href="https://css-tricks.com/hey-hey-font-display/">Hey hey `font-display`</a> &nbsp;|&nbsp;
@@ -185,7 +185,7 @@ HTML;
 			<div style="margin: 0 0 6px;"><?php _e('If you wish to preload any of the Google Font Files (e.g. ending in .woff2), you can add their URL here (one per line)', 'wp-asset-clean-up'); ?>:</div>
 			<textarea style="width:100%;"
 			          rows="5"
-			          name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[google_fonts_preload_files]"><?php echo $data['google_fonts_preload_files']; ?></textarea>
+			          name="<?php echo WPACU_PLUGIN_ID . '_settings'; ?>[google_fonts_preload_files]"><?php echo esc_textarea($data['google_fonts_preload_files']); ?></textarea>
 			<hr />
 			<p>To get the URL to the actual font file, you have to open the Google Fonts Link (e.g. https://fonts.googleapis.com/css?family=Open+Sans:bold), locate the actual @font-face (or all of them, depends on the circumstances), and then copy the value of the <code>url</code> within the 'src:' property.</p>
 			<strong>Examples:</strong>

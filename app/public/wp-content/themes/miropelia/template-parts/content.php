@@ -25,6 +25,7 @@
         <?php endif; ?>
     </header><!-- .entry-header -->
     <div class="entry-content">
+	    <?php the_post_thumbnail('large'); ?>
         <?php
         the_content(
             sprintf(
@@ -49,7 +50,4 @@
         );
         ?>
     </div><!-- .entry-content -->
-    <div class="feature-image">
-        <?php the_post_thumbnail('full'); ?>
-    </div>
 </article><!-- #post-<?php the_ID(); ?> -->

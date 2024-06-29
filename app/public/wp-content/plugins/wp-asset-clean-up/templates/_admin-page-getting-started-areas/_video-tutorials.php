@@ -68,7 +68,7 @@ if (! isset($data)) {
 
     <div class="wpacu-video-area-wrapper">
         <div class="wpacu-col-left wpacu-video-wrapper">
-            <a target="_blank" href="https://www.youtube.com/watch?v=garf1tL6PTU&start=1925"><img src="<?php echo WPACU_PLUGIN_URL; ?>/assets/images/sproutedweb-asset-cleanup-elementor-video.jpg" style="width: 560px;" alt="" /></a>
+            <a target="_blank" href="https://www.youtube.com/watch?v=garf1tL6PTU&start=1925"><img src="<?php echo esc_url(WPACU_PLUGIN_URL); ?>/assets/images/sproutedweb-asset-cleanup-elementor-video.jpg" style="width: 560px;" alt="" /></a>
         </div>
         <div class="wpacu-col-right">
             <p>This video from SproutedWeb, covers some basic Performance Fundamentals, shows the latest Benchmarks for Elementor v2.5.3 (on WP Engine, PHP 7.2, WP 5.1).</p>
