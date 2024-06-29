@@ -524,7 +524,7 @@ class Explore
     {
         $args = [
             'numberposts' => -1,
-            'post_type' => ['explore-area', 'explore-point', 'explore-character', 'explore-enemy'],
+            'post_type' => ['explore-area', 'explore-point', 'explore-character', 'explore-enemy', 'explore-sign'],
             'tax_query' => [
                 [
                     'taxonomy' => 'explore-area-point',
@@ -621,8 +621,8 @@ class Explore
                         background-size: cover;
                         top: <?php echo esc_html($top); ?>;
                         left: <?php echo esc_html($left); ?>;
-                        height: <?php echo esc_html($height); ?>;
-                        width: <?php echo esc_html($width); ?>;
+                        <?php '0px' !== $height ? 'height: ' . esc_html($height) . ';' : ''; ?>
+                        <?php '0px' !== $width ? 'height: ' . esc_html($width) . ';' : ''; ?>
                     }
                 <?php endforeach; ?>
             </style>
@@ -712,7 +712,7 @@ class Explore
             if (('explore-enemy' === $explore_point->post_type && false === in_array($explore_point->post_name, $dead_ones,
                         true)) || 'explore-enemy' !== $explore_point->post_type ) {
                 $html .= '<div style="left:' . intval($left) . 'px; top:' . intval($top) . 'px;" id="' . $explore_point->ID . '" data-genre="' . $explore_point->post_type . '" data-type="' . esc_attr($type) . '" data-value="' . intval($value) . '"';
-                $html .= 'data-image=' . get_the_post_thumbnail_url($explore_point->ID) . '" ';
+                $html .= 'data-image="' . get_the_post_thumbnail_url($explore_point->ID) . '" ';
                 if ('explore-area' === $explore_point->post_type) {
                     $map_url = get_the_post_thumbnail_url($explore_point->ID);
 
@@ -722,6 +722,10 @@ class Explore
                 // Is item breakable.
                 if ($breakable) {
                     $html .= ' data-breakable="true" ';
+
+                    if ('explore-sign' === $explore_point->post_type) {
+                        $classes .= ' explore-sign-vertical';
+                    }
                 }
 
                 // Is item attached to a mission.
@@ -760,7 +764,7 @@ class Explore
 
                 $html .= '>';
 
-                $html .= 'explore-character' === $explore_point->post_type ? $explore_point->post_content : '';
+                $html .= true === in_array($explore_point->post_type, ['explore-character', 'explore-sign'], true) ? $explore_point->post_content : '';
 
                 // Projectile html for enemy.
                 if ('explore-enemy' === $explore_point->post_type && 'shooter' === $explore_enemy_type) {
@@ -913,13 +917,14 @@ class Explore
             'explore-enemy' => 'Explore Enemy',
             'explore-weapon' => 'Explore Weapon',
             'explore-magic' => 'Explore Magic',
-            'explore-mission' => 'Explore Mission'
+            'explore-mission' => 'Explore Mission',
+            'explore-sign' => 'Explore Sign',
         ];
 
         $taxo_types = [
             'explore-area-point' => [
                 'name' => 'Explore Area',
-                'post-types' => ['explore-area', 'explore-point', 'explore-character', 'explore-cutscene', 'explore-enemy', 'explore-mission']
+                'post-types' => ['explore-area', 'explore-point', 'explore-character', 'explore-cutscene', 'explore-enemy', 'explore-mission', 'explore-sign']
             ],
             'explore-character-point' => [
                 'name' => 'Explore Character',
@@ -940,7 +945,7 @@ class Explore
             'explore-next-area' => [
                 'name' => 'Next Area',
                 'post-types' => ['explore-cutscene']
-            ]
+            ],
         ];
 
         foreach($post_types as $slug => $name) {

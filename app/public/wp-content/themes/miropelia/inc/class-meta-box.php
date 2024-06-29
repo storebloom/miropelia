@@ -38,7 +38,7 @@ class Meta_Box {
 	 */
 	public function explore_metabox() {
 		// Get all post types available.
-		$post_types = ['explore-point', 'explore-area', 'explore-character', 'explore-enemy', 'explore-weapon', 'explore-magic', 'explore-cutscene', 'explore-mission'];
+		$post_types = ['explore-point', 'explore-area', 'explore-character', 'explore-enemy', 'explore-weapon', 'explore-magic', 'explore-cutscene', 'explore-mission', 'explore-sign'];
 
 		// Add the Explore Point meta box to editor pages.
 		add_meta_box( 'explore-point', esc_html__( 'Explore Point Position', 'miropelia' ), [$this, 'explore_point_box'], $post_types, 'side', 'high' );
@@ -118,7 +118,7 @@ class Meta_Box {
 
         $post_type = get_post_type();
 
-        if (true === in_array($post_type, ['explore-point', 'explore-area', 'explore-character', 'explore-weapon', 'explore-magic', 'explore-cutscene', 'explore-mission'], true)) {
+        if (true === in_array($post_type, ['explore-point', 'explore-area', 'explore-character', 'explore-weapon', 'explore-magic', 'explore-cutscene', 'explore-mission', 'explore-sign'], true)) {
             $top    = filter_input(INPUT_POST, 'explore-top', FILTER_SANITIZE_NUMBER_INT);
             $left   = filter_input(INPUT_POST, 'explore-left', FILTER_SANITIZE_NUMBER_INT);
             $height = filter_input(INPUT_POST, 'explore-height', FILTER_SANITIZE_NUMBER_INT);
@@ -181,9 +181,7 @@ class Meta_Box {
             }
 
             foreach ($inputs as $name => $output) {
-                if (false === empty($output)) {
-                    update_post_meta($post_id, $name, $output);
-                }
+                update_post_meta($post_id, $name, $output);
             }
         }
     }

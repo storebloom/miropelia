@@ -1365,25 +1365,17 @@ function miroExplorePosition(v,a,b,d,x, $newest) {
     forEach(modal, function(index, value) {
         let position = cleanClassName(value.className);
 
-        // For breakables.
-        if ( weaponEl && 'true' === value.getAttribute('data-breakable') ) {
-            if ( elementsOverlap( weaponEl.getBoundingClientRect(), value.getBoundingClientRect() ) ) {
-                if ( value.dataset.mission && '' !== value.dataset.mission ) {
-                    saveMission( value.dataset.mission, value, position );
-                }
-
-                value.remove();
-            }
-
-            return;
-        }
-
         if ( value.classList.contains( 'enemy-item' ) ) {
             // Hurt enemy save enemy health.
             hurtTheEnemy( weaponEl, value );
         }
 
         if ( value && box && elementsOverlap( box.getBoundingClientRect(), value.getBoundingClientRect() ) ) {
+            // For explore signs.
+            if ( 'explore-sign' === value.dataset.genre ) {
+                value.classList.add( 'open-up' );
+            }
+
             navigator.vibrate(1000);
 
             // If trigger. Trigger the triggee.
@@ -1469,6 +1461,17 @@ function miroExplorePosition(v,a,b,d,x, $newest) {
             }
         } else if ( true === value.classList.contains(  'engage' ) ) {
            value.classList.remove( 'engage' );
+        }
+
+        // For breakables.
+        if ( weaponEl && 'true' === value.getAttribute('data-breakable') ) {
+            if ( elementsOverlap( weaponEl.getBoundingClientRect(), value.getBoundingClientRect() ) ) {
+                if ( value.dataset.mission && '' !== value.dataset.mission ) {
+                    saveMission( value.dataset.mission, value, position );
+                }
+
+                value.remove();
+            }
         }
     });
 

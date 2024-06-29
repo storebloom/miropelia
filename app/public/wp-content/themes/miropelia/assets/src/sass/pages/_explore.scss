@@ -566,6 +566,40 @@
       }
     }
 
+    [data-genre="explore-sign"] {
+      background: tan;
+      border-radius: 1px;
+      height: .5rem;
+      width: 3.25rem;
+
+      &.explore-sign-vertical {
+        height: 3.25rem;
+        width: .5rem;
+      }
+
+      p {
+        background: tan;
+        border-radius: 6px;
+        box-shadow: 11px 7px 13px 0px #00000054;
+        height: 100%;
+        left: 50%;
+        max-height: 400px;
+        max-width: 400px;
+        overflow: scroll;
+        padding: 2rem;
+        position: fixed;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 95%;
+      }
+
+      &:not(.open-up) {
+        p {
+          display: none;
+        }
+      }
+    }
+
     .map-item,
     .enemy-item {
       position: absolute;
