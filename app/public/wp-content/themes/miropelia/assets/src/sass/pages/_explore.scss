@@ -580,7 +580,7 @@
       p {
         background: tan;
         border-radius: 6px;
-        box-shadow: 11px 7px 13px 0px #00000054;
+        box-shadow: 11px 7px 13px 0 #00000054;
         height: 100%;
         left: 50%;
         max-height: 400px;
@@ -749,6 +749,7 @@
           background: blue;
           padding-top: 5rem;
           transform: translate(10px, -65px);
+          width: 1rem;
         }
       }
 

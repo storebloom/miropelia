@@ -10,6 +10,9 @@ document.addEventListener("DOMContentLoaded", function(){
         // Engage transport function.
         engageTransportFunction();
 
+        // Engage draggable function.
+        engageDraggableFunction();
+
         // Spell clicks.
         const spells = document.querySelectorAll('.spell');
         const weapon = document.getElementById( 'weapon' );
@@ -284,8 +287,6 @@ function moveNPC( npc ) {
                 // Set next position to 0 if position is at the end.
                 nextPosition = position === pathCount ? 0 : position + 1;
 
-                console.log(position);
-
                 // Get loop amount for how many times to loop interval before switching to next position.
                 const loopAmount = getLoopAmount( pathArray[position].left, pathArray[position].top, pathArray[nextPosition].left, pathArray[nextPosition].top, walkingSpeed );
 
@@ -294,7 +295,7 @@ function moveNPC( npc ) {
                     // Check that current position is not the last position. And move npc if it is not.
                     if ( pathCount > position || ( firstRun && pathCount === position ) ) {
                         regulateTransitionSpeed( pathArray[position].left, pathArray[position].top, pathArray[nextPosition].left, pathArray[nextPosition].top, npc, walkingSpeed );
-console.log(pathArray[nextPosition]);
+
                         npc.style.left = pathArray[nextPosition].left + 'px';
                         npc.style.top = pathArray[nextPosition].top + 'px';
                     }
@@ -314,8 +315,6 @@ console.log(pathArray[nextPosition]);
 
                             // If it is the last position, and repeat is set to true, then reset position to 0.
                         } else if ('true' === repeatPath) {
-
-                            console.log('repeat');
                             firstRun = true;
                             position = pathCount;
                             loopCount = 0;
@@ -643,6 +642,7 @@ const enterNewArea = (function () {
     let called = false;
 
     return function(position, weapon, mapUrl) {
+        window.allowMovement = false;
         // Clear enemy interval.
         clearInterval(window.shooterInt);
         clearInterval(window.runnerInt);
@@ -737,6 +737,7 @@ const enterNewArea = (function () {
                         mapContainer.className = 'container ' + position;
                         mapContainer.style.backgroundImage = 'url(' + mapUrl + ')';
                         playSong(newMusic);
+                        window.allowMovement = true;
                     }, 100 );
                 } );
             }
@@ -1371,12 +1372,12 @@ function miroExplorePosition(v,a,b,d,x, $newest) {
         }
 
         if ( value && box && elementsOverlap( box.getBoundingClientRect(), value.getBoundingClientRect() ) ) {
-            // For explore signs.
-            if ( 'explore-sign' === value.dataset.genre ) {
-                value.classList.add( 'open-up' );
-            }
-
             navigator.vibrate(1000);
+
+            // Draggable logic.
+            if ( 'true' === value.dataset.draggable && false === value.classList.contains( 'dragme' ) ) {
+                value.classList.add( 'dragme' );
+            }
 
             // If trigger. Trigger the triggee.
             if ( 'true' === value.dataset.trigger ) {
@@ -1390,7 +1391,6 @@ function miroExplorePosition(v,a,b,d,x, $newest) {
 
             // NPC Walking Path Trigger.
             if ( true === value.classList.contains( 'path-trigger' ) && false === value.classList.contains( 'already-hit' ) ) {
-                console.log('path trigger');
                 const triggee = document.querySelector( '.' + value.getAttribute( 'data-triggee' ) );
 
                 // Move triggered NPC.
@@ -1451,7 +1451,6 @@ function miroExplorePosition(v,a,b,d,x, $newest) {
                     saveMission( value.dataset.mission, value, position );
                 }
 
-                console.log('cutscene2');
                 engageCutscene( position );
             }
 
@@ -1459,18 +1458,24 @@ function miroExplorePosition(v,a,b,d,x, $newest) {
             if ( 'true' === value.getAttribute( 'data-collectable' ) ) {
                 value.remove();
             }
-        } else if ( true === value.classList.contains(  'engage' ) ) {
+        } else if ( true === value.classList.contains(  'engage' ) || true === value.classList.contains( 'dragme' ) ) {
            value.classList.remove( 'engage' );
+           value.classList.remove( 'dragme' );
         }
 
-        // For breakables.
-        if ( weaponEl && 'true' === value.getAttribute('data-breakable') ) {
+        // For breakables and other interactions.
+        if ( weaponEl ) {
             if ( elementsOverlap( weaponEl.getBoundingClientRect(), value.getBoundingClientRect() ) ) {
                 if ( value.dataset.mission && '' !== value.dataset.mission ) {
                     saveMission( value.dataset.mission, value, position );
                 }
 
-                value.remove();
+                // Don't remove item if its a sign.
+                if ( 'true' === value.dataset.breakable ) {
+                    value.remove();
+                } else {
+                    interactWithItem( value );
+                }
             }
         }
     });
@@ -1586,6 +1591,23 @@ function miroExplorePosition(v,a,b,d,x, $newest) {
         }
         // If value is not found, you can return null or any other indicator
         return null;
+    }
+}
+
+/**
+ * Drag item
+ */
+
+/**
+ * When user hits an item with weapon
+ * @param item
+ */
+function interactWithItem( item ) {
+    // For explore signs.
+    if ( 'explore-sign' === item.dataset.genre ) {
+        item.classList.add( 'open-up' );
+
+        document.addEventListener( 'click', () => {item.classList.remove( 'open-up' );}, { once: true } );
     }
 }
 
@@ -1883,7 +1905,6 @@ function enterExplorePoint(value) {
  * position on the map based on user input.
  */
 function movementIntFunc() {
-    console.log('start interval');
     const d = {};
     const x = 3;
     let $newest = false;
@@ -2036,14 +2057,27 @@ function movementIntFunc() {
         const leftValInt = parseInt( leftVal, 10 );
         const topValInt = parseInt( topVal, 10 );
         const finalPos = blockMovement( topValInt, leftValInt );
+        const draggableItem = document.querySelector( '.dragme' );
 
         if ( window.allowMovement ) {
-            box.style.top = miroExplorePosition( finalPos.top, d[87] ? 87 : 38, d[83] ? 83 : 40, d, x, $newest ).toString() + 'px';
-            box.style.left = miroExplorePosition( finalPos.left, d[65] ? 65 : 37, d[68] ? 68 : 39, d, x, $newest ).toString() + 'px';
+            const myTop = miroExplorePosition( finalPos.top, d[87] ? 87 : 38, d[83] ? 83 : 40, d, x, $newest );
+            const myLeft = miroExplorePosition( finalPos.left, d[65] ? 65 : 37, d[68] ? 68 : 39, d, x, $newest );
+            box.style.top = myTop + 'px';
+            box.style.left = myLeft + 'px';
 
             if ( weapon ) {
-                weapon.style.top = ( miroExplorePosition( finalPos.top, d[87] ? 87 : 38, d[83] ? 83 : 40, d, x, $newest ) + 500 ) + 'px';
-                weapon.style.left = ( miroExplorePosition( finalPos.left, d[65] ? 65 : 37, d[68] ? 68 : 39, d, x, $newest ) + 500 ) + 'px';
+                weapon.style.top = ( myTop + 500 ) + 'px';
+                weapon.style.left = ( myLeft + 500 ) + 'px';
+            }
+
+            if ( draggableItem ) {
+                if (window.dragTop && false !== window.dragTop) {
+                    draggableItem.style.top = window.dragTop.higher ? ( ( myTop + 450 ) - window.dragTop.offset ) + 'px' : ( ( myTop + 450 ) + window.dragTop.offset ) + 'px';
+                }
+
+                if (window.dragLeft && false !== window.dragLeft) {
+                    draggableItem.style.left = window.dragLeft.left ? ( ( myLeft + 450 ) - window.dragLeft.offset ) + 'px' : ( ( myLeft + 450 ) + window.dragLeft.offset ) + 'px';
+                }
             }
         }
 
@@ -2157,7 +2191,7 @@ function blockMovement(top, left) {
     let finalTop = top;
     let finalLeft = left;
     const box = document.querySelector( '#map-character img' ).getBoundingClientRect();
-    const collisionWalls = document.querySelectorAll('.default-map svg rect, .map-item:not([data-trigger="true"]), .enemy-item');
+    const collisionWalls = document.querySelectorAll('.default-map svg rect, .map-item:not([data-trigger="true"]):not(.currently-dragging), .enemy-item');
 
     return getBlockDirection(collisionWalls, box, finalTop, finalLeft, false);
 }
@@ -2189,7 +2223,7 @@ function getBlockDirection(collisionWalls, box, finalTop, finalLeft, enemy) {
                 const bottomCollision = collisionWall.top < box.bottom && collisionWall.bottom > box.bottom && collisionWall.top > ( box.bottom - 10 );
                 const leftCollision = collisionWall.right > box.left && collisionWall.left < box.left;
                 const rightCollision = collisionWall.left < box.right && collisionWall.right > box.right;
-                const adjust = true === enemy ? 5 : 5;
+                const adjust = true === enemy ? 5 : 3;
 
                 if (topCollision && !bottomCollision) {
                     final =  { top: top + adjust, left: finalLeft, collide: true };
@@ -2361,6 +2395,58 @@ function engageTransportFunction() {
             container.removeEventListener( 'click', clickTransport );
         }
     } );
+}
+
+/**
+ * This will hold all in-game draggable functionality.
+ */
+function engageDraggableFunction() {
+    document.addEventListener( 'keydown', e => {
+        const dragmeitem = document.querySelector( '.dragme' );
+        // If Shift is pressed start transport sequence.
+        if ( 16 === e.keyCode || 32 === e.keyCode ) {
+            if ( dragmeitem && true === dragmeitem.classList.contains( 'currently-dragging' ) ) {
+                dragmeitem.classList.remove( 'currently-dragging' );
+                dragmeitem.classList.remove( 'dragme' );
+
+                dragmeitem.style.left = window.dragLeft.left ? ( parseInt( dragmeitem.style.left.replace('px', '') ) - 5 ) + 'px' : ( parseInt( dragmeitem.style.left.replace('px', '') ) + 5 ) + 'px';
+                dragmeitem.style.top = window.dragTop.higher ? ( parseInt( dragmeitem.style.top.replace('px', '') ) - 5 ) + 'px' : ( parseInt( dragmeitem.style.top.replace('px', '') ) + 5 ) + 'px';
+
+                window.dragLeft = false;
+                window.dragTop = false;
+            } else {
+                dragItem();
+            }
+        }
+    } );
+}
+
+/**
+ * Dragg item function.
+ */
+function dragItem() {
+    const itemToDrag = document.querySelector( '.dragme' );
+    const mapCharacter = document.querySelector( '#map-character' );
+
+    if ( itemToDrag ) {
+        const itemToDragTop = parseInt( itemToDrag.style.top.replace( 'px', '' ) );
+        const itemToDragLeft = parseInt( itemToDrag.style.left.replace( 'px', '' ) );
+        const mapCharacterTop = parseInt( mapCharacter.style.top.replace( 'px', '' ) ) + 450;
+        const mapCharacterLeft = parseInt( mapCharacter.style.left.replace( 'px', '' ) ) + 450;
+
+        const itemIsHigher = itemToDragTop < mapCharacterTop;
+        const itemIsLeft = itemToDragLeft < mapCharacterLeft;
+        const topOffset = itemToDragTop < mapCharacterTop ? mapCharacterTop - itemToDragTop : itemToDragTop - mapCharacterTop;
+        const leftOffset = itemToDragLeft < mapCharacterLeft ? mapCharacterLeft - itemToDragLeft : itemToDragLeft - mapCharacterLeft;
+
+        window.dragTop = {'offset': topOffset, 'higher': itemIsHigher};
+        window.dragLeft = {'offset': leftOffset, 'left': itemIsLeft};
+
+        itemToDrag.classList.add( 'currently-dragging' );
+    } else {
+        window.dragTop = false;
+        window.dragLeft = false;
+    }
 }
 
 /**

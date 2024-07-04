@@ -621,8 +621,8 @@ class Explore
                         background-size: cover;
                         top: <?php echo esc_html($top); ?>;
                         left: <?php echo esc_html($left); ?>;
-                        <?php '0px' !== $height ? 'height: ' . esc_html($height) . ';' : ''; ?>
-                        <?php '0px' !== $width ? 'height: ' . esc_html($width) . ';' : ''; ?>
+                        <?php echo '0px' !== $height ? 'height: ' . esc_html($height) . ';' : ''; ?>
+                        <?php echo '0px' !== $width ? 'width: ' . esc_html($width) . ';' : ''; ?>
                     }
                 <?php endforeach; ?>
             </style>
@@ -668,8 +668,10 @@ class Explore
 
             $value = get_post_meta($explore_point->ID, 'value', true);
             $type = get_the_terms($explore_point->ID, 'value-type');
-            $breakable = get_post_meta($explore_point->ID, 'explore-breakable', true);
-            $collectable = get_post_meta($explore_point->ID, 'explore-collectable', true);
+            $interaction_type = get_post_meta($explore_point->ID, 'explore-interaction-type', true);
+            $breakable = false === empty($interaction_type) && 'breakable' === $interaction_type;
+            $collectable = false === empty($interaction_type) && 'collectable' === $interaction_type;
+            $draggable = false === empty($interaction_type) && 'draggable' === $interaction_type;
             $top = get_post_meta($explore_point->ID, 'explore-top', true) . 'px';
             $left = get_post_meta($explore_point->ID, 'explore-left', true) . 'px';
             $type = false === empty($type[0]->slug) ? $type[0]->slug : '';
@@ -720,7 +722,7 @@ class Explore
                 }
 
                 // Is item breakable.
-                if ($breakable) {
+                if (true === $breakable) {
                     $html .= ' data-breakable="true" ';
 
                     if ('explore-sign' === $explore_point->post_type) {
@@ -748,8 +750,12 @@ class Explore
                     }
                 }
 
-                if ($collectable) {
+                if (true === $collectable) {
                     $html .= ' data-collectable="true" ';
+                }
+
+                if (true === $draggable) {
+                    $html .= ' data-draggable="true" ';
                 }
 
                 // Eneemy specific data-points.

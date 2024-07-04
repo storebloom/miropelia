@@ -64,8 +64,7 @@ class Meta_Box {
         $map = get_post_meta($post->ID, 'explore-map-svg', true);
         $value = get_post_meta($post->ID, 'value', true);
         $unlock_level = get_post_meta($post->ID, 'explore-unlock-level', true);
-        $collectable = get_post_meta($post->ID, 'explore-collectable', true);
-        $breakable = get_post_meta($post->ID, 'explore-breakable', true);
+        $interaction_type = get_post_meta($post->ID, 'explore-interaction-type', true);
         $walking_paths = get_post_meta($post->ID, 'explore-path', true);
         $walking_paths = false === empty($walking_paths['explore-path']) ? $walking_paths['explore-path'] : [['top' => 0, 'left' => 0]];
         $walking_speed = get_post_meta($post->ID, 'explore-speed', true);
@@ -129,8 +128,7 @@ class Meta_Box {
             $map  = filter_input(INPUT_POST, 'explore-map-svg', FILTER_UNSAFE_RAW);
             $value  = filter_input(INPUT_POST, 'value', FILTER_SANITIZE_NUMBER_INT);
             $unlock_level  = filter_input(INPUT_POST, 'explore-unlock-level', FILTER_SANITIZE_NUMBER_INT);
-            $collectable  = filter_input(INPUT_POST, 'explore-collectable', FILTER_UNSAFE_RAW);
-            $breakable  = filter_input(INPUT_POST, 'explore-breakable', FILTER_UNSAFE_RAW);
+            $interaction_type  = filter_input(INPUT_POST, 'explore-interaction-type', FILTER_UNSAFE_RAW);
             $repeat  = filter_input(INPUT_POST, 'explore-repeat', FILTER_UNSAFE_RAW);
             $walking_path = filter_input_array(
                 INPUT_POST, ['explore-path' => ['filter' => FILTER_UNSAFE_RAW, 'flags' => FILTER_REQUIRE_ARRAY]]
@@ -155,8 +153,7 @@ class Meta_Box {
                 'explore-width'            => $width,
                 'value'                    => $value,
                 'explore-unlock-level'     => $unlock_level,
-                'explore-breakable'        => $breakable,
-                'explore-collectable'      => $collectable,
+                'explore-interaction-type' => $interaction_type,
                 'explore-path'             => $walking_path,
                 'explore-speed'            => $walking_speed,
                 'explore-repeat'           => $repeat,

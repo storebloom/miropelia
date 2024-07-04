@@ -54,14 +54,22 @@ $post_type = get_post_type();
         <input class="top" type="number" name="explore-unlock-level" id="explore-unlock-level" value="<?php echo intval($unlock_level); ?>">
     </p>
 
-    <?php if (false === in_array($post_type, ['explore-character', 'explore-area'], true )) :  ?>
+    <?php if (false === in_array($post_type, ['explore-character', 'explore-area', 'explore-mission', 'explore-cutscene', 'explore-magic'], true )) :  ?>
         <p>
             Collectable<br>
-            <input class="top" type="checkbox" name="explore-collectable" id="explore-collectable" <?php checked('on', $collectable, true) ?>>
+            <input class="top" type="radio" name="explore-interaction-type" id="explore-collectable" value="collectable" <?php checked('collectable', $interaction_type, true) ?>>
         </p>
         <p>
             Breakable<br>
-            <input class="top" type="checkbox" name="explore-breakable" id="explore-breakable" <?php checked('on', $breakable, true) ?>>
+            <input class="top" type="radio" name="explore-interaction-type" id="explore-breakable" value="breakable" <?php checked('breakable', $interaction_type, true) ?>>
+        </p>
+        <p>
+            Draggable<br>
+            <input class="top" type="radio" name="explore-interaction-type" id="explore-draggable" value="draggable" <?php checked('draggable', $interaction_type, true) ?>>
+        </p>
+        <p>
+            None<br>
+            <input class="top" type="radio" name="explore-interaction-type" id="explore-draggable" value="" <?php checked('', $interaction_type, true) ?>>
         </p>
     <?php endif; ?>
     <?php if (true === in_array($post_type, ['explore-character', 'explore-enemy'], true )) :  ?>

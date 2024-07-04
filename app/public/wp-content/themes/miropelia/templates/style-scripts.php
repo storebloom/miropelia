@@ -10,7 +10,7 @@ $point_type = 'explore-enemy' === $explore_point->post_type ? '.enemy-item' : '.
 <?php echo esc_html($background_url); ?>
     background-size: cover;
     <?php echo '0px' !== $height ? 'height: ' . esc_html($height) . ';' : '';  ?>
-    <?php echo '0px' !== $width ? 'height: ' . esc_html($width) . ';' : '';  ?>
+    <?php echo '0px' !== $width ? 'width: ' . esc_html($width) . ';' : '';  ?>
 }
 
 <?php endforeach;
