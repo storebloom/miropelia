@@ -65,6 +65,16 @@ class Meta_Box {
         $value = get_post_meta($post->ID, 'value', true);
         $unlock_level = get_post_meta($post->ID, 'explore-unlock-level', true);
         $interaction_type = get_post_meta($post->ID, 'explore-interaction-type', true);
+        $drag_dest = get_post_meta($post->ID, 'explore-drag-dest', true);
+        var_dump($drag_dest);
+        $drag_dest = false === empty($drag_dest['explore-drag-dest']) ? $drag_dest['explore-drag-dest'] : [
+            'top' => 0,
+            'left' => 0,
+            'height' => 0,
+            'width' => 0,
+            'image' => '',
+            'mission' => '',
+        ];
         $walking_paths = get_post_meta($post->ID, 'explore-path', true);
         $walking_paths = false === empty($walking_paths['explore-path']) ? $walking_paths['explore-path'] : [['top' => 0, 'left' => 0]];
         $walking_speed = get_post_meta($post->ID, 'explore-speed', true);
@@ -86,6 +96,13 @@ class Meta_Box {
             'width' => 0,
             'point' => '',
             'cutscene' => ''
+        ];
+        $mission_trigger = get_post_meta($post->ID, 'explore-mission-trigger', true);
+        $mission_trigger = false === empty($mission_trigger['explore-mission-trigger']) ? $mission_trigger['explore-mission-trigger'] : [
+            'top' => 0,
+            'left' => 0,
+            'height' => 0,
+            'width' => 0,
         ];
         $mission_cutscene = get_post_meta($post->ID, 'explore-mission-cutscene', true);
         $mission_complete_cutscene = get_post_meta($post->ID, 'explore-mission-complete-cutscene', true);
@@ -129,6 +146,9 @@ class Meta_Box {
             $value  = filter_input(INPUT_POST, 'value', FILTER_SANITIZE_NUMBER_INT);
             $unlock_level  = filter_input(INPUT_POST, 'explore-unlock-level', FILTER_SANITIZE_NUMBER_INT);
             $interaction_type  = filter_input(INPUT_POST, 'explore-interaction-type', FILTER_UNSAFE_RAW);
+            $drag_dest  = filter_input_array(
+                INPUT_POST, ['explore-drag-dest' => ['filter' => FILTER_UNSAFE_RAW, 'flags' => FILTER_REQUIRE_ARRAY]]
+            );
             $repeat  = filter_input(INPUT_POST, 'explore-repeat', FILTER_UNSAFE_RAW);
             $walking_path = filter_input_array(
                 INPUT_POST, ['explore-path' => ['filter' => FILTER_UNSAFE_RAW, 'flags' => FILTER_REQUIRE_ARRAY]]
@@ -138,6 +158,9 @@ class Meta_Box {
             );
             $cutscene_trigger = filter_input_array(
                 INPUT_POST, ['explore-cutscene-trigger' => ['filter' => FILTER_UNSAFE_RAW, 'flags' => FILTER_REQUIRE_ARRAY]]
+            );
+            $mission_trigger = filter_input_array(
+                INPUT_POST, ['explore-mission-trigger' => ['filter' => FILTER_UNSAFE_RAW, 'flags' => FILTER_REQUIRE_ARRAY]]
             );
             $walking_speed = filter_input(INPUT_POST, 'explore-speed', FILTER_SANITIZE_NUMBER_INT);
             $cutscene_character_position = filter_input_array(
@@ -154,10 +177,12 @@ class Meta_Box {
                 'value'                    => $value,
                 'explore-unlock-level'     => $unlock_level,
                 'explore-interaction-type' => $interaction_type,
+                'explore-drag-dest'        => $drag_dest,
                 'explore-path'             => $walking_path,
                 'explore-speed'            => $walking_speed,
                 'explore-repeat'           => $repeat,
                 'explore-path-trigger'     => $path_trigger,
+                'explore-mission-trigger'  => $mission_trigger,
                 'explore-cutscene-trigger' => $cutscene_trigger,
                 'explore-cutscene-character-position' => $cutscene_character_position,
                 'explore-mission-cutscene' => sanitize_text_field(wp_unslash($mission_cutscene)),

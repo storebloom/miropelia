@@ -67,9 +67,35 @@ $post_type = get_post_type();
             Draggable<br>
             <input class="top" type="radio" name="explore-interaction-type" id="explore-draggable" value="draggable" <?php checked('draggable', $interaction_type, true) ?>>
         </p>
+
         <p>
             None<br>
             <input class="top" type="radio" name="explore-interaction-type" id="explore-draggable" value="" <?php checked('', $interaction_type, true) ?>>
+        </p>
+        <h2>Draggable Destination</h2>
+        <p>
+            Top<br>
+            <input class="top" type="number" name="explore-drag-dest[top]" id="explore-drag-dest[top]" value="<?php echo intval($drag_dest['top']); ?>">
+        </p>
+        <p>
+            Left<br>
+            <input class="top" type="number" name="explore-drag-dest[left]" id="explore-drag-dest[left]" value="<?php echo intval($drag_dest['left']); ?>">
+        </p>
+        <p>
+            Height<br>
+            <input class="top" type="number" name="explore-drag-dest[height]" id="explore-drag-dest[height]" value="<?php echo intval($drag_dest['height']); ?>">
+        </p>
+        <p>
+            Width<br>
+            <input class="top" type="number" name="explore-drag-dest[width]" id="explore-drag-dest[width]" value="<?php echo intval($drag_dest['width']); ?>">
+        </p>
+        <p>
+            Dest Image<br>
+            <input class="top" type="text" name="explore-drag-dest[image]" id="explore-drag-dest[image]" value="<?php echo esc_html($drag_dest['image']); ?>">
+        </p>
+        <p>
+            Mission Complete<br>
+            <input class="top" type="text" name="explore-drag-dest[mission]" id="explore-drag-dest[mission]" value="<?php echo esc_html($drag_dest['mission']); ?>">
         </p>
     <?php endif; ?>
     <?php if (true === in_array($post_type, ['explore-character', 'explore-enemy'], true )) :  ?>
@@ -181,12 +207,29 @@ $post_type = get_post_type();
         </p>
     <?php endif; ?>
     <?php if ('explore-mission' === $post_type) : ?>
-        <h2 class="hndle" style="padding-left: 0;">Mission Properties</h2>
+        <h2 class="handle" style="padding-left: 0;">Mission Properties</h2>
     <p>
         Next Mission
         <br>
 
         <input class="top" type="text" name="explore-next-mission" id="explore-next-mission" value="<?php echo esc_html($next_mission); ?>">
     </p>
+        <h2>Complete Mission Trigger</h2>
+        <p>
+            Top<br>
+            <input class="top" type="number" name="explore-mission-trigger[top]" id="explore-mission-trigger[top]" value="<?php echo intval($mission_trigger['top']); ?>">
+        </p>
+        <p>
+            Left<br>
+            <input class="top" type="number" name="explore-mission-trigger[left]" id="explore-mission-trigger[left]" value="<?php echo intval($mission_trigger['left']); ?>">
+        </p>
+        <p>
+            Height<br>
+            <input class="top" type="number" name="explore-mission-trigger[height]" id="explore-mission-trigger[height]" value="<?php echo intval($mission_trigger['height']); ?>">
+        </p>
+        <p>
+            Width<br>
+            <input class="top" type="number" name="explore-mission-trigger[width]" id="explore-mission-trigger[width]" value="<?php echo intval($mission_trigger['width']); ?>">
+        </p>
     <?php endif; ?>
 </div>

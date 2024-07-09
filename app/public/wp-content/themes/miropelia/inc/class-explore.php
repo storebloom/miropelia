@@ -655,6 +655,35 @@ class Explore
         $dead_ones = false === empty($dead_ones) ? $dead_ones : [];
         $current_location = get_user_meta($userid, 'current_location', true);
         $current_location = false === empty($current_location) ? $current_location : 'foresight';
+        $missions_for_triggers = get_posts(
+            [
+                'post_type' => 'explore-mission',
+                'numberposts' => 100,
+                'post_status' => 'publish',
+                'tax_query' => [
+                    [
+                        'taxonomy' => 'explore-area-point',
+                        'field' => 'slug',
+                        'terms' => $current_location,
+                    ],
+                ],
+            ]
+        );
+
+        $mission_trigger_html = '';
+
+        // Grab mission trigger points.
+        foreach( $missions_for_triggers as $mission ) {
+            $mission_trigger = get_post_meta($mission->ID, 'explore-mission-trigger', true);
+            $mission_trigger = false === empty($mission_trigger) ? $mission_trigger['explore-mission-trigger'] : $mission_trigger;
+
+            if (false === empty($mission_trigger['top'])) {
+                $mission_trigger_html .= '<div class="mission-trigger wp-block-group map-item ' . $mission->post_name . '-mission-trigger-map-item is-layout-flow wp-block-group-is-layout-flow"';
+                $mission_trigger_html .= 'style="left:' . $mission_trigger['left'] . 'px;top:' . $mission_trigger['top'] . 'px;height:' . $mission_trigger['height'] . 'px; width:' . $mission_trigger['width'] . 'px;"';
+                $mission_trigger_html .= 'data-trigger="true" data-triggee="' . $mission->post_name . '"';
+                $mission_trigger_html .= '></div>';
+            }
+        }
 
         foreach( $explore_points as $explore_point ) {
             if ('explore-enemy' === $explore_point->post_type) {
@@ -704,7 +733,6 @@ class Explore
                     ],
                 ]
             );
-
 
              // Create onload class:
              $path_onload = true === empty($path_trigger['left']) && true === empty($path_trigger['cutscene']) ? ' path-onload' : '';
@@ -805,8 +833,34 @@ class Explore
                     $html .= 'data-trigger="true" data-triggee="' . $explore_point->post_name . '-map-item"';
                     $html .= '></div>';
                 }
+
+                // Draggable Destination.
+                if (true === $draggable) {
+                    $drag_dest = get_post_meta($explore_point->ID, 'explore-drag-dest', true);
+                    $drag_dest = $drag_dest['explore-drag-dest'] ?? false;
+
+                    if (false === empty($drag_dest)) {
+                        $drag_top = $drag_dest['top'] ?? '';
+                        $drag_left = $drag_dest['left'] ?? '';
+                        $drag_height = $drag_dest['height'] ?? '';
+                        $drag_width = $drag_dest['width'] ?? '';
+                        $drag_image = $drag_dest['image'] ?? '';
+                        $drag_mission = $drag_dest['mission'] ?? '';
+
+                        $html .= '<div class="drag-dest wp-block-group map-item ' . $explore_point->post_name . '-drag-dest-map-item is-layout-flow wp-block-group-is-layout-flow"';
+                        $html .= 'style="z-index:0;left:' . esc_html($drag_left) . 'px;top:' . $drag_top . 'px;height:' . $drag_height . 'px; width:' . $drag_width . 'px;"';
+                        $html .= 'data-mission="' . $drag_mission . '">';
+                        $html .= '<img height="' . $drag_height . 'px" width="' . $drag_width . 'px" src="' . $drag_image . '" alt="' . $explore_point->post_title . '-drag-dest">';
+                        $html .= '</div>';
+                    }
+                }
             }
          }
+
+        // Trigger Mission complete.
+        if (false === empty($mission_trigger_html)) {
+            echo $mission_trigger_html;
+        }
 
          return $html;
     }
