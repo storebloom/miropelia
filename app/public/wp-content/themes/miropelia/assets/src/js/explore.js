@@ -415,7 +415,6 @@ function getPointsGaugeAmount( amount ) {
  * @param position
  */
 function saveMission( mission, value, position ) {
-    console.log(mission);
     // Cross off mission.
     const theMission = document.querySelector( '.' + mission + '-mission-item' );
 
@@ -425,17 +424,19 @@ function saveMission( mission, value, position ) {
 
         if ( false !== nextMissions ) {
             nextMissions.forEach( nextMission => {
-                console.log(nextMission);
-                const nextMissionEl = document.querySelector( '.' + nextMission + '-mission-item' );
+                const allMissionsNext = document.querySelectorAll('[data-nextmission*="' + nextMission + '"]');
 
-                const nextMissionBlockade = nextMissionEl.dataset.blockade;
+                if (1 === allMissionsNext.length ) {
+                    const nextMissionEl = document.querySelector('.' + nextMission + '-mission-item');
+                    const nextMissionBlockade = nextMissionEl.dataset.blockade;
 
-                // If next mission exists then show it after previous is completed.
-                if ( '' !== nextMissionBlockade && '0' !== JSON.parse( nextMissionBlockade ).top ) {
-                    document.querySelector( '.' + nextMissionEl.className.replace( 'mission-item ', '' ).replace('next-mission ', '') + '-blockade' ).style.display = 'block';
+                    // If next mission exists then show it after previous is completed.
+                    if ('' !== nextMissionBlockade && '0' !== JSON.parse(nextMissionBlockade).top) {
+                        document.querySelector('.' + nextMissionEl.className.replace('mission-item ', '').replace('next-mission ', '') + '-blockade').style.display = 'block';
+                    }
+
+                    nextMissionEl.classList.add('engage');
                 }
-
-                nextMissionEl.classList.add( 'engage' );
             } );
         }
 
@@ -444,10 +445,14 @@ function saveMission( mission, value, position ) {
 
         // Remove blockade if exists.
         if ( '' !== missionBlockade && '0' !== JSON.parse( missionBlockade ).top ) {
-            document.querySelector( '.' + theMission.classList.replace( 'mission-item ', '' ) + '-blockade' ).remove();
+            document.querySelector( '.' + theMission.className.replace( 'mission-item ', '' ) + '-blockade' ).remove();
         }
 
         theMission.style.textDecoration = 'line-through';
+
+        setTimeout( () => {
+            theMission.remove();
+        }, 500)
 
         // Give points
         runPointAnimation(value, position, true, missionPoints);
@@ -2467,6 +2472,15 @@ function engageDraggableFunction() {
                         dragDest.classList.add( 'completed-mission' );
                     }
                 }
+
+                // Save position of item.
+                const filehref = `https://${wpThemeURL}/wp-json/orbemorder/v1/save-drag/${cleanClass}/${dragmeitem.style.top.replace('px', '')}/${dragmeitem.style.left.replace('px', '')}/${currentUserId}`;
+
+                const xhr = new XMLHttpRequest();
+                xhr.open( "GET", filehref, true );
+                xhr.setRequestHeader( 'Content-Type', 'application/json' );
+                xhr.setRequestHeader( 'Authorization', 'Basic ' + restApiKey );
+                xhr.send();
             } else {
                 dragItem();
             }

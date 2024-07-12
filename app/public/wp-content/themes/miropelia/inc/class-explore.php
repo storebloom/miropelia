@@ -112,6 +112,12 @@ class Explore
             'methods'  => 'GET',
             'callback' => [$this, 'saveMission'],
         ));
+
+        // Save draggable drop position.
+        register_rest_route($namespace, '/save-drag/(?P<slug>[a-zA-Z0-9-]+)/(?P<top>\d+)/(?P<left>\d+)/(?P<userid>\d+)', array(
+            'methods'  => 'GET',
+            'callback' => [$this, 'saveDrag'],
+        ));
     }
 
     /**
@@ -182,6 +188,36 @@ class Explore
     }
 
     /**
+     * Call back function for rest route that save draggable items positions when dropped.
+     * @param object $return The arg values from rest route.
+     */
+    public function saveDrag(object $return)
+    {
+        $user = isset($return['userid']) ? intval($return['userid']) : '';
+        $top = isset($return['top']) ? intval($return['top']) : '';
+        $left = isset($return['left']) ? intval($return['left']) : '';
+        $slug = isset($return['slug']) ? sanitize_text_field(wp_unslash($return['slug'])) : '';
+
+        if (false === in_array('', [$top, $left, $user], true)) {
+            $current_explore_drag = get_user_meta($user, 'explore_drag_items', true);
+
+            if (false === empty($current_explore_drag)) {
+                $current_explore_drag[$slug] = [
+                    'top' => $top,
+                    'left' => $left,
+                ];
+            } else {
+                $current_explore_drag = [$slug => [
+                    'top' => $top,
+                    'left' => $left,
+                ]];
+            }
+
+            update_user_meta($user, 'explore_drag_items', $current_explore_drag);
+        }
+    }
+
+    /**
      * Call back function for rest route that adds points to user's explore game.
      * @param object $return The arg values from rest route.
      */
@@ -216,7 +252,7 @@ class Explore
         if (false === in_array('', [$user, $mission], true)) {
             $explore_missions = get_user_meta($user, 'explore_missions', true);
 
-            if (false === empty($explore_missions)) {
+            if (false === empty($explore_missions) && false === in_array($mission, $explore_missions, true)) {
                 $explore_missions[] = $mission;
             } else {
                 $explore_missions = [$mission];
@@ -495,6 +531,7 @@ class Explore
         delete_user_meta($current_user, 'explore_current_gear');
         delete_user_meta($current_user, 'explore_current_weapons');
         delete_user_meta($current_user, 'explore_missions');
+        delete_user_meta($current_user, 'explore_drag_items');
     }
 
     /**
@@ -741,6 +778,18 @@ class Explore
             // If it's an enemy and they have health show or if not an enemy show.
             if (('explore-enemy' === $explore_point->post_type && false === in_array($explore_point->post_name, $dead_ones,
                         true)) || 'explore-enemy' !== $explore_point->post_type ) {
+
+                // Highjack top/left if draggable and has save drag values.
+                if (true === $draggable) {
+                    $current_drag = get_user_meta($userid, 'explore_drag_items', true);
+
+                    if (false === empty($current_drag) && true === isset($current_drag[$explore_point->post_name])) {
+                        $top = $current_drag[$explore_point->post_name]['top'];
+                        $left = $current_drag[$explore_point->post_name]['left'];
+                    }
+                }
+
+
                 $html .= '<div style="left:' . intval($left) . 'px; top:' . intval($top) . 'px;" id="' . $explore_point->ID . '" data-genre="' . $explore_point->post_type . '" data-type="' . esc_attr($type) . '" data-value="' . intval($value) . '"';
                 $html .= 'data-image="' . get_the_post_thumbnail_url($explore_point->ID) . '" ';
                 if ('explore-area' === $explore_point->post_type) {
@@ -859,7 +908,7 @@ class Explore
 
         // Trigger Mission complete.
         if (false === empty($mission_trigger_html)) {
-            echo $mission_trigger_html;
+            $html .= $mission_trigger_html;
         }
 
          return $html;

@@ -83,7 +83,6 @@ foreach ($missions as $mission)  {
             $mission_blockade['height'] = get_post_meta($mission->ID, 'explore-height', true);
             $mission_blockade['width'] = get_post_meta($mission->ID, 'explore-width', true);
             $mission_blockade = false === in_array('', $mission_blockade, true) ? $mission_blockade : '';
-
             $classes = true === in_array($parent_mission, $completed_missions, true) ? 'engage ' : '';
             $classes .= false !== $parent_mission || true === $is_cutscene_mission ? 'next-mission mission-item ' : 'mission-item ';
             $classes .= esc_attr($mission->post_name) . '-mission-item';

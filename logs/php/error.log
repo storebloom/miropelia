@@ -5827,3 +5827,4 @@ Stack trace:
 #3 /Users/scottadrian/Local Sites/orbem-order/app/public/index.php(17): require('/Users/scottadr...')
 #4 {main}
   thrown in /Users/scottadrian/Local Sites/orbem-order/app/public/wp-content/themes/miropelia/page-templates/components/explore-missions.php on line 72
+[10-Jul-2024 03:50:25 UTC] Cron reschedule event error for hook: action_scheduler_run_queue, Error code: could_not_set, Error message: The cron event list could not be saved., Data: {"schedule":"every_minute","args":["WP Cron"],"interval":60}

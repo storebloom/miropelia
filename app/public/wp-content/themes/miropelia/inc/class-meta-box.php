@@ -66,7 +66,6 @@ class Meta_Box {
         $unlock_level = get_post_meta($post->ID, 'explore-unlock-level', true);
         $interaction_type = get_post_meta($post->ID, 'explore-interaction-type', true);
         $drag_dest = get_post_meta($post->ID, 'explore-drag-dest', true);
-        var_dump($drag_dest);
         $drag_dest = false === empty($drag_dest['explore-drag-dest']) ? $drag_dest['explore-drag-dest'] : [
             'top' => 0,
             'left' => 0,
