@@ -416,15 +416,17 @@ class Explore
     public function getOrbemArea(object $return)
     {
         $position = isset($return['position']) ? sanitize_text_field(wp_unslash($return['position'])) : '';
+        $area = get_posts(['post_type' => 'explore-area', 'name' => $position]);
+        $is_area_cutscene = get_post_meta($area[0]->ID, 'explore-is-cutscene', true);
 
         // Get content from the new explore-area post type.
-        $area = get_posts(['post_type' => 'explore-area', 'name' => $position, 'posts_per_page' => 1]);
         $userid = $return['userid'] ?? get_current_user_id();
         $explore_points = self::getExplorePoints($position);
         $explore_cutscenes = self::getExploreCutscenes($position);
-        $map_items = self::getMapItemHTML($explore_points, $userid);
-        $map_cutscenes = self::getMapCutsceneHTML($explore_cutscenes);
-        $map_abilities = self::getMapAbilitiesHTML($explore_cutscenes);
+        $explore_abilities = Explore::getExploreAbilities();
+        $map_items = self::getMapItemHTML($explore_points, $userid, $position);
+        $map_cutscenes = self::getMapCutsceneHTML($explore_cutscenes, $position);
+        $map_abilities = self::getMapAbilitiesHTML($explore_abilities);
 
         ob_start();
         include_once $this->theme->dir_path . '/../templates/style-scripts.php';
@@ -450,7 +452,8 @@ class Explore
                     'map-item-styles-scripts' => $area_item_styles_scripts,
                     'start-top' => get_post_meta($area[0]->ID, 'explore-start-top', true),
                     'start-left' => get_post_meta($area[0]->ID, 'explore-start-left', true),
-                    'map-svg' => self::getMapSVG($area[0])
+                    'map-svg' => self::getMapSVG($area[0]),
+                    'is-cutscene' => $is_area_cutscene
                 ]
             )
         );
@@ -684,14 +687,12 @@ class Explore
      *
      * @return string
      */
-    public static function getMapItemHTML($explore_points, $userid) {
+    public static function getMapItemHTML($explore_points, $userid, $current_location = 'foresight') {
         $html = '';
 
         $userid = $userid ?? get_current_user_id();
         $dead_ones = get_user_meta($userid, 'explore_enemies', true);
         $dead_ones = false === empty($dead_ones) ? $dead_ones : [];
-        $current_location = get_user_meta($userid, 'current_location', true);
-        $current_location = false === empty($current_location) ? $current_location : 'foresight';
         $missions_for_triggers = get_posts(
             [
                 'post_type' => 'explore-mission',
@@ -920,8 +921,10 @@ class Explore
      *
      * @return string
      */
-    public static function getMapCutsceneHTML($explore_cutscenes) {
+    public static function getMapCutsceneHTML($explore_cutscenes, $position) {
         $html = '';
+        $area = get_posts(['post_type' => 'explore-area', 'name' => $position, 'posts_per_page' => 1]);
+        $is_area_cutscene = 'yes' === get_post_meta($area[0]->ID, 'explore-is-cutscene', true);
 
         foreach( $explore_cutscenes as $explore_cutscene ) {
             $cut_char = get_the_post_thumbnail_url($explore_cutscene->ID);
@@ -936,8 +939,9 @@ class Explore
             $mission_complete_cutscene = get_post_meta($explore_cutscene->ID, 'explore-mission-complete-cutscene', true);
 
             $next_area = false === empty($next_area[0]) ? ' data-nextarea="' . $next_area[0]->slug . '"' : '';
+            $cutscene_name = false === $is_area_cutscene ? $character[0]->slug : $area[0]->post_name;
 
-            $html .= '<div class="wp-block-group map-cutscene ' . $character[0]->slug . '-map-cutscene is-layout-flow wp-block-group-is-layout-flow"';
+            $html .= '<div class="wp-block-group map-cutscene ' . $cutscene_name . '-map-cutscene is-layout-flow wp-block-group-is-layout-flow"';
 
             if (false === empty($mission_cutscene)) {
                 $html .= 'data-mission="' . $mission_cutscene . '" ';
@@ -961,9 +965,17 @@ class Explore
             }
 
             $html .= '>';
-            $html .= '<div class="cut-character"><img src="/wp-content/themes/miropelia/assets/src/images/graeme-avatar.png"/></div>';
+
+            if (false === $is_area_cutscene) {
+                $html .= '<div class="cut-character"><img src="/wp-content/themes/miropelia/assets/src/images/graeme-avatar.png"/></div>';
+            }
+
             $html .= 'explore-area' !== $explore_cutscene->post_type ? $explore_cutscene->post_content : '';
-            $html .= '<div class="cut-character"><img src="' . $cut_char . '"/></div>';
+
+            if (false === $is_area_cutscene) {
+                $html .= '<div class="cut-character"><img src="' . $cut_char . '"/></div>';
+            }
+
             $html .= '</div>';
 
             $path_trigger_left = false === empty($cutscene_trigger['explore-cutscene-trigger']['left']) && 0 !== $cutscene_trigger['explore-cutscene-trigger']['left'] ? $cutscene_trigger['explore-cutscene-trigger']['left'] : '';

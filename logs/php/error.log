@@ -5828,3 +5828,6 @@ Stack trace:
 #4 {main}
   thrown in /Users/scottadrian/Local Sites/orbem-order/app/public/wp-content/themes/miropelia/page-templates/components/explore-missions.php on line 72
 [10-Jul-2024 03:50:25 UTC] Cron reschedule event error for hook: action_scheduler_run_queue, Error code: could_not_set, Error message: The cron event list could not be saved., Data: {"schedule":"every_minute","args":["WP Cron"],"interval":60}
+[16-Jul-2024 04:21:36 UTC] PHP Parse error:  syntax error, unexpected token ";", expecting ")" in /Users/scottadrian/Local Sites/orbem-order/app/public/wp-content/themes/miropelia/page-templates/explore.php on line 160
+[16-Jul-2024 04:22:19 UTC] PHP Warning:  Undefined variable $area in /Users/scottadrian/Local Sites/orbem-order/app/public/wp-content/themes/miropelia/inc/class-explore.php on line 439
+[16-Jul-2024 04:23:29 UTC] PHP Warning:  Undefined variable $area in /Users/scottadrian/Local Sites/orbem-order/app/public/wp-content/themes/miropelia/inc/class-explore.php on line 439

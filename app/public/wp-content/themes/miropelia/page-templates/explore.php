@@ -15,6 +15,7 @@ $location = false === empty($location) ? $location : 'foresight';
 $coordinates = get_user_meta($userid, 'current_coordinates', true);
 $back = false === empty($coordinates) ? ' Back' : '';
 $explore_area = get_posts(['post_type' => 'explore-area', 'name' => $location]);
+$is_area_cutscene = get_post_meta($explore_area[0]->ID, 'explore-is-cutscene', true);
 $explore_area_map = get_the_post_thumbnail_url($explore_area[0]->ID);
 $explore_points = Explore::getExplorePoints($location);
 $explore_cutscenes = Explore::getExploreCutscenes($location);
@@ -154,10 +155,10 @@ get_header();
                  height="<?php echo intval(get_post_meta($equipped_weapon->ID, 'explore-height', true)); ?>px"
             />
         </div>
-		<div class="default-map">
+		<div class="default-map" data-iscutscene="<?php echo esc_attr($is_area_cutscene); ?>">
             <?php echo Explore::getMapSVG($explore_area[0]); ?>
 			<?php echo html_entity_decode(Explore::getMapItemHTML($explore_points, get_current_user_id())); ?>
-            <?php echo html_entity_decode(Explore::getMapCutsceneHTML($explore_cutscenes)); ?>
+            <?php echo html_entity_decode(Explore::getMapCutsceneHTML($explore_cutscenes, $explore_area[0]->post_name)); ?>
             <?php echo html_entity_decode(Explore::getMapAbilitiesHTML($explore_abilities)); ?>
 		</div>
 	</div>

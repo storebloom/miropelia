@@ -78,6 +78,7 @@ class Meta_Box {
         $walking_paths = false === empty($walking_paths['explore-path']) ? $walking_paths['explore-path'] : [['top' => 0, 'left' => 0]];
         $walking_speed = get_post_meta($post->ID, 'explore-speed', true);
         $repeat = get_post_meta($post->ID, 'explore-repeat', true);
+        $is_cutscene = get_post_meta($post->ID, 'explore-is-cutscene', true);
         $path_trigger = get_post_meta($post->ID, 'explore-path-trigger', true);
         $path_trigger = false === empty($path_trigger['explore-path-trigger']) ? $path_trigger['explore-path-trigger'] : [
             'top' => 0,
@@ -149,6 +150,7 @@ class Meta_Box {
                 INPUT_POST, ['explore-drag-dest' => ['filter' => FILTER_UNSAFE_RAW, 'flags' => FILTER_REQUIRE_ARRAY]]
             );
             $repeat  = filter_input(INPUT_POST, 'explore-repeat', FILTER_UNSAFE_RAW);
+            $is_cutscene  = filter_input(INPUT_POST, 'explore-is-cutscene', FILTER_UNSAFE_RAW);
             $walking_path = filter_input_array(
                 INPUT_POST, ['explore-path' => ['filter' => FILTER_UNSAFE_RAW, 'flags' => FILTER_REQUIRE_ARRAY]]
             );
@@ -174,12 +176,13 @@ class Meta_Box {
                 'explore-height'           => $height,
                 'explore-width'            => $width,
                 'value'                    => $value,
+                'explore-is-cutscene'      => sanitize_text_field(wp_unslash($is_cutscene)),
                 'explore-unlock-level'     => $unlock_level,
                 'explore-interaction-type' => $interaction_type,
                 'explore-drag-dest'        => $drag_dest,
                 'explore-path'             => $walking_path,
                 'explore-speed'            => $walking_speed,
-                'explore-repeat'           => $repeat,
+                'explore-repeat'           => sanitize_text_field(wp_unslash($repeat)),
                 'explore-path-trigger'     => $path_trigger,
                 'explore-mission-trigger'  => $mission_trigger,
                 'explore-cutscene-trigger' => $cutscene_trigger,

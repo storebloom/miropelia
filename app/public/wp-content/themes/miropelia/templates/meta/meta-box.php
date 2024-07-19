@@ -43,6 +43,16 @@ $post_type = get_post_type();
             Map SVG<br>
             <input class="map-svg" type="text" name="explore-map-svg" id="explore-map-svg" value="<?php echo esc_html($map); ?>">
         </p>
+        <p>
+            Is Cutscene<br>
+            yes
+            <input class="repeat" type="radio" name="explore-is-cutscene" id="explore-is-cutscene" value="yes" <?php checked('yes', $is_cutscene, true); ?>
+            <br>
+            no
+            <input class="repeat" type="radio" name="explore-is-cutscene" id="explore-is-cutscene" value="no" <?php checked('no', $is_cutscene, true); ?>>
+        </p>
+        </p>
+
     <?php endif; ?>
     <p>
         Value<br>
