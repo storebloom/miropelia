@@ -102,6 +102,11 @@ get_header();
                     <?php include get_template_directory() . '/page-templates/components/explore-settings.php'; ?>
                 </div>
             </div>
+            <div id="characters" style="display: none;">
+                <div class="characters-content">
+                    <?php include get_template_directory() . '/page-templates/components/explore-characters.php'; ?>
+                </div>
+            </div>
             <div id="missions">
                 <div class="missions-content">
                     <?php include get_template_directory() . '/page-templates/components/explore-missions.php'; ?>

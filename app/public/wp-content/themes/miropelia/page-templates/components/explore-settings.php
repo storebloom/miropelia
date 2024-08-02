@@ -5,6 +5,7 @@
 $settings = get_user_meta($userid, 'explore_settings', true);
 $music = true === isset($settings['music']) ? intval($settings['music']) : 5;
 $sfx = true === isset($settings['sfx']) ? intval($settings['sfx']) : 5;
+$talking = true === isset($settings['talking']) ? intval($settings['talking']) : 5;
 ?>
 <div class="settings-form">
     <span class="close-settings">X</span>
@@ -16,6 +17,10 @@ $sfx = true === isset($settings['sfx']) ? intval($settings['sfx']) : 5;
     <label for="sfx-volume">
         SFX Volume
         <input id="sfx-volume" type="range" min="0" max="10" value="<?php echo intval($sfx); ?>"/>
+    </label>
+    <label for="talking-volume">
+        Talking Volume
+        <input id="talking-volume" type="range" min="0" max="10" value="<?php echo intval($talking); ?>"/>
     </label>
     <button id="update-settings">Save</button>
 

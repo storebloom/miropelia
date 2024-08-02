@@ -58,7 +58,12 @@
     }
 
     .cut-character {
+      display: none;
       width: 300px;
+
+      &.engage {
+        display: block;
+      }
 
       img {
         object-fit: contain;
@@ -196,6 +201,97 @@
 
     #weapon {
       bottom: 5.5rem;
+    }
+
+    #characters {
+      position: fixed;
+      right: 6.75rem;
+      top: 1rem;
+      width: 73vw;
+
+      &:not(.engage) {
+        width: 300px;
+        z-index: 9;
+
+        &:hover {
+          &:before {
+            font-size: 50px;
+          }
+        }
+
+        &:before {
+          content: '⛑';
+          color: black;
+          cursor: pointer;
+          line-height: 30px;
+          text-shadow: 1px 1px 2px white;
+          font-size: 50px;
+          position: absolute;
+          right: 0;
+          top: 0;
+        }
+      }
+
+      &.engage {
+        z-index: 10;
+
+        .characters-content {
+          display: block;
+        }
+      }
+
+      .characters-content {
+        background: white;
+        border: 1px solid black;
+        border-radius: 10px;
+        display: none;
+        padding: 1rem;
+
+        h2 {
+          margin-top: 0;
+        }
+
+        .characters-form {
+          display: flex;
+          flex-direction: column;
+          position: relative;
+          width: 100%;
+
+          .close-settings {
+            cursor: pointer;
+            position: absolute;
+            right: .25rem;
+            top: .25rem;
+          }
+
+          .character-list {
+            display: flex;
+            gap: 1rem;
+
+            .character-item {
+              cursor: pointer;
+              width: 150px;
+
+              &:hover {
+                border: 4px solid $light_blue;
+                border-radius: 4px;
+              }
+
+              img {
+                width: 100%;
+              }
+            }
+          }
+
+          label {
+            margin-bottom: 1rem;
+          }
+
+          a {
+            margin-top: 1rem;
+          }
+        }
+      }
     }
 
     #settings {

@@ -90,7 +90,7 @@ class Explore
         ));
 
         // Register route for saving settings.
-        register_rest_route($namespace, '/save-settings/(?P<userid>\d+)/(?P<music>\d+)/(?P<sfx>\d+)', array(
+        register_rest_route($namespace, '/save-settings/(?P<userid>\d+)/(?P<music>\d+)/(?P<sfx>\d+)/(?P<talking>\d+)', array(
             'methods'  => 'GET',
             'callback' => [$this, 'saveSettings'],
         ));
@@ -117,6 +117,12 @@ class Explore
         register_rest_route($namespace, '/save-drag/(?P<slug>[a-zA-Z0-9-]+)/(?P<top>\d+)/(?P<left>\d+)/(?P<userid>\d+)', array(
             'methods'  => 'GET',
             'callback' => [$this, 'saveDrag'],
+        ));
+
+        // Add character to crew list.
+        register_rest_route($namespace, '/add-character/(?P<slug>[a-zA-Z0-9-]+)/(?P<userid>\d+)', array(
+            'methods'  => 'GET',
+            'callback' => [$this, 'addCharacter'],
         ));
     }
 
@@ -214,6 +220,28 @@ class Explore
             }
 
             update_user_meta($user, 'explore_drag_items', $current_explore_drag);
+        }
+    }
+
+    /**
+     * Call back function for rest route that save draggable items positions when dropped.
+     * @param object $return The arg values from rest route.
+     */
+    public function addCharacter(object $return)
+    {
+        $user = isset($return['userid']) ? intval($return['userid']) : '';
+        $slug = isset($return['slug']) ? sanitize_text_field(wp_unslash($return['slug'])) : '';
+
+        if (false === in_array('', [$user, $slug], true)) {
+            $current_characters = get_user_meta($user, 'explore_characters', true);
+
+            if (false === empty($current_characters) && false === in_array($slug, $current_characters)) {
+                $current_characters[] = $slug;
+            } else {
+                $current_characters = [$slug];
+            }
+
+            update_user_meta($user, 'explore_characters', $current_characters);
         }
     }
 
@@ -402,10 +430,11 @@ class Explore
     {
         $music = isset($return['music']) ? intval($return['music']) : '';
         $sfx = isset($return['sfx']) ? intval($return['sfx']) : '';
+        $talking = isset($return['talking']) ? intval($return['talking']) : '';
         $userid = isset($return['userid']) ? intval($return['userid']) : '';
 
-        if (false === in_array('', [$music, $userid, $sfx], true)) {
-            update_user_meta($userid, 'explore_settings', ['music' => $music, 'sfx' => $sfx]);
+        if (false === in_array('', [$music, $userid, $sfx, $talking], true)) {
+            update_user_meta($userid, 'explore_settings', ['music' => $music, 'sfx' => $sfx, 'talking' => $talking,]);
         }
     }
 
@@ -745,6 +774,7 @@ class Explore
             $walking_path = get_post_meta($explore_point->ID, 'explore-path', true);
             $walking_speed = get_post_meta($explore_point->ID, 'explore-speed', true);
             $repeat = get_post_meta($explore_point->ID, 'explore-repeat', true);
+            $crew_mate = get_post_meta($explore_point->ID, 'explore-crew-mate', true);
             $path_trigger = get_post_meta($explore_point->ID, 'explore-path-trigger', true);
             $path_trigger = false === empty($path_trigger['explore-path-trigger']) ? $path_trigger['explore-path-trigger'] : '';
             $path_trigger_left = false === empty($path_trigger['left']) ? $path_trigger['left'] : '';
@@ -797,6 +827,11 @@ class Explore
                     $map_url = get_the_post_thumbnail_url($explore_point->ID);
 
                     $html .= ' data-map-url="' . $map_url . '" ';
+                }
+
+                // Explore character crew mate.
+                if ('explore-character' === $explore_point->post_type) {
+                    $html .= ' data-crewmate="' . $crew_mate . '"';
                 }
 
                 // Is item breakable.
@@ -927,18 +962,20 @@ class Explore
         $is_area_cutscene = 'yes' === get_post_meta($area[0]->ID, 'explore-is-cutscene', true);
 
         foreach( $explore_cutscenes as $explore_cutscene ) {
-            $cut_char = get_the_post_thumbnail_url($explore_cutscene->ID);
             $character = get_the_terms( $explore_cutscene->ID, 'explore-character-point' );
             $next_area = get_the_terms( $explore_cutscene->ID, 'explore-next-area' );
             $cutscene_trigger = get_post_meta($explore_cutscene->ID, 'explore-cutscene-trigger', true);
             $character_position = get_post_meta($explore_cutscene->ID, 'explore-cutscene-character-position', true);
+            $next_area_position = get_post_meta($explore_cutscene->ID, 'explore-cutscene-next-area-position', true);
             $character_position_left = $character_position['explore-cutscene-character-position']['left'] ?? '';
             $character_position_top = $character_position['explore-cutscene-character-position']['top'] ?? '';
+            $next_area_position_left = $next_area_position['explore-cutscene-next-area-position']['left'] ?? '';
+            $next_area_position_top = $next_area_position['explore-cutscene-next-area-position']['top'] ?? '';
             $character_position_trigger = $character_position['explore-cutscene-character-position']['trigger'] ?? '';
             $mission_cutscene = get_post_meta($explore_cutscene->ID, 'explore-mission-cutscene', true);
             $mission_complete_cutscene = get_post_meta($explore_cutscene->ID, 'explore-mission-complete-cutscene', true);
 
-            $next_area = false === empty($next_area[0]) ? ' data-nextarea="' . $next_area[0]->slug . '"' : '';
+            $next_area_datapoint = false === empty($next_area[0]) ? ' data-nextarea="' . $next_area[0]->slug . '"' : '';
             $cutscene_name = false === $is_area_cutscene ? $character[0]->slug : $area[0]->post_name;
 
             $html .= '<div class="wp-block-group map-cutscene ' . $cutscene_name . '-map-cutscene is-layout-flow wp-block-group-is-layout-flow"';
@@ -958,24 +995,28 @@ class Explore
             }
 
             if (false === empty($next_area)) {
-                $area_obj = get_posts(['post_name' => $next_area, 'post_type' => 'explore-area', 'post_status' => 'publish']);
+                $area_obj = get_posts(['name' => $next_area[0]->slug, 'post_type' => 'explore-area', 'post_status' => 'publish', 'posts_per_page' => 1]);
 
-                $html .= $next_area;
+                $html .= $next_area_datapoint;
+                $html .= false === empty($next_area_position_top) ? ' data-nextarea-position={"left":"' . $next_area_position_left . '","top":"' . $next_area_position_top . '"}' : '';
                 $html .= ' data-mapurl="' . get_the_post_thumbnail_url($area_obj[0]->ID) . '"';
             }
 
             $html .= '>';
 
             if (false === $is_area_cutscene) {
-                $html .= '<div class="cut-character"><img src="/wp-content/themes/miropelia/assets/src/images/graeme-avatar.png"/></div>';
+                $html .= '<div data-character="mc" class="cut-character"><img src="/wp-content/themes/miropelia/assets/src/images/graeme-avatar.png"/></div>';
+            }
+
+            if (false === empty($character) && true === is_array($character)) {
+                foreach ( $character as $char ) {
+                    $character_post = get_posts( ['post_type' => 'explore-character', 'posts_per_page' => 1, 'name' => $char->slug] );
+
+                    $html .= '<div data-character="' . $char->slug . '" class="cut-character">' . get_the_post_thumbnail($character_post[0]->ID) . '</div>';
+                }
             }
 
             $html .= 'explore-area' !== $explore_cutscene->post_type ? $explore_cutscene->post_content : '';
-
-            if (false === $is_area_cutscene) {
-                $html .= '<div class="cut-character"><img src="' . $cut_char . '"/></div>';
-            }
-
             $html .= '</div>';
 
             $path_trigger_left = false === empty($cutscene_trigger['explore-cutscene-trigger']['left']) && 0 !== $cutscene_trigger['explore-cutscene-trigger']['left'] ? $cutscene_trigger['explore-cutscene-trigger']['left'] : '';

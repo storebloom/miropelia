@@ -109,6 +109,16 @@ $post_type = get_post_type();
         </p>
     <?php endif; ?>
     <?php if (true === in_array($post_type, ['explore-character', 'explore-enemy'], true )) :  ?>
+
+    <p>
+        <h2>Crew mate</h2>
+            yes
+            <input class="repeat" type="radio" name="explore-crew-mate" id="explore-crew-mate" value="yes" <?php checked('yes', $crew_mate, true); ?>
+            <br>
+            no
+            <input class="repeat" type="radio" name="explore-crew-mate" id="explore-crew-mate" value="no" <?php checked('no', $crew_mate, true); ?>>
+    </p>
+
     <div class="repeater-container">
         <h2>Walking Path</h2>
         <p>Speed<br>
@@ -214,6 +224,16 @@ $post_type = get_post_type();
         <p>
             Mission Complete Name<br>
             <input class="top" type="text" name="explore-mission-complete-cutscene" id="explore-mission-complete-cutscene" value="<?php echo esc_html($mission_complete_cutscene); ?>">
+        </p>
+
+        <h2>Next Area Start Position</h2>
+        <p>
+            Top<br>
+            <input class="top" type="number" name="explore-cutscene-next-area-position[top]" id="explore-cutscene-next-area-position[top]" value="<?php echo intval($cutscene_next_area_position['top']); ?>">
+        </p>
+        <p>
+            Left<br>
+            <input class="top" type="number" name="explore-cutscene-next-area-position[left]" id="explore-cutscene-next-area-position[left]" value="<?php echo intval($cutscene_next_area_position['left']); ?>">
         </p>
     <?php endif; ?>
     <?php if ('explore-mission' === $post_type) : ?>

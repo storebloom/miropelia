@@ -5831,3 +5831,30 @@ Stack trace:
 [16-Jul-2024 04:21:36 UTC] PHP Parse error:  syntax error, unexpected token ";", expecting ")" in /Users/scottadrian/Local Sites/orbem-order/app/public/wp-content/themes/miropelia/page-templates/explore.php on line 160
 [16-Jul-2024 04:22:19 UTC] PHP Warning:  Undefined variable $area in /Users/scottadrian/Local Sites/orbem-order/app/public/wp-content/themes/miropelia/inc/class-explore.php on line 439
 [16-Jul-2024 04:23:29 UTC] PHP Warning:  Undefined variable $area in /Users/scottadrian/Local Sites/orbem-order/app/public/wp-content/themes/miropelia/inc/class-explore.php on line 439
+[19-Jul-2024 01:50:42 UTC] Flywheel::DatabaseConnection
+[19-Jul-2024 01:50:45 UTC] Flywheel::DatabaseConnection
+[19-Jul-2024 01:50:45 UTC] Flywheel::DatabaseConnection
+[31-Jul-2024 04:13:20 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function Miropelia\wp_post_kses() in /Users/scottadrian/Local Sites/orbem-order/app/public/wp-content/themes/miropelia/inc/class-explore.php:976
+Stack trace:
+#0 /Users/scottadrian/Local Sites/orbem-order/app/public/wp-content/themes/miropelia/page-templates/explore.php(161): Miropelia\Explore::getMapCutsceneHTML(Array, 'foresight')
+#1 /Users/scottadrian/Local Sites/orbem-order/app/public/wp-includes/template-loader.php(106): include('/Users/scottadr...')
+#2 /Users/scottadrian/Local Sites/orbem-order/app/public/wp-blog-header.php(19): require_once('/Users/scottadr...')
+#3 /Users/scottadrian/Local Sites/orbem-order/app/public/index.php(17): require('/Users/scottadr...')
+#4 {main}
+  thrown in /Users/scottadrian/Local Sites/orbem-order/app/public/wp-content/themes/miropelia/inc/class-explore.php on line 976
+[31-Jul-2024 04:13:29 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function Miropelia\wp_post_kses() in /Users/scottadrian/Local Sites/orbem-order/app/public/wp-content/themes/miropelia/inc/class-explore.php:976
+Stack trace:
+#0 /Users/scottadrian/Local Sites/orbem-order/app/public/wp-content/themes/miropelia/page-templates/explore.php(161): Miropelia\Explore::getMapCutsceneHTML(Array, 'foresight')
+#1 /Users/scottadrian/Local Sites/orbem-order/app/public/wp-includes/template-loader.php(106): include('/Users/scottadr...')
+#2 /Users/scottadrian/Local Sites/orbem-order/app/public/wp-blog-header.php(19): require_once('/Users/scottadr...')
+#3 /Users/scottadrian/Local Sites/orbem-order/app/public/index.php(17): require('/Users/scottadr...')
+#4 {main}
+  thrown in /Users/scottadrian/Local Sites/orbem-order/app/public/wp-content/themes/miropelia/inc/class-explore.php on line 976
+[31-Jul-2024 04:26:49 UTC] PHP Warning:  Attempt to read property "slug" on array in /Users/scottadrian/Local Sites/orbem-order/app/public/wp-content/themes/miropelia/inc/class-explore.php on line 975
+[31-Jul-2024 04:27:03 UTC] PHP Warning:  Attempt to read property "slug" on array in /Users/scottadrian/Local Sites/orbem-order/app/public/wp-content/themes/miropelia/inc/class-explore.php on line 975
+[02-Aug-2024 03:47:25 UTC] PHP Warning:  foreach() argument must be of type array|object, string given in /Users/scottadrian/Local Sites/orbem-order/app/public/wp-content/themes/miropelia/page-templates/components/explore-characters.php on line 11
+[02-Aug-2024 04:14:41 UTC] PHP Warning:  foreach() argument must be of type array|object, string given in /Users/scottadrian/Local Sites/orbem-order/app/public/wp-content/themes/miropelia/page-templates/components/explore-characters.php on line 11
+[02-Aug-2024 04:20:07 UTC] PHP Warning:  foreach() argument must be of type array|object, string given in /Users/scottadrian/Local Sites/orbem-order/app/public/wp-content/themes/miropelia/page-templates/components/explore-characters.php on line 11
+[02-Aug-2024 04:27:33 UTC] PHP Warning:  foreach() argument must be of type array|object, string given in /Users/scottadrian/Local Sites/orbem-order/app/public/wp-content/themes/miropelia/page-templates/components/explore-characters.php on line 11
+[02-Aug-2024 04:47:23 UTC] PHP Warning:  Attempt to read property "slug" on string in /Users/scottadrian/Local Sites/orbem-order/app/public/wp-content/themes/miropelia/page-templates/components/explore-characters.php on line 14
+[02-Aug-2024 04:47:23 UTC] PHP Warning:  Attempt to read property "slug" on string in /Users/scottadrian/Local Sites/orbem-order/app/public/wp-content/themes/miropelia/page-templates/components/explore-characters.php on line 14
